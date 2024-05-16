@@ -1,0 +1,7 @@
+# Binaries
+cmake-build-*/
+build/
+
+# Jetbrains
+.cache/
+.idea/
