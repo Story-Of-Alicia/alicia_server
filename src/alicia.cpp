@@ -2,23 +2,8 @@
 
 #include "alicia.hpp"
 
-template <typename Buffer> void alicia::xor_codec_cpp(Buffer& buffer)
-{
-  const std::array control{
-      static_cast<std::byte>(0xCB),
-      static_cast<std::byte>(0x91),
-      static_cast<std::byte>(0x01),
-      static_cast<std::byte>(0xA2),
-  };
-
-  for(size_t idx = 0; idx < buffer.size(); idx++) {
-    const auto shift = idx % 4;
-    buffer[idx] ^= control[shift];
-  }
-}
-
-uint32_t alicia::encode_message_information(
-    uint16_t message_id, uint16_t message_jumbo, uint16_t message_data_length, uint16_t buffer_size)
+uint32_t encode_message_information(
+    uint16_t message_id, uint16_t message_jumbo, uint16_t message_data_length, uint16_t buffer_size = 4092)
 {
   uint32_t length = buffer_size << 16 | message_data_length;
   uint32_t val = length;
@@ -29,11 +14,6 @@ uint32_t alicia::encode_message_information(
   uint32_t encoded = magic;
   encoded |= ((magic ^ message_id) << 16);
   return encoded;
-}
-
-template <typename ValType> void alicia::read(std::istream& stream, ValType& val)
-{
-  stream.read(reinterpret_cast<char*>(&val), sizeof(val));
 }
 
 uint32_t alicia::decode_message_length(uint32_t data)
@@ -53,13 +33,6 @@ void alicia::read(std::istream& stream, std::string& val)
     if(v == 0)
       break;
     val += v;
-  }
-}
-
-template <typename ValType> void alicia::read(std::istream& stream, std::vector<ValType>& val)
-{
-  for(auto& v : val) {
-    read(stream, v);
   }
 }
 

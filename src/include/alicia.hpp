@@ -6,12 +6,6 @@ namespace alicia {
 
   namespace asio = boost::asio;
 
-  //! Appy XORcodec to buffer.
-  //!
-  //! @param buffer Buffer.
-  //! @returns XORcoded buffer.
-  template <typename Buffer> void xor_codec_cpp(Buffer& buffer);
-
   /**
    * Encode message information.
    *
@@ -32,11 +26,39 @@ namespace alicia {
    */
   uint32_t decode_message_length(uint32_t data);
 
-  template <typename ValType> void read(std::istream& stream, ValType& val);
-
   void read(std::istream& stream, std::string& val);
 
-  template <typename ValType> void read(std::istream& stream, std::vector<ValType>& val);
+  //! Appy XORcodec to buffer.
+  //!
+  //! @param buffer Buffer.
+  //! @returns XORcoded buffer.
+  template <typename Buffer> void xor_codec_cpp(Buffer& buffer)
+  {
+    const std::array control{
+        static_cast<std::byte>(0xCB),
+        static_cast<std::byte>(0x91),
+        static_cast<std::byte>(0x01),
+        static_cast<std::byte>(0xA2),
+    };
+
+    for(size_t idx = 0; idx < buffer.size(); idx++) {
+      const auto shift = idx % 4;
+      buffer[idx] ^= control[shift];
+    }
+  }
+
+
+  template <typename ValType> void read(std::istream& stream, ValType& val)
+  {
+    stream.read(reinterpret_cast<char*>(&val), sizeof(val));
+  }
+
+  template <typename ValType> void read(std::istream& stream, std::vector<ValType>& val)
+  {
+    for(auto& v : val) {
+      read(stream, v);
+    }
+  }
 
   class AcCmdCLLogin {
   public:
