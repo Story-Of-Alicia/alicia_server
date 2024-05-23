@@ -5,24 +5,27 @@ option(BUILD_TESTS "Build tests" ON)
 
 find_package(Boost REQUIRED)
 
+# Project properties interface library
+add_library(project-properties INTERFACE)
+target_compile_features(project-properties
+        INTERFACE cxx_std_20)
+
+# Alicia server library
+add_library(alicia-libserver STATIC)
+target_sources(alicia-libserver
+        PUBLIC src/libserver/alicia.cpp)
+target_include_directories(alicia-libserver
+        PUBLIC include/)
+target_link_libraries(alicia-libserver
+        PUBLIC project-properties Boost::headers)
+
+# Alicia server executable
 add_executable(alicia-server)
-
-target_sources(alicia-server PRIVATE 
-        ${CMAKE_SOURCE_DIR}/src/main.cpp 
-        ${CMAKE_SOURCE_DIR}/src/alicia.cpp
-)        
-
-target_include_directories(alicia-server PRIVATE 
-        ${CMAKE_SOURCE_DIR}/src/include
-)
-
-target_compile_features(alicia-server
-        PRIVATE cxx_std_20)
-
+target_sources(alicia-server
+        PRIVATE src/server/main.cpp)
 target_link_libraries(alicia-server
-        PRIVATE Boost::headers)
+        PRIVATE project-properties alicia-libserver)
 
-        
 if (BUILD_TESTS) 
         enable_testing()
         add_subdirectory(tests)

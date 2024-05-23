@@ -1,28 +1,41 @@
 #include <bit>
 
-#include "alicia.hpp"
+#include "libserver/alicia.hpp"
 
-uint32_t alicia::encode_message_information(
-    uint16_t message_id, uint16_t message_jumbo, uint16_t message_data_length, uint16_t buffer_size)
+namespace
 {
-  uint32_t length = buffer_size << 16 | message_data_length;
-  uint32_t val = length;
-  length = length & 16383 | length << 14;
-  const uint16_t magic = (length & 15 | 65408) << 8 | val >> 4 & 255 | length & 61440;
 
-  message_id = message_jumbo & 0xFFFF | message_id & 0xFFFF;
-  uint32_t encoded = magic;
-  encoded |= ((magic ^ message_id) << 16);
-  return encoded;
+} // namespace anon
+
+alicia::MessageMagic alicia::decode_message_magic(
+  uint32_t value)
+{
+  MessageMagic magic;
+  if(value & 1 << 15) {
+    const uint16_t section = value & 0x3FFF;
+    magic.length = (value & 0xFF) << 4 | section >> 8 & 0xF | section & 0xF000;
+  }
+
+  const uint16_t firstTwoBytes = value & 0xFF;
+  const uint16_t secondTwoBytes = value >> 16 & 0xFF;
+  const uint16_t xorResult = firstTwoBytes ^ secondTwoBytes;
+  magic.id = ~(xorResult & 0xC000) & xorResult;
+
+  return magic;
 }
 
-uint32_t alicia::decode_message_length(uint32_t data)
+uint32_t alicia::encode_message_magic(
+  MessageMagic magic)
 {
-  if(data & (1 << 15)) {
-    const uint16_t section = data & 16383;
-    return (data & 255) << 4 | section >> 8 & 15 | section & 61440;
-  }
-  return data;
+  uint32_t length = BufferSize << 16 | magic.length;
+  uint32_t val = length;
+  length = length & 16383 | length << 14;
+  const uint16_t intermediate = (length & 15 | 0xFF80) << 8 | val >> 4 & 0xFF | length & 0xF000;
+
+  const auto message_id = BufferJumbo & 0xFFFF | magic.id & 0xFFFF;
+  uint32_t encoded = intermediate;
+  encoded |= (intermediate ^ message_id) << 16;
+  return encoded;
 }
 
 void alicia::read(std::istream& stream, std::string& val)
@@ -35,8 +48,6 @@ void alicia::read(std::istream& stream, std::string& val)
     val += v;
   }
 }
-
-// std::array message_table = {0, 1};
 
 void alicia::AcCmdCLLogin::Serialize(std::istream& buffer)
 {
@@ -69,11 +80,11 @@ void alicia::Client::read_loop()
       throw std::runtime_error("invalid message magic");
     }
 
-    const auto message_length = decode_message_length(magic);
+    const auto message_magic = decode_message_magic(magic);
 
     // Read the message data.
     std::vector<std::byte> data;
-    data.resize(message_length);
+    data.resize(message_magic.length);
     read(stream, data);
 
     // XOR decode
@@ -99,9 +110,9 @@ void alicia::Client::read_loop()
     printf("\tAuth Key: %s\n", login.auth_key.c_str());
 
     std::array<std::byte, 5> test;
-    *reinterpret_cast<uint32_t*>(test.data()) = encode_message_information(9, 16384, 5);
+    *reinterpret_cast<uint32_t*>(test.data()) = encode_message_magic({9, 5});
     test[4] = static_cast<std::byte>(3);
-    _socket.write_some(boost::asio::const_buffer(test.data(), 5));
+    _socket.write_some(asio::const_buffer(test.data(), 5));
 
     read_loop();
   });

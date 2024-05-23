@@ -1,30 +1,56 @@
+//
+// Created by maros on 23/05/2024.
+//
+
+#ifndef ALICIA_HPP
+#define ALICIA_HPP
+
+#include <cstdint>
 #include <unordered_map>
 #include <istream>
 #include <boost/asio.hpp>
 
-namespace alicia {
+namespace alicia
+{
 
-  namespace asio = boost::asio;
+  //! A constant buffer size for message magic.
+  //! The maximum size of message payload is 4092 bytes.
+  //! The extra 4 bytes are reserved for message magic.
+  constexpr uint16_t BufferSize = 4096;
 
-  /**
-   * Encode message information.
-   *
-   * @param message_id  Message identifier.
-   * @param message_jumbo Message jumbo.
-   * @param message_data_length Message data length.
-   * @param buffer_size Message data buffer size.
-   * @return Encoded message information.
-   */
-  uint32_t encode_message_information(
-      uint16_t message_id, uint16_t message_jumbo, uint16_t message_data_length, uint16_t buffer_size = 4092);
+  //! A constant buffer jumbo for message magic.
+  constexpr uint16_t BufferJumbo = 16384;
 
-  /**
-   * Decode message length from message information.
-   *
-   * @param data Message information to decode.
-   * @return Decoded message length.
-   */
-  uint32_t decode_message_length(uint32_t data);
+  //! A constant 4-byte XOR control value,
+  //! with which message bytes are XORed.
+  constexpr std::array xor_control{
+    static_cast<std::byte>(0xCB),
+    static_cast<std::byte>(0x91),
+    static_cast<std::byte>(0x01),
+    static_cast<std::byte>(0xA2),
+};
+
+  //! Message magix with which all messages are prefixed.
+  struct MessageMagic
+  {
+    //! An ID of the message.
+    uint16_t id{0};
+    //! A length of message payload.
+    //! Maximum payload length is 4092 bytes.
+    uint16_t length{0};
+  };
+
+  //! Decode message magic value.
+  //!
+  //! @param value Magic value.
+  //! @return Decoded message magic.
+  MessageMagic decode_message_magic(uint32_t value);
+
+  //! Encode message magic.
+  //!
+  //! @param magic Message magic.
+  //! @return Encoded message magic value.
+  uint32_t encode_message_magic(MessageMagic magic);
 
   void read(std::istream& stream, std::string& val);
 
@@ -34,19 +60,11 @@ namespace alicia {
   //! @returns XORcoded buffer.
   template <typename Buffer> void xor_codec_cpp(Buffer& buffer)
   {
-    const std::array control{
-        static_cast<std::byte>(0xCB),
-        static_cast<std::byte>(0x91),
-        static_cast<std::byte>(0x01),
-        static_cast<std::byte>(0xA2),
-    };
-
     for(size_t idx = 0; idx < buffer.size(); idx++) {
       const auto shift = idx % 4;
-      buffer[idx] ^= control[shift];
+      buffer[idx] ^= xor_control[shift];
     }
   }
-
 
   template <typename ValType> void read(std::istream& stream, ValType& val)
   {
@@ -75,6 +93,8 @@ namespace alicia {
 
   struct AcCmdCLLoginCancel {};
 
+  namespace asio = boost::asio;
+
   /**
    * Client
    */
@@ -82,7 +102,6 @@ namespace alicia {
   public:
     explicit Client(asio::ip::tcp::socket&& socket) noexcept : _socket(std::move(socket)) {}
 
-  public:
     void read_loop();
 
   private:
@@ -97,7 +116,6 @@ namespace alicia {
   public:
     Server() : _acceptor(_io_ctx) {}
 
-  public:
     void host();
 
     void run() { _io_ctx.run(); }
@@ -105,7 +123,6 @@ namespace alicia {
   private:
     void accept_loop();
 
-  private:
     asio::io_context _io_ctx;
     asio::ip::tcp::acceptor _acceptor;
 
@@ -114,3 +131,5 @@ namespace alicia {
   };
 
 } // namespace alicia
+
+#endif //ALICIA_HPP
