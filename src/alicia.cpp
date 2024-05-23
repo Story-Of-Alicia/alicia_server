@@ -2,8 +2,8 @@
 
 #include "alicia.hpp"
 
-uint32_t encode_message_information(
-    uint16_t message_id, uint16_t message_jumbo, uint16_t message_data_length, uint16_t buffer_size = 4092)
+uint32_t alicia::encode_message_information(
+    uint16_t message_id, uint16_t message_jumbo, uint16_t message_data_length, uint16_t buffer_size)
 {
   uint32_t length = buffer_size << 16 | message_data_length;
   uint32_t val = length;
