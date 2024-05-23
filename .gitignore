@@ -2,6 +2,9 @@
 cmake-build-*/
 build/
 
+# Testing
+Testing/
+
 # Jetbrains
 .cache/
 .idea/
