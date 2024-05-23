@@ -27,14 +27,13 @@ alicia::MessageMagic alicia::decode_message_magic(
 uint32_t alicia::encode_message_magic(
   MessageMagic magic)
 {
-  uint32_t length = BufferSize << 16 | magic.length;
-  uint32_t val = length;
-  length = length & 16383 | length << 14;
-  const uint16_t intermediate = (length & 15 | 0xFF80) << 8 | val >> 4 & 0xFF | length & 0xF000;
+  const uint16_t id = BufferJumbo & 0xFFFF | magic.id & 0xFFFF;
+  const uint32_t length = BufferSize << 16 | magic.length;
 
-  const auto message_id = BufferJumbo & 0xFFFF | magic.id & 0xFFFF;
-  uint32_t encoded = intermediate;
-  encoded |= (intermediate ^ message_id) << 16;
+  uint32_t encoded = length;
+  encoded = (encoded & 0x3FFF | encoded << 14) & 0xFFFF;
+  encoded = ((encoded & 0xF | 0xFF80) << 8 | length >> 4 & 0xFF | encoded & 0xF000) & 0xFFFF;
+  encoded |= (encoded ^ id) << 16;
   return encoded;
 }
 
