@@ -1,6 +1,7 @@
 # Binaries
 cmake-build-*/
 build/
+build/Testing
 
 # Jetbrains
 .cache/
