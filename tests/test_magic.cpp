@@ -24,5 +24,8 @@ namespace {
 
 int main() {
   test_magic();
+
+  const auto magic = alicia::decode_message_magic(0xc725c72d);
+  printf("%d", magic.id);
 }
 

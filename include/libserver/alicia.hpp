@@ -24,10 +24,10 @@ namespace alicia
   //! A constant 4-byte XOR control value,
   //! with which message bytes are XORed.
   constexpr std::array xor_control{
-    static_cast<std::byte>(0xCB),
-    static_cast<std::byte>(0x91),
-    static_cast<std::byte>(0x01),
-    static_cast<std::byte>(0xA2),
+    static_cast<uint8_t>(0xCB),
+    static_cast<uint8_t>(0x91),
+    static_cast<uint8_t>(0x01),
+    static_cast<uint8_t>(0xA2),
 };
 
   //! Message magix with which all messages are prefixed.
@@ -86,7 +86,7 @@ namespace alicia
     uint32_t member_no;
     std::string auth_key;
 
-    void Serialize(std::istream& buffer);
+    void Deserialize(std::istream& buffer);
   };
 
   struct AcCmdCLLoginOK {};
