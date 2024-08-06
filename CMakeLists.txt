@@ -25,6 +25,8 @@ target_sources(alicia-server
         PRIVATE src/server/main.cpp)
 target_link_libraries(alicia-server
         PRIVATE project-properties alicia-libserver)
+target_compile_definitions(alicia-server PUBLIC ALICIA_PROTOCOL=2)
+
 
 if (BUILD_TESTS) 
         enable_testing()
