@@ -78,20 +78,26 @@ namespace alicia
     }
   }
 
-  class AcCmdCLLogin {
+  class ICommand {
   public:
-    uint16_t constant0;
-    uint16_t constant1;
-    std::string login_id;
-    uint32_t member_no;
-    std::string auth_key;
-
-    void Deserialize(std::istream& buffer);
+    ICommand() {}
+    virtual ~ICommand(){}
+    virtual uint16_t GetCommandId() = 0;
+    virtual std::vector<uint8_t>& AsBytes() = 0;
+    virtual void Log() = 0;
   };
 
-  struct AcCmdCLLoginOK {};
+  class DummyCommand : public ICommand {
+  public:
+    DummyCommand(uint16_t cId) : commandId(cId) {};
+    uint16_t GetCommandId();
+    std::vector<uint8_t>& AsBytes();
+    void Log();
 
-  struct AcCmdCLLoginCancel {};
+    uint16_t commandId;
+    std::vector<uint8_t> data;
+    std::chrono::system_clock::time_point timestamp;
+  };
 
   namespace asio = boost::asio;
 
