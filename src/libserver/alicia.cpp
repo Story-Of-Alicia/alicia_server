@@ -16,8 +16,8 @@ alicia::MessageMagic alicia::decode_message_magic(
     magic.length = (value & 0xFF) << 4 | section >> 8 & 0xF | section & 0xF000;
   }
 
-  const uint16_t firstTwoBytes = value & 0xFF;
-  const uint16_t secondTwoBytes = value >> 16 & 0xFF;
+  const uint16_t firstTwoBytes = value & 0xFFFF;
+  const uint16_t secondTwoBytes = value >> 16 & 0xFFFF;
   const uint16_t xorResult = firstTwoBytes ^ secondTwoBytes;
   magic.id = ~(xorResult & 0xC000) & xorResult;
 
