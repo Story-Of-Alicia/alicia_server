@@ -19,13 +19,21 @@ target_include_directories(alicia-libserver
 target_link_libraries(alicia-libserver
         PUBLIC project-properties Boost::headers)
 
-# Alicia server executable
-add_executable(alicia-server)
-target_sources(alicia-server
+# Alicia 1.0 server executable
+add_executable(alicia1-server)
+target_sources(alicia1-server
         PRIVATE src/server/main.cpp)
-target_link_libraries(alicia-server
+target_link_libraries(alicia1-server
         PRIVATE project-properties alicia-libserver)
-target_compile_definitions(alicia-server PUBLIC ALICIA_PROTOCOL=2)
+target_compile_definitions(alicia1-server PUBLIC ALICIA_PROTOCOL=1)
+
+# Alicia 2.0 server executable
+add_executable(alicia2-server)
+target_sources(alicia2-server
+        PRIVATE src/server/main.cpp)
+target_link_libraries(alicia2-server
+        PRIVATE project-properties alicia-libserver)
+target_compile_definitions(alicia2-server PUBLIC ALICIA_PROTOCOL=2)
 
 
 if (BUILD_TESTS) 
