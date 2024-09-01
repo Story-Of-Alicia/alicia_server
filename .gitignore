@@ -8,3 +8,6 @@ Testing/
 # Jetbrains
 .cache/
 .idea/
+
+# Visual Studio
+.vs/
