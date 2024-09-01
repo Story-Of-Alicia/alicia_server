@@ -89,7 +89,7 @@ namespace alicia
 
   class DummyCommand : public ICommand {
   public:
-    DummyCommand(uint16_t cId) : commandId(cId) {};
+    DummyCommand(uint16_t cId);
     uint16_t GetCommandId();
     std::vector<uint8_t>& AsBytes();
     void Log();
