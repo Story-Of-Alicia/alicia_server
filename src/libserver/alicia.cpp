@@ -4,6 +4,16 @@
 #include "libserver/alicia.hpp"
 #include "libserver/mapping.hpp"
 
+uint16_t MUTE_COMMAND_IDS[] = {
+  #ifdef AcCmdCLHeartbeat
+  AcCmdCLHeartbeat,
+  #endif
+
+  #ifdef AcCmdCRHeartbeat
+  AcCmdCRHeartbeat
+  #endif
+};
+
 namespace
 {
 
@@ -11,8 +21,20 @@ namespace
 
 void send_command(boost::asio::ip::tcp::socket& socket, alicia::ICommand& cmd)
 {
-  printf(">>> SEND ");
-  cmd.Log();
+  bool mute = false;
+  for (auto &muteCmdId : MUTE_COMMAND_IDS)
+  {
+    if (cmd.GetCommandId() == muteCmdId)
+    {
+      mute = true;
+      break;
+    }
+  }
+  if(!mute)
+  {
+    std::cout << ">>> SEND " << socket.remote_endpoint().address().to_string() << ":" << socket.remote_endpoint().port() << " ";
+    cmd.Log();
+  }
 
   std::vector<uint8_t> cmdContents = cmd.AsBytes();
   // gametree forgot to encode clientbound packets
@@ -60,6 +82,12 @@ void alicia::read(std::istream& stream, std::string& val)
       break;
     val += v;
   }
+}
+
+alicia::DummyCommand::DummyCommand(uint16_t cId)
+{
+  this->commandId = cId;
+  this->timestamp = std::chrono::system_clock::now();
 }
 
 uint16_t alicia::DummyCommand::GetCommandId()
@@ -142,16 +170,27 @@ void alicia::Client::read_loop()
     DummyCommand request = DummyCommand(message_magic.id);
     request.timestamp = std::chrono::system_clock::now();
     request.data = data;
-    printf("<<< RECV ");
-    request.Log();
-
+    bool mute = false;
+    for (auto &muteCmdId : MUTE_COMMAND_IDS)
+    {
+      if (message_magic.id == muteCmdId)
+      {
+        mute = true;
+        break;
+      }
+    }
+    if(!mute)
+    {
+      std::cout << "<<< RECV " << _socket.remote_endpoint().address().to_string() << ":" << _socket.remote_endpoint().port() << " ";
+      request.Log();
+    }
+    
     switch(message_magic.id)
     {
       #ifdef AcCmdCLLogin
       case AcCmdCLLogin:
         {
           DummyCommand response(AcCmdCLLoginOK);
-          response.timestamp = std::chrono::system_clock::now();
           response.data = {
             0xC2, 0x08, 0x40, 0xA7, 0xF2, 0xB7, 0xDA, 0x01,  0x94, 0xA7, 0x0C, 0x00, 0xE8, 0xE2, 0x06, 0x00,
             0x72, 0x67, 0x6E, 0x74, 0x00, 0x00, 0x01, 0x00,  0x00, 0x00, 0x0A, 0x00, 0xB1, 0x8D, 0x00, 0x00,
@@ -209,7 +248,6 @@ void alicia::Client::read_loop()
       case AcCmdCLShowInventory:
         {
           DummyCommand response(AcCmdCLShowInventoryOK);
-          response.timestamp = std::chrono::system_clock::now();
           response.data = {
             0x1F, 0x4A, 0x75, 0x00, 0x02, 0x4A, 0x75, 0x00,  0x00, 0xB8, 0x1B, 0x01, 0x00, 0x01, 0x00, 0x00,
             0x00, 0xB0, 0x9A, 0x00, 0x02, 0xB0, 0x9A, 0x00,  0x00, 0xB8, 0x1B, 0x01, 0x00, 0x01, 0x00, 0x00,
@@ -253,7 +291,6 @@ void alicia::Client::read_loop()
       case AcCmdCLRequestLicenseInfo:
         {
           DummyCommand response(AcCmdCLRequestLicenseInfoOK);
-          response.timestamp = std::chrono::system_clock::now();
           response.data = {
               0x0};
           send_command(_socket, response);
@@ -265,7 +302,6 @@ void alicia::Client::read_loop()
       case AcCmdCLRequestLeagueInfo:
         {
           DummyCommand response(AcCmdCLRequestLeagueInfoOK);
-          response.timestamp = std::chrono::system_clock::now();
           response.data = {
             0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x12, 0x01, 0x01, 0x01,  0x00, 0x00, 0x34, 0x01, 0x00,
@@ -279,7 +315,6 @@ void alicia::Client::read_loop()
       case AcCmdCLAchievementCompleteList:
         {
           DummyCommand response(AcCmdCLAchievementCompleteListOK);
-          response.timestamp = std::chrono::system_clock::now();
           response.data = {
             0xE8, 0xE2, 0x06, 0x00, // character id probably
                                     0x1C, 0x00, 0x28, 0x4E,  0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
@@ -319,7 +354,6 @@ void alicia::Client::read_loop()
       case AcCmdCLShowMountList:
         {
           DummyCommand response(AcCmdCLShowMountListOK);
-          response.timestamp = std::chrono::system_clock::now();
           response.data = {
               0x0};
           send_command(_socket, response);
@@ -331,7 +365,6 @@ void alicia::Client::read_loop()
       case AcCmdCLShowEggList:
         {
           DummyCommand response(AcCmdCLShowEggListOK);
-          response.timestamp = std::chrono::system_clock::now();
           response.data = {
               0x0};
           send_command(_socket, response);
@@ -343,7 +376,6 @@ void alicia::Client::read_loop()
       case AcCmdCLShowCharList:
         {
           DummyCommand response(AcCmdCLShowCharListOK);
-          response.timestamp = std::chrono::system_clock::now();
           response.data = {
               0x0};
           send_command(_socket, response);
@@ -355,7 +387,6 @@ void alicia::Client::read_loop()
       case AcCmdCLRequestMountEquipmentList:
         {
           DummyCommand response(AcCmdCLRequestMountEquipmentListOK);
-          response.timestamp = std::chrono::system_clock::now();
           response.data = {
             0xE8, 0xE2, 0x06, 0x00, // character ID?
             0x00, // length
@@ -369,7 +400,6 @@ void alicia::Client::read_loop()
       case AcCmdCLEnterChannel:
         {
           DummyCommand response(AcCmdCLEnterChannelOK);
-          response.timestamp = std::chrono::system_clock::now();
           response.data = {
               0x00, // member0
               0x00, 0x00 // member1
@@ -383,7 +413,6 @@ void alicia::Client::read_loop()
       case AcCmdCLMakeRoom:
         {
           DummyCommand response(AcCmdCLMakeRoomOK);
-          response.timestamp = std::chrono::system_clock::now();
           response.data = {
               // one of these two probably has to be the char id
               0x00, 0x00, 0x00, 0x00,
