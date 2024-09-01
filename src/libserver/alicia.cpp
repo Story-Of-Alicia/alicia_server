@@ -415,8 +415,8 @@ void alicia::Client::read_loop()
           DummyCommand response(AcCmdCLMakeRoomOK);
           response.data = {
               // one of these two probably has to be the char id
-              0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00,
+              0xE8, 0xE2, 0x06, 0x00, // character id?
+              0x44, 0x33, 0x22, 0x11, // probably made up
               0x7F, 0x00, 0x00, 0x01, // 127.0.0.1, game server IP
               0x2E, 0x27, // port
               0x00, // member2
@@ -448,7 +448,7 @@ void alicia::Server::host()
 void alicia::Server::accept_loop()
 {
   _acceptor.async_accept([&](boost::system::error_code error, asio::ip::tcp::socket client_socket) {
-    printf("Accepted new client from port %d\n", client_socket.remote_endpoint().port());
+    printf("+++ CONN %s:%d\n\n", client_socket.remote_endpoint().address().to_string().c_str(), client_socket.remote_endpoint().port());
     const auto [itr, _] = _clients.emplace(client_id++, std::move(client_socket));
     itr->second.read_loop();
 
