@@ -198,10 +198,13 @@ void alicia::Client::read_loop()
             0x94, 0xA7, 0x0C, 0x00,
 
             0xE8, 0xE2, 0x06, 0x00, // Self UID
-            0x72, 0x67, 0x6E, 0x74, 0x00, // Nick name ("rgnt\0")
-            0x00, // Unk0: Another string, probably some character description? 100 chars long
-            0x01, // Unk1: 1 byte, no idea what
-            0x00, // Unk2: Another string, 100 chars long
+            'r', 'g', 'n', 't', 0x00, // Nick name ("rgnt\0")
+            'W', 'e', 'l', 'c', 'o', 'm', 'e', ' ', 't', 'o', ' ', 'S', 't', 'o', 'r', 'y', ' ', 'o', 'f', ' ', 'A', 'l', 'i', 'c', 'i', 'a', '!', 0x00, // motd, 100 chars long
+            0x01, // profile gender:
+                  // 0x00 - baby
+                  // 0x01 - boy
+                  // 0x02 - girl
+            'T', 'h', 'i', 's', ' ', 'p', 'e', 'r', 's', 'o', 'n', ' ', 'i', 's', ' ', 'm', 'e', 'n', 't', 'a', 'l', 'l', 'y', ' ', 'u', 'n', 's', 't', 'a', 'b', 'l', 'e', 0x00, // info, 100 chars long
 
             0x01, // Equipment list size: List size, max 16 elements
                 0x01, 0x00, 0x00, 0x00,
@@ -215,10 +218,10 @@ void alicia::Client::read_loop()
 
             0x00, // Unk4: List size, max 250 elements
                   // Seems to be the same type of data as Unk3
-            0x0A, 0x00, // Login success
-            0xB1, 0x8D, 0x00, 0x00, // Unk6
+            0xFF, 0xFF, // Level
+            0xFF, 0xFF, 0xFF, 0x7F, // Carrots
             0x30, 0x61, 0x00, 0x00, // Unk7
-            0x00, 0x00, 0x00, 0x00, // Unk8
+            0x01, 0x00, 0x00, 0x00, // Unk8
             0x00, // Unk9
 
             // Unk10: Data structure with keybinds and macros
