@@ -685,6 +685,53 @@ void alicia::Client::read_loop()
         }
         break;
       #endif
+    /*
+      #ifdef AcCmdCREnterRanch
+      case AcCmdCREnterRanch: {
+          DummyCommand response(AcCmdCREnterRanchOK);
+          response.data = {
+              0x00, 0x00, 0x00, 0x00, // doesn't look needed
+              0x00, 0x00, 0x00, 0x00, // unknown but this part of buffer may get overwritten
+              //string of max length 0x11 (17)
+              't', 'e', 's', 't',
+              '1', 0x00,
+              // string of max length 0x3d (61)
+              't', 'e', 's', 't',
+              '2', 0x00,
+              // 4 byte int used by function 1
+              0x00, 0x00, 0x00, 0x00,
+              // 4 byte for int used by function 2
+              0x00, 0x00, 0x00, 0x00,
+              // 8 unknown bytes, overwritten by uVar8
+              0x00, 0x00, 0x00, 0x00,
+              0x00, 0x00, 0x00, 0x00,
+              // 4 bytes for unsigned int
+              0x00, 0x00, 0x00, 0x00,
+              // 4 unknown bytes overwritten by uVar5
+              0x00, 0x00, 0x00, 0x00,
+              // 4 unknown bytes called in third function
+              0x00, 0x00, 0x00, 0x00,
+              // taking a guess of 1 byte, overwritten by uVar2
+              0x00,
+              // 4 unknown bytes that's overwritten by *puVar6
+              0x00, 0x00, 0x00, 0x00,
+              // 4 unknown bytes (void pointer)
+              0x00, 0x00, 0x00, 0x00,
+              // 4 bytes that's also overwritten by *puVar6
+              0x00, 0x00, 0x00, 0x00,
+              // 4 bytes used by first call of function 4
+              0x00, 0x00, 0x00, 0x00,
+              // 4 bytes used by second call of function 4
+              0x00, 0x00, 0x00, 0x00,
+              // 4 byte int used in call of function 6
+              0x00, 0x00, 0x00, 0x00,
+              // 4 bytes used by third call of function 4
+              0x00, 0x00, 0x00, 0x00,
+          };
+          send_command(_socket, response);
+        } break;
+      #endif
+      */
 
       #ifdef AcCmdCLGetMessengerInfo
       case AcCmdCLGetMessengerInfo:
