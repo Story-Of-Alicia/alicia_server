@@ -4,7 +4,9 @@
 #include "libserver/alicia.hpp"
 #include "libserver/mapping.hpp"
 
-uint16_t MUTE_COMMAND_IDS[] = {
+#define PORT 10030
+
+uint16_t MUTE_COMMAND_IDS[2] = {
   #ifdef AcCmdCLHeartbeat
   AcCmdCLHeartbeat,
   #endif
@@ -351,9 +353,9 @@ void alicia::Client::read_loop()
             0x00, 0x00,
 
             // Horse: Big ass structure now, probably horse info
-            // Horse.Unk0: Structure, probably IDs
-            0x96, 0xA3, 0x79, 0x05,
-            0x21, 0x4E, 0x00, 0x00,
+            // Horse.TIDs
+            0x96, 0xA3, 0x79, 0x05, // Horse.TIDs.MountTID Unique horse identifier
+            0x21, 0x4E, 0x00, 0x00, // Horse.TIDs.HorseTID Horse model
             /* Horse name: "idontunderstand" */ 0x69, 0x64, 0x6F, 0x6E, 0x74, 0x75, 0x6E, 0x64, 0x65, 0x72, 0x73, 0x74, 0x61, 0x6E, 0x64, 0x00,
             // Horse.Appearance: Structure. Probably horse appearance
             0x02,
@@ -685,53 +687,125 @@ void alicia::Client::read_loop()
         }
         break;
       #endif
-    /*
+    
       #ifdef AcCmdCREnterRanch
       case AcCmdCREnterRanch: {
+          // Received request contents:
+          // E8 E2 06 00 44 33 22 11  E8 E2 06 00 21 B2 64
+
           DummyCommand response(AcCmdCREnterRanchOK);
           response.data = {
-              0x00, 0x00, 0x00, 0x00, // doesn't look needed
-              0x00, 0x00, 0x00, 0x00, // unknown but this part of buffer may get overwritten
-              //string of max length 0x11 (17)
-              't', 'e', 's', 't',
-              '1', 0x00,
-              // string of max length 0x3d (61)
-              't', 'e', 's', 't',
-              '2', 0x00,
-              // 4 byte int used by function 1
+              0xe8, 0xe2, 0x06, 0x00, // player id?
+              't', 'e', 's', 't', '1', 0x00,//string of max length 0x11 (17)
+              't', 'e', 's', 't', '2', 0x00,// string of max length 0x3d (61)
+
+              // Structure with a list of horses
+              // Likely horses in the ranch
+              0x00, // List size, max 10
+
+              // Structure consisting of:
+              // uint
+              // string
+              // byte
+              // byte
+              // byte
+              // string
+              // AcCmdCLLoginOK.Unk15
+              // Horse
+              // list of equipment (AcCmdCLLoginOK_Unk3_Element)
+              // structure with:
+              //  uint
+              //  byte
+              //  uint
+              //  string
+              //  byte
+              //  uint
+              // short
+              // byte
+              // byte
+              // structure with:
+              //  uint
+              //  uint
+              // structure with:
+              //  uint
+              //  uint
+              //  string
+              //  uint
+              // structure with:
+              //  byte
+              //  byte
+              // Very likely other players in the ranch
+              0x00, // List size, max 20
+
+              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
               0x00, 0x00, 0x00, 0x00,
-              // 4 byte for int used by function 2
               0x00, 0x00, 0x00, 0x00,
-              // 8 unknown bytes, overwritten by uVar8
-              0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00,
-              // 4 bytes for unsigned int
-              0x00, 0x00, 0x00, 0x00,
-              // 4 unknown bytes overwritten by uVar5
-              0x00, 0x00, 0x00, 0x00,
-              // 4 unknown bytes called in third function
-              0x00, 0x00, 0x00, 0x00,
-              // taking a guess of 1 byte, overwritten by uVar2
+
+              // structure with int, short, and something weird
+              0x00, // list size, max 13 values
+
               0x00,
-              // 4 unknown bytes that's overwritten by *puVar6
               0x00, 0x00, 0x00, 0x00,
-              // 4 unknown bytes (void pointer)
+              0x00, 0x00, 0x00, 0x00, // bitset, no idea what its for
+
               0x00, 0x00, 0x00, 0x00,
-              // 4 bytes that's also overwritten by *puVar6
               0x00, 0x00, 0x00, 0x00,
-              // 4 bytes used by first call of function 4
+
+              // list of three structures, each with Horse.TID, uint, byte, int, int, int, int, int
+              // Horse.TIDs
+              0x97, 0xA3, 0x79, 0x05, // Horse.TIDs.MountTID Unique horse identifier
+              0x21, 0x4E, 0x00, 0x00, // Horse.TIDs.HorseTID Horse model
+
+              0x00, 0x00, 0x00, 0x00, 
+              0x00, 
+
+              // Horse.Unk1: Structure, no idea what this is
               0x00, 0x00, 0x00, 0x00,
-              // 4 bytes used by second call of function 4
               0x00, 0x00, 0x00, 0x00,
-              // 4 byte int used in call of function 6
               0x00, 0x00, 0x00, 0x00,
-              // 4 bytes used by third call of function 4
               0x00, 0x00, 0x00, 0x00,
+              0x12, 0x00, 0x00, 0x00,
+
+
+              // Horse.TIDs
+              0x98, 0xA3, 0x79, 0x05, // Horse.TIDs.MountTID Unique horse identifier
+              0x21, 0x4E, 0x00, 0x00, // Horse.TIDs.HorseTID Horse model
+
+              0x00, 0x00, 0x00, 0x00, 
+              0x00, 
+
+              // Horse.Unk1: Structure, no idea what this is
+              0x00, 0x00, 0x00, 0x00,
+              0x00, 0x00, 0x00, 0x00,
+              0x00, 0x00, 0x00, 0x00,
+              0x00, 0x00, 0x00, 0x00,
+              0x12, 0x00, 0x00, 0x00,
+
+
+              // Horse.TIDs
+              0x99, 0xA3, 0x79, 0x05, // Horse.TIDs.MountTID Unique horse identifier
+              0x21, 0x4E, 0x00, 0x00, // Horse.TIDs.HorseTID Horse model
+
+              0x00, 0x00, 0x00, 0x00, 
+              0x00, 
+
+              // Horse.Unk1: Structure, no idea what this is
+              0x00, 0x00, 0x00, 0x00,
+              0x00, 0x00, 0x00, 0x00,
+              0x00, 0x00, 0x00, 0x00,
+              0x00, 0x00, 0x00, 0x00,
+              0x12, 0x00, 0x00, 0x00,
+              
+
+              // structure
+              0x00,
+              0x00,
+
+              0x00, 0x00, 0x00, 0x00
           };
           send_command(_socket, response);
         } break;
       #endif
-      */
 
       #ifdef AcCmdCLGetMessengerInfo
       case AcCmdCLGetMessengerInfo:
@@ -766,8 +840,8 @@ void alicia::Client::read_loop()
 
 void alicia::Server::host()
 {
-  asio::ip::tcp::endpoint server_endpoint(asio::ip::tcp::v4(), 10030);
-  printf("Hosting the server on port 10030\n");
+  asio::ip::tcp::endpoint server_endpoint(asio::ip::tcp::v4(), PORT);
+  printf("Hosting the server on port %d\n", PORT);
   _acceptor.open(server_endpoint.protocol());
   _acceptor.bind(server_endpoint);
   _acceptor.listen();
