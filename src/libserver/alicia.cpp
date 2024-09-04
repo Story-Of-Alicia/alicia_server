@@ -355,84 +355,94 @@ void alicia::Client::read_loop()
             // Horse: Big ass structure now, probably horse info
             // Horse.TIDs
             0x96, 0xA3, 0x79, 0x05, // Horse.TIDs.MountTID Unique horse identifier
-              0x21, 0x4E, 0x00, 0x00, // Horse.TIDs.HorseTID Horse model
-              0x69, 0x64, 0x6F, 0x6E, 0x74, 0x75, 0x6E, 0x64, 0x65, 0x72, 0x73, 0x74, 0x61, 0x6E, 0x64, 0x00,  // Horse Name "idontunderstand\0"
-              // Horse.Appearance: Structure. Probably horse appearance
-              0x02,
-              0x03,
-              0x03,
-              0x03,
-              0x04,
-              0x04,
-              0x05,
-              0x03,
-              0x04,
-              // Horse.Unk1: Structure, mounted horse stats
-              // agility
-              0x04, 0x00, 0x00, 0x00,
-              // spirit
-              0x03, 0x00, 0x00, 0x00,
-              // speed
-              0x02, 0x00, 0x00, 0x00,
-              // strength
-              0x01, 0x00, 0x00, 0x00,
-              // control
-              0x13, 0x00, 0x00, 0x00,
+            0x21, 0x4E, 0x00, 0x00, // Horse.TIDs.HorseTID Horse model
+            /* Horse name: "idontunderstand" */ 0x69, 0x64, 0x6F, 0x6E, 0x74, 0x75, 0x6E, 0x64, 0x65, 0x72, 0x73, 0x74, 0x61, 0x6E, 0x64, 0x00,
+            // Horse.Appearance: Structure. Probably horse appearance
+            0x02,
+            0x03,
+            0x03,
+            0x03,
+            0x04,
+            0x04,
+            0x05,
+            0x03,
+            0x04,
+            0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00,
+            // Horse.Unk1: Structure, mounted horse stats
+            // agility
+            0x04, 0x00, 0x00, 0x00,
+            // spirit
+            0x03, 0x00, 0x00, 0x00,
+            // speed
+            0x02, 0x00, 0x00, 0x00,
+            // strength
+            0x01, 0x00, 0x00, 0x00,
+            // control
+            0x13, 0x00, 0x00, 0x00,
 
-              0x0F, 0x00, 0x00, 0x00,         // ReadHorse *(undefined4 *)((int)this + 0x38) 
-              0x10,                           // ReadHorse *(char *)((int)this + 0x40)
-              0x11,                           // ReadHorse *(char *)((int)this + 0x41)
-              0x12,                           // ReadHorse *(char *)((int)this + 0x42)
-              0x13, 0x00,                     // ReadHorse *(undefined2 *)((int)this + 0x44)
+            0x00, 0x00, 0x00, 0x00, // Horse.Unk2
+            0x15, // Horse.Unk3
+            0x01, // Horse.Unk4
+            0x02, // Horse.Unk5
+            0x02, 0x00, // Horse.Unk6
 
-              // loop in ReadHorse that reads 7 2 2-byte values
-              0x14, 0x00, 
-              0x15, 0x00,
+            // Horse.Unk7: An array of size 8? Each element has two 2 byte values
+            0xD0, 0x07,
+              0x3C, 0x00,
+              0x1C, 0x02,
 
-              0x16, 0x00, 
-              0x17, 0x00, 
+              0x00, 0x00,
+              0xE8, 0x03,
 
-              0x18, 0x00, 
-              0x19, 0x00, 
+              0x00, 0x00,
+              0x00, 0x00,
 
-              0x1A, 0x00, 
-              0x1B, 0x00, 
+              0x00, 0x00,
+              0xE8, 0x03,
 
-              0x1C, 0x00, 
-              0x1D, 0x00, 
+              0x1E, 0x00,
+              0x0A, 0x00,
 
-              0x1E, 0x00, 
-              0x1F, 0x00, 
+              0x0A, 0x00,
+              0x0A, 0x00,
 
-              0x20, 0x00, 
-              0x21, 0x00,
+              0x00, 0x00,
+              0x00, 0x00,
 
-              0x22,                           // ReadHorse *(int *)((int)this + 0x74)
-              0x23, 0x00, 0x00, 0x00,         // ReadHorse *(undefined4 *)((int)this + 0x80)
-              0x24, 0x00, 0x00, 0x00,         // ReadHorse *(undefined4 *)((int)this + 0x84)
-              0x25,                           // ReadHorse *(int *)((int)this + 0x78)
-              0x26,                           // ReadHorse *(int *)((int)this + 0x7c)
-              0x27, 0x00, 0x00, 0x00,         // ReadHorse *(undefined4 *)((int)this + 0x3c)
-              0x28, 0x00, 0x00, 0x00,         // ReadHorse *(undefined4 *)((int)this + 0x88)
-              0x29,                           // ReadHorse *(char *)((int)this + 0x8c)
-              0x2A,                           // ReadHorse *(int *)((int)this + 0x90)
-              0x2B,                           // ReadHorse *(char *)((int)this + 0x94)
-              0x2C,                           // ReadHorse *(char *)((int)this + 0x95)
-              0x2D,                           // ReadHorse *(int *)((int)this + 0x98)
-              0x2E,                           // ReadHorse *(int *)((int)this + 0x9c)
-              0x2F,                           // ReadHorse *(char *)((int)this + 0xa0)
-              0x30, 0x00,                     // ReadHorse *(undefined2 *)((int)this + 0xa2)
-              0x31, 0x00,                     // ReadHorse *(undefined2 *)((int)this + 0xa4)
-              0x32, 0x00,                     // ReadHorse *(undefined2 *)((int)this + 0xaa)
+              0x00, 0x00,
+              0x00, 0xE4,
 
-              // ReadArrayOfFour4bytes
-              0x33, 0x00, 0x00, 0x00, 
-              0x34, 0x00, 0x00, 0x00, 
-              0x35, 0x00, 0x00, 0x00, 
-              0x36, 0x00, 0x00, 0x00,  
+            // Probably missed something, TODO: Verify
+            0x67,  // Horse.Unk8
+            0xA1, 0xB8, 0x02, 0x00, // Horse.Unk9
+            0x7D, 0x2E, 0x03, 0x00, // Horse.Unk10
+            0x00,  // Horse.Unk11
+            0x00,  // Horse.Unk12
+            0x00, 0x00, 0x00, 0x00,  // Horse.Unk13
+            0x00, 0x00, 0x04, 0x00,  // Horse.Unk14
+            0x00,  // Horse.Unk15
+            0x00,  // Horse.Unk16
+            0x00,  // Horse.Unk17
+            0x00,  // Horse.Unk18
+            0x00,  // Horse.Unk19
+            0x01,   // Horse.Unk20
+            0x00,  // Horse.Unk21
+            0xFE, 0x01, // Horse.Unk22
+            0x00, 0x00, // Horse.Unk23
+            0x21, 0x04, // Horse.Unk24
 
-              0x37, 0x00, 0x00, 0x00,         // ReadHorse *(undefined4 *)((int)this + 0xa6)
-              0x38, 0x00, 0x00, 0x00,         // ReadHorse *(undefined4 *)((int)this + 0xbc)
+            // From this point onwards i may be off
+            // Horse.Unk26: Array of four 4 byte values
+            0x00, 0x00, 0xF8, 0x05,
+            0x00, 0x00, 0xA4, 0xCF,
+            0x00, 0x00, 0xE4, 0x67,
+            0xA1, 0xB8, 0x00, 0x00,
+
+            0x00, 0x00, 0x0A, 0x06, // Horse.Unk27
+            0x00, 0x00, 0x00, 0x00, // Horse.Unk28
 
             // Unk16: Array of max size 70. Each element is two 4 byte values
             0x00, // List size
@@ -700,165 +710,7 @@ void alicia::Client::read_loop()
 
               // Structure with a list of horses
               // Likely horses in the ranch
-              0x02, // List size, max 10
-
-              //horse 0
-              0x00, 0x00,             // Horse ID in reference to the ranch (0 could mean active horse and 1 - 9 shows a ranch horse)
-              0x96, 0xA3, 0x79, 0x05, // Horse.TIDs.MountTID Unique horse identifier
-              0x21, 0x4E, 0x00, 0x00, // Horse.TIDs.HorseTID Horse model
-              0x69, 0x64, 0x6F, 0x6E, 0x74, 0x75, 0x6E, 0x64, 0x65, 0x72, 0x73, 0x74, 0x61, 0x6E, 0x64, 0x00,  // Horse Name "idontunderstand\0"
-              // Horse.Appearance: Structure. Probably horse appearance
-              0x02,
-              0x03,
-              0x03,
-              0x03,
-              0x04,
-              0x04,
-              0x05,
-              0x03,
-              0x04,
-              // Horse.Unk1: Structure, mounted horse stats
-              // agility
-              0x04, 0x00, 0x00, 0x00,
-              // spirit
-              0x03, 0x00, 0x00, 0x00,
-              // speed
-              0x02, 0x00, 0x00, 0x00,
-              // strength
-              0x01, 0x00, 0x00, 0x00,
-              // control
-              0x13, 0x00, 0x00, 0x00,
-
-              0x0F, 0x00, 0x00, 0x00,         // ReadHorse *(undefined4 *)((int)this + 0x38) 
-              0x10,                           // ReadHorse *(char *)((int)this + 0x40)
-              0x11,                           // ReadHorse *(char *)((int)this + 0x41)
-              0x12,                           // ReadHorse *(char *)((int)this + 0x42)
-              0x13, 0x00,                     // ReadHorse *(undefined2 *)((int)this + 0x44)
-
-              // loop in ReadHorse that reads 7 2 2-byte values
-              0x14, 0x00, 
-              0x15, 0x00,
-
-              0x16, 0x00, 
-              0x17, 0x00, 
-
-              0x18, 0x00, 
-              0x19, 0x00, 
-
-              0x1A, 0x00, 
-              0x1B, 0x00, 
-
-              0x1C, 0x00, 
-              0x1D, 0x00, 
-
-              0x1E, 0x00, 
-              0x1F, 0x00, 
-
-              0x20, 0x00, 
-              0x21, 0x00,
-
-              0x22,                           // ReadHorse *(int *)((int)this + 0x74)
-              0x23, 0x00, 0x00, 0x00,         // ReadHorse *(undefined4 *)((int)this + 0x80)
-              0x24, 0x00, 0x00, 0x00,         // ReadHorse *(undefined4 *)((int)this + 0x84)
-              0x25,                           // ReadHorse *(int *)((int)this + 0x78)
-              0x26,                           // ReadHorse *(int *)((int)this + 0x7c)
-              0x27, 0x00, 0x00, 0x00,         // ReadHorse *(undefined4 *)((int)this + 0x3c)
-              0x28, 0x00, 0x00, 0x00,         // ReadHorse *(undefined4 *)((int)this + 0x88)
-              0x29,                           // ReadHorse *(char *)((int)this + 0x8c)
-              0x2A,                           // ReadHorse *(int *)((int)this + 0x90)
-              0x2B,                           // ReadHorse *(char *)((int)this + 0x94)
-              0x2C,                           // ReadHorse *(char *)((int)this + 0x95)
-              0x2D,                           // ReadHorse *(int *)((int)this + 0x98)
-              0x2E,                           // ReadHorse *(int *)((int)this + 0x9c)
-              0x2F,                           // ReadHorse *(char *)((int)this + 0xa0)
-              0x30, 0x00,                     // ReadHorse *(undefined2 *)((int)this + 0xa2)
-              0x31, 0x00,                     // ReadHorse *(undefined2 *)((int)this + 0xa4)
-              0x32, 0x00,                     // ReadHorse *(undefined2 *)((int)this + 0xaa)
-
-              // ReadArrayOfFour4bytes
-              0x33, 0x00, 0x00, 0x00, 
-              0x34, 0x00, 0x00, 0x00, 
-              0x35, 0x00, 0x00, 0x00, 
-              0x36, 0x00, 0x00, 0x00,  
-
-              0x37, 0x00, 0x00, 0x00,         // ReadHorse *(undefined4 *)((int)this + 0xa6)
-              0x38, 0x00, 0x00, 0x00,         // ReadHorse *(undefined4 *)((int)this + 0xbc)
-
-              // horse 1
-              0x01, 0x00,                     // Horse ID in reference to the ranch (0 could mean active horse and 1 - 9 shows a ranch horse)
-              0x97, 0xA3, 0x79, 0x05, // Horse.TIDs.MountTID Unique horse identifier
-              0x22, 0x4E, 0x00, 0x00, // Horse.TIDs.HorseTID Horse model
-              0x70, 0x6F, 0x6E, 0x7A, 0x75, 0x00,  // Horse Name "ponzu\0"
-              // Horse.Appearance: Structure. Probably horse appearance
-              0x03,
-              0x04,
-              0x04,
-              0x04,
-              0x05,
-              0x05,
-              0x06,
-              0x04,
-              0x05,
-              // Horse.Unk1: Structure, mounted horse stats
-              // agility
-              0x04, 0x00, 0x00, 0x00,
-              // spirit
-              0x00, 0x00, 0x00, 0x00,
-              // speed
-              0x02, 0x00, 0x00, 0x00,
-              // strength
-              0x01, 0x00, 0x00, 0x00,
-              // control
-              0x14, 0x00, 0x00, 0x00,
-
-              0x0F, 0x00, 0x00, 0x00,         // ReadHorse *(undefined4 *)((int)this + 0x38) 
-              0x10,                           // ReadHorse *(char *)((int)this + 0x40)
-              0x11,                           // ReadHorse *(char *)((int)this + 0x41)
-              0x12,                           // ReadHorse *(char *)((int)this + 0x42)
-              0x13, 0x00,                     // ReadHorse *(undefined2 *)((int)this + 0x44)
-
-              // loop in ReadHorse that reads 14 2-byte values
-              0x14, 0x00, 
-              0x15, 0x00, 
-              0x16, 0x00, 
-              0x17, 0x00, 
-              0x18, 0x00, 
-              0x19, 0x00, 
-              0x1A, 0x00, 
-              0x1B, 0x00, 
-              0x1C, 0x00, 
-              0x1D, 0x00, 
-              0x1E, 0x00, 
-              0x1F, 0x00, 
-              0x20, 0x00, 
-              0x21, 0x00,
-
-              0x22,                           // ReadHorse *(int *)((int)this + 0x74)
-              0x23, 0x00, 0x00, 0x00,         // ReadHorse *(undefined4 *)((int)this + 0x80)
-              0x24, 0x00, 0x00, 0x00,         // ReadHorse *(undefined4 *)((int)this + 0x84)
-              0x25,                           // ReadHorse *(int *)((int)this + 0x78)
-              0x26,                           // ReadHorse *(int *)((int)this + 0x7c)
-              0x27, 0x00, 0x00, 0x00,         // ReadHorse *(undefined4 *)((int)this + 0x3c)
-              0x28, 0x00, 0x00, 0x00,         // ReadHorse *(undefined4 *)((int)this + 0x88)
-              0x29,                           // ReadHorse *(char *)((int)this + 0x8c)
-              0x2A,                           // ReadHorse *(int *)((int)this + 0x90)
-              0x2B,                           // ReadHorse *(char *)((int)this + 0x94)
-              0x2C,                           // ReadHorse *(char *)((int)this + 0x95)
-              0x2D,                           // ReadHorse *(int *)((int)this + 0x98)
-              0x2E,                           // ReadHorse *(int *)((int)this + 0x9c)
-              0x2F,                           // ReadHorse *(char *)((int)this + 0xa0)
-              0x30, 0x00,                     // ReadHorse *(undefined2 *)((int)this + 0xa2)
-              0x31, 0x00,                     // ReadHorse *(undefined2 *)((int)this + 0xa4)
-              0x32, 0x00,                     // ReadHorse *(undefined2 *)((int)this + 0xaa)
-
-              // ReadArrayOfFour4bytes
-              0x33, 0x00, 0x00, 0x00, 
-              0x34, 0x00, 0x00, 0x00, 
-              0x35, 0x00, 0x00, 0x00, 
-              0x36, 0x00, 0x00, 0x00,  
-
-              0x37, 0x00, 0x00, 0x00,         // ReadHorse *(undefined4 *)((int)this + 0xa6)
-              0x38, 0x00, 0x00, 0x00,          // ReadHorse *(undefined4 *)((int)this + 0xbc)
+              0x00, // List size, max 10
 
               // Structure consisting of:
               // uint
@@ -892,142 +744,7 @@ void alicia::Client::read_loop()
               //  byte
               //  byte
               // Very likely other players in the ranch
-              0x01, // List size, max 20
-
-              // player 0
-              0xE8, 0xE2, 0x03, 0x00, // player id?
-
-              // string up to 17 bytes
-              't', 'e', 's', 't', '3', 0x00,
-
-              0x00, // maybe profile gender?
-              0x00, // unknown2
-              0x00, // unknown3
-
-              // unknownString (null-terminated string, up to 256 bytes, could be info?)
-              't', 'e', 's', 't', '4', 0x00,
-
-              // AutoClass6 data (Read_AcCmdCLLoginOK_Unk15)
-              0x00, // mem0 
-              0x00, // field1_0x4 
-              0x00, // field2_0x8 
-              0x00, // field3_0xc 
-              0x00, 0x00, // field4_0x10 
-              0x00, 0x00, // field5_0x12 
-              0x00, 0x00, // field6_0x14 
-              0x00, 0x00, // field7_0x16 
-              0x00, 0x00, // field8_0x18 
-              0x00, 0x00, // field9_0x1a
-
-              // Horse data
-              // horse
-              0x96, 0xA3, 0x79, 0x05, // Horse.TIDs.MountTID Unique horse identifier
-              0x21, 0x4E, 0x00, 0x00, // Horse.TIDs.HorseTID Horse model
-              0x69, 0x64, 0x6F, 0x6E, 0x74, 0x75, 0x6E, 0x64, 0x65, 0x72, 0x73, 0x74, 0x61, 0x6E, 0x64, 0x00,  // Horse Name "idontunderstand\0"
-              // Horse.Appearance: Structure. Probably horse appearance
-              0x02,
-              0x03,
-              0x03,
-              0x03,
-              0x04,
-              0x04,
-              0x05,
-              0x03,
-              0x04,
-              // Horse.Unk1: Structure, mounted horse stats
-              // agility
-              0x04, 0x00, 0x00, 0x00,
-              // spirit
-              0x03, 0x00, 0x00, 0x00,
-              // speed
-              0x02, 0x00, 0x00, 0x00,
-              // strength
-              0x01, 0x00, 0x00, 0x00,
-              // control
-              0x13, 0x00, 0x00, 0x00,
-
-              0x0F, 0x00, 0x00, 0x00,         // ReadHorse *(undefined4 *)((int)this + 0x38) 
-              0x10,                           // ReadHorse *(char *)((int)this + 0x40)
-              0x11,                           // ReadHorse *(char *)((int)this + 0x41)
-              0x12,                           // ReadHorse *(char *)((int)this + 0x42)
-              0x13, 0x00,                     // ReadHorse *(undefined2 *)((int)this + 0x44)
-
-              // loop in ReadHorse that reads 14 2-byte values
-              0x14, 0x00, 
-              0x15, 0x00, 
-              0x16, 0x00, 
-              0x17, 0x00, 
-              0x18, 0x00, 
-              0x19, 0x00, 
-              0x1A, 0x00, 
-              0x1B, 0x00, 
-              0x1C, 0x00, 
-              0x1D, 0x00, 
-              0x1E, 0x00, 
-              0x1F, 0x00, 
-              0x20, 0x00, 
-              0x21, 0x00,
-
-              0x22,                           // ReadHorse *(int *)((int)this + 0x74)
-              0x23, 0x00, 0x00, 0x00,         // ReadHorse *(undefined4 *)((int)this + 0x80)
-              0x24, 0x00, 0x00, 0x00,         // ReadHorse *(undefined4 *)((int)this + 0x84)
-              0x25,                           // ReadHorse *(int *)((int)this + 0x78)
-              0x26,                           // ReadHorse *(int *)((int)this + 0x7c)
-              0x27, 0x00, 0x00, 0x00,         // ReadHorse *(undefined4 *)((int)this + 0x3c)
-              0x28, 0x00, 0x00, 0x00,         // ReadHorse *(undefined4 *)((int)this + 0x88)
-              0x29,                           // ReadHorse *(char *)((int)this + 0x8c)
-              0x2A,                           // ReadHorse *(int *)((int)this + 0x90)
-              0x2B,                           // ReadHorse *(char *)((int)this + 0x94)
-              0x2C,                           // ReadHorse *(char *)((int)this + 0x95)
-              0x2D,                           // ReadHorse *(int *)((int)this + 0x98)
-              0x2E,                           // ReadHorse *(int *)((int)this + 0x9c)
-              0x2F,                           // ReadHorse *(char *)((int)this + 0xa0)
-              0x30, 0x00,                     // ReadHorse *(undefined2 *)((int)this + 0xa2)
-              0x31, 0x00,                     // ReadHorse *(undefined2 *)((int)this + 0xa4)
-              0x32, 0x00,                     // ReadHorse *(undefined2 *)((int)this + 0xaa)
-
-              // ReadArrayOfFour4bytes
-              0x33, 0x00, 0x00, 0x00, 
-              0x34, 0x00, 0x00, 0x00, 
-              0x35, 0x00, 0x00, 0x00, 
-              0x36, 0x00, 0x00, 0x00,  
-
-              0x37, 0x00, 0x00, 0x00,         // ReadHorse *(undefined4 *)((int)this + 0xa6)
-              0x38, 0x00, 0x00, 0x00,          // ReadHorse *(undefined4 *)((int)this + 0xbc)
-
-              0x00, // unk3ElementCount, limit of 16
-              // unk3Elements (16 bytes each, repeated unk3ElementCount times)
-
-              // PlayerRelatedThing data
-              0x00, // field0 (1 byte)
-              0x00, // field1 (1 byte)
-              0x00, // field2 (1 byte)
-              0x00, // field3 (1 byte)
-              0x00, 0x00, // field4 (2 bytes)
-              0x00, 0x00, // field5 (2 bytes)
-              0x00, 0x00, // field6 (2 bytes)
-              0x00, 0x00, // field7 (2 bytes)
-              0x00, 0x00, 0x00, 0x00, // field8 (4 bytes)
-
-              0x00, 0x00, // unknown4 (2 bytes)
-              0x00, // unknown5 (1 byte)
-
-              0x00, // unknown6 (1 byte)
-
-              // ReadAnotherPlayerRelatedSomething data
-              0x00, 0x00, 0x00, 0x00, // field0 (4 bytes)
-              0x00, 0x00, 0x00, 0x00, // field1 (4 bytes)
-              0x00, 0x00, 0x00, 0x00, // field2 (4 bytes)
-
-              // ReadYetAnotherPlayerRelatedSomething data
-              0x00, 0x00, 0x00, 0x00, // field0 
-              0x00, 0x00, 0x00, 0x00, // field1 
-              't', 'e', 's', 't', '5', 0x00, // string up to 17 bytes
-              0x00, 0x00, 0x00, 0x00, // field3
-
-              // CREnterRanchOKDeser_func6 data
-              0x00, // field0 
-              0x00, // field1 
+              0x00, // List size, max 20
 
               0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
               0x00, 0x00, 0x00, 0x00,
@@ -1035,12 +752,6 @@ void alicia::Client::read_loop()
 
               // structure with int, short, and something weird
               0x00, // list size, max 13 values
-
-              0x01, 0x00, 0x00, 0x00,  
-              0x00, 0x00,
-              // assigning a non-zero to the all six bytes
-              // makes client sends AcCmdCRBoostIncubateInfoList
-              0x00, 0x00,  0x00, 0x00, 0x00, 0x00,
 
               0x00,
               0x00, 0x00, 0x00, 0x00,
