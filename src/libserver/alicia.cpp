@@ -816,7 +816,11 @@ void alicia::Client::read_loop()
       case AcCmdCLGetMessengerInfo:
         {
           DummyCommand response(AcCmdCLGetMessengerInfoOK);
-          response.data = { 0x03, 0xBB, 0x2D, 0xD6, 0x88, 0xF3, 0x51, 0xEE,  0x68, 0x42 };
+          response.data = { 
+            0x03, 0xBB, 0x2D, 0xD6, 
+            0x7F, 0x00, 0x00, 0x01, // 127.0.0.1, messenger server IP
+            0x2E, 0x27, // port
+          };
           send_command(_socket, response);
         }
         break;
