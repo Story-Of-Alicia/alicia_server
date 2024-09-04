@@ -1,33 +1,18 @@
 ---
 Language: Cpp
-
-# Limits
-ColumnLimit: 120
-
-# Indents
+ColumnLimit: 100
 IndentWidth: 2
 PPIndentWidth: 2
+ContinuationIndentWidth: 2
 NamespaceIndentation: All
-
-# Breaking
-BreakBeforeBraces: Stroustrup
+BreakBeforeBraces: Allman
 AlwaysBreakAfterReturnType: None
 AlwaysBreakAfterDefinitionReturnType: None
-
-# Alignments
 PointerAlignment: Left
 ReferenceAlignment: Left
-
-# Break parameters to each line
 AlignAfterOpenBracket: AlwaysBreak
 BinPackArguments: false
 BinPackParameters: false
-
-# Spaces
-SpaceBeforeParens: Never
-
-# Tabs
+SpaceBeforeParens: ControlStatements
 UseTab: Never
-
-# Includes
-SortIncludes: Never
+SortIncludes: CaseInsensitive

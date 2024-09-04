@@ -12,8 +12,10 @@ target_compile_features(project-properties
 
 # Alicia server library
 add_library(alicia-libserver STATIC)
-target_sources(alicia-libserver
-        PUBLIC src/libserver/alicia.cpp)
+target_sources(alicia-libserver PUBLIC
+        src/libserver/alicia.cpp
+        src/libserver/proto/util.cpp
+        src/libserver/proto/lobby.cpp)
 target_include_directories(alicia-libserver
         PUBLIC include/)
 target_link_libraries(alicia-libserver

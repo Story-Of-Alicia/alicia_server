@@ -12,7 +12,6 @@
 
 namespace alicia
 {
-
   //! A constant buffer size for message magic.
   //! The maximum size of message payload is 4092 bytes.
   //! The extra 4 bytes are reserved for message magic.
@@ -52,9 +51,7 @@ namespace alicia
   //! @return Encoded message magic value.
   uint32_t encode_message_magic(MessageMagic magic);
 
-  void read(std::istream& stream, std::string& val);
-
-  //! Appy XORcodec to buffer.
+  //! Appy XORcodec to a buffer.
   //!
   //! @param buffer Buffer.
   //! @returns XORcoded buffer.
@@ -66,33 +63,6 @@ namespace alicia
     }
   }
 
-  template <typename ValType> void read(std::istream& stream, ValType& val)
-  {
-    stream.read(reinterpret_cast<char*>(&val), sizeof(val));
-  }
-
-  template <typename ValType> void read(std::istream& stream, std::vector<ValType>& val)
-  {
-    for(auto& v : val) {
-      read(stream, v);
-    }
-  }
-
-  class AcCmdCLLogin {
-  public:
-    uint16_t constant0;
-    uint16_t constant1;
-    std::string login_id;
-    uint32_t member_no;
-    std::string auth_key;
-
-    void Serialize(std::istream& buffer);
-  };
-
-  struct AcCmdCLLoginOK {};
-
-  struct AcCmdCLLoginCancel {};
-
   namespace asio = boost::asio;
 
   /**
@@ -100,7 +70,9 @@ namespace alicia
    */
   class Client {
   public:
-    explicit Client(asio::ip::tcp::socket&& socket) noexcept : _socket(std::move(socket)) {}
+    explicit Client(asio::ip::tcp::socket&& socket) noexcept
+      : _socket(std::move(socket))
+    {}
 
     void read_loop();
 
@@ -114,9 +86,12 @@ namespace alicia
    */
   class Server {
   public:
-    Server() : _acceptor(_io_ctx) {}
+    using AcceptFunc = std::function<void(const Client& client)>;
 
-    void host();
+    Server()
+      : _acceptor(_io_ctx) {}
+
+    virtual void host() = 0;
 
     void run() { _io_ctx.run(); }
 
@@ -126,7 +101,8 @@ namespace alicia
     asio::io_context _io_ctx;
     asio::ip::tcp::acceptor _acceptor;
 
-    uint32_t client_id = 0;
+    //! Sequential client ID.
+    uint32_t _client_id = 0;
     std::unordered_map<uint32_t, Client> _clients;
   };
 
