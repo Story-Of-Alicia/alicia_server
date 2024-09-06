@@ -737,10 +737,13 @@ void alicia::Client::read_loop()
       #ifdef AcCmdCLEnterChannel
       case AcCmdCLEnterChannel:
         {
+          // Requests send a single byte
+          uint8_t unk0 = request.data[0];
+
           DummyCommand response(AcCmdCLEnterChannelOK);
           response.data = {
-              0x00, // member0
-              0x00, 0x00 // member1
+              unk0,
+              0x01, 0x00
           };
           send_command(_socket, response);
         }
@@ -1322,6 +1325,217 @@ void alicia::Client::read_loop()
         break;
       #endif
 
+      #ifdef AcCmdCREnterRoom
+      case AcCmdCREnterRoom:
+        {
+          DummyCommand response(AcCmdCREnterRoomOK);
+          response.data = {
+            // List of racers, consists of a list of structures with:
+            // byte 
+            // byte 
+            // int 
+            // int 
+            // int 
+            // string
+            // byte
+            // uint
+            // byte
+            // byte (isNPC?)
+            // if the last byte is zero:
+            //   a list (with byte length) of AcCmdCLLoginOK_Unk3_Element
+            //   AcCmdCLLoginOK_Unk15
+            //   Horse
+            //   int
+            // if not:
+            //   uint
+            // a structure with byte and AnotherPlayerRelatedSomething
+            // YetAnotherPlayerRelatedSomething
+            // PlayerRelatedThing
+            // RanchUnk11
+            // byte
+            // byte
+            // byte
+            // byte
+            0x01, 0x00, 0x00, 0x00, // list size (yes, 4 bytes this time)
+              0x00,
+              0x00,
+              0x00, 0x00, 0x00, 0x00,
+              0x00, 0x00, 0x00, 0x00,
+              0x00, 0x00, 0x00, 0x00,
+              'r', 'g', 'n', 't', 0x00, // racer name
+              0x00,
+              0x00, 0x00, 0x00, 0x00,
+              0x00,
+              0x00, // isNPC = false
+
+              0x01, // Equipment list size: List size, max 16 elements
+                0x01, 0x00, 0x00, 0x00, // 4 byte - type
+                0x31, 0x75, 0x00, 0x00, // 4 byte - TID
+                0x01, 0x00, 0x00, 0x00, // 4 byte - ???
+                0x01, 0x00, 0x00, 0x00, // 4 byte - ???
+
+              // Unk15: Another small structure
+              0x0A,
+              0x00,
+              0x00,
+              0x01,
+              0x01, 0x00,
+              0x04, 0x00,
+              0x08, 0x00,
+              0x08, 0x00,
+              0x08, 0x00,
+              0x00, 0x00,
+              
+              // Horse: Big ass structure now, probably horse info
+              // Horse.TIDs
+              0x96, 0xA3, 0x79, 0x05, // Horse.TIDs.MountTID Unique horse identifier
+              0x21, 0x4E, 0x00, 0x00, // Horse.TIDs.HorseTID Horse model
+              /* Horse name: "idontunderstand" */ 0x69, 0x64, 0x6F, 0x6E, 0x74, 0x75, 0x6E, 0x64, 0x65, 0x72, 0x73, 0x74, 0x61, 0x6E, 0x64, 0x00,
+              // Horse.Appearance: Structure. Probably horse appearance
+              0x02,
+              0x03,
+              0x03,
+              0x03,
+              0x04,
+              0x04,
+              0x05,
+              0x03,
+              0x04,
+              // Horse.Stats
+              0x04, 0x00, 0x00, 0x00, // agility
+              0x03, 0x00, 0x00, 0x00, // spirit
+              0x02, 0x00, 0x00, 0x00, // speed
+              0x01, 0x00, 0x00, 0x00, // strength 
+              0x13, 0x00, 0x00, 0x00, // control
+
+              0x00, 0x00, 0x00, 0x00, // Horse.Rating
+              0x15, // Horse.Class
+              0x01, // Horse.Unk4
+              0x02, // Horse.Unk5
+              0x02, 0x00, // Horse.AvailableGrowthPoints
+
+              // Horse.Unk7: An array of size 7. Each element has two 2 byte values
+              0xD0, 0x07,
+              0x3C, 0x00,
+
+              0x1C, 0x02,
+              0x00, 0x00,
+
+              0xE8, 0x03,
+              0x00, 0x00,
+
+              0x00, 0x00,
+              0x00, 0x00,
+
+              0xE8, 0x03,
+              0x1E, 0x00,
+
+              0x0A, 0x00,
+              0x0A, 0x00,
+
+              0x0A, 0x00,
+              0x00, 0x00,
+
+              // More horse fields
+              0x00,
+              0x00, 0x00, 0x00, 0x00, 
+              0xE4, 0x67, 0xA1, 0xB8, 
+              0x02, 
+              0x00, 
+              0x7D, 0x2E, 0x03, 0x00,
+              0x00, 0x00, 0x00, 0x00, 
+              0x00, 
+              0x00, 
+              0x00, 
+              0x00, 
+              0x04, 
+              0x00,
+              0x00,
+              0x00, 0x00,
+              0x00, 0x00,
+              0x01, 0x00, 
+
+              // Horse field: Array of four 4 byte values
+              0xFE, 0x01, 0x00, 0x00,
+              0x21, 0x04, 0x00, 0x00, 
+              0xF8, 0x05, 0x00, 0x00, 
+              0xA4, 0xCF, 0x00, 0x00, 
+              
+              // still horse
+              0xE4, 0x67, 0xA1, 0xB8, 
+              0x00, 0x00, 0x00, 0x00, 
+            
+              // last uint
+              0x00, 0x00, 0x00, 0x00,
+
+              // Unk26: Buffer::ReadAnotherPlayerRelatedSomething, also shared
+              0x96, 0xA3, 0x79, 0x05, 
+              0x12, 0x00, 0x00, 0x00,             
+              0xE4, 0x67, 0x6E, 0x01, 
+
+              // Buffer::ReadYetAnotherPlayerRelatedSomething, also shared
+              0x00, 0x00, 0x00, 0x00, 
+              0x00, 0x00, 0x00, 0x00, 
+              0x00, // string
+              0x00, 0x00, 0x00, 0x00,
+
+              // Unk24: Buffer::ReadPlayerRelatedThing, shared with the structures in EnterRanch
+              0x00, 0x00, 0x00, 0x00, 
+              0x01, 
+              0x00, 0x00, 0x00, 0x00, 
+              0x00, // string
+              0x00, 
+              0x00, 0x00, 0x00, 0x00,            
+              0x00, // Goes ignored?
+
+              //unk11: structure
+              0x01,
+              0x01,
+
+              // those last 4 bytes
+              0x00,
+              0x00,
+              0x00,
+              0x00,
+
+
+            0x00,
+            0x00, 0x00, 0x00, 0x00,
+
+            // Structure: Room description
+            'T', 'h', 'e', ' ', 'R', 'o', 'o', 'm', 0x00, // string
+            0x01,
+            'S', 'i', 'l', 'e', 'n', 't', ' ', 'H', 'i', 'l', 'l', ' ', '4', 0x00, // string
+            0x01,
+            0x01,
+            0x01, 0x00,
+            0x01,
+            0x01, 0x00,
+            0x01,
+            0x01,
+
+            0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00,
+
+            // unk9: structure that depends on this+0x2980 == 2 (inside unk3?)
+            0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00,
+            // list containing ints
+            0x00, // list size
+
+            0x00, 0x00, 0x00, 0x00,
+            // something weird in the decompilation in here
+            0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00
+          };
+          send_command(_socket, response);
+        }
+        break;
+      #endif
+
       #ifdef AcCmdCRChangeRoomOptions
       case AcCmdCRChangeRoomOptions:
         {
@@ -1336,6 +1550,100 @@ void alicia::Client::read_loop()
           // (same values as AcCmdCREnterRoomOK.Unk3?)
           DummyCommand response(AcCmdCRChangeRoomOptionsNotify);
           response.data = { 0x00, 0x00 };
+          send_command(_socket, response);
+        }
+        break;
+      #endif
+
+      #ifdef AcCmdCRStartRace
+      case AcCmdCRStartRace:
+        {
+          // Request consists of a list (length specified in a byte) of shorts
+
+          DummyCommand response(AcCmdCRStartRaceNotify);
+          response.data = {
+            0x00,
+            0x00,
+            0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00,
+
+            // list of short string byte byte short int short int
+            0x00,  // list size
+
+            127, 0, 0, 1, // ip
+            0x39, 0x89, // Port
+
+            0x00,
+
+            // unk9: structure
+            0x00, 0x00,
+            0x00,
+            0x00,
+            0x00, 0x00, 0x00, 0x00,
+            // unk9.unk5: list of ints
+            0x00, // list size
+            // if this+8 == 3?
+            0x00, 0x00,
+            0x00, 0x00,
+            0x00, 0x00,
+            0x00, 0x00,
+            0x00, 0x00,
+            0x00,
+            0x00, 0x00, 0x00, 0x00,
+
+            // unk10: another structure
+            0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00,
+
+            0x00, 0x00,
+            0x00,
+
+            // unk13: structure
+            0x00,
+            0x00, 0x00, 0x00, 0x00,
+            // list of ints
+            0x00, // list size
+
+            0x00,
+            0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00,
+            0x00,
+            // unk18: list of short and a nested list of int
+            0x00, // list size
+          };
+          send_command(_socket, response);
+        }
+        break;
+      #endif
+
+      #ifdef AcCmdUserRaceTimer
+      case AcCmdUserRaceTimer:
+        {
+          // Request contains a long, i assume with the time
+
+          // Response contains two longs
+          DummyCommand response(AcCmdUserRaceTimerOK);
+          response.data = {
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+          };
+          send_command(_socket, response);
+        }
+        break;
+      #endif
+
+      #ifdef AcCmdCRLoadingComplete
+      case AcCmdCRLoadingComplete:
+        {
+          // Request contains nothing
+          // Response contains short
+          DummyCommand response(AcCmdCRLoadingCompleteNotify);
+          response.data = { 
+            0x00, 0x00 // index of the player who finished loading?
+          };
           send_command(_socket, response);
         }
         break;
