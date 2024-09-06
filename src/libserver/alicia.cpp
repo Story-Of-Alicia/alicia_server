@@ -754,72 +754,20 @@ void alicia::Client::read_loop()
 
           DummyCommand response(AcCmdCREnterRanchOK);
           response.data = {
-              0xe8, 0xe2, 0x06, 0x00, // player id?
-              't', 'e', 's', 't', '1', 0x00,//string of max length 0x11 (17)
-              't', 'e', 's', 't', '2', 0x00,// string of max length 0x3d (61)
+              0x01, 0x00, 0x00, 0x00, // ranch id?
+              't', 'e', 's', 't', '1', 0x00,// string max length 17
+              'R', 'a', 'n', 'c', 'h', 0x00,// Ranch name, max length 61
 
-              // Structure with a list of horses
-              // Likely horses in the ranch
-              0x00, // List size, max 10
+              // Structure with a list of byte and horse
+              // Likely index and horses in the ranch
+              0x01, // List size, max 10
 
-              // Structure consisting of:
-              // uint
-              // string
-              // byte
-              // byte
-              // byte
-              // string
-              // AcCmdCLLoginOK.Unk15
-              // Horse
-              // list of equipment (AcCmdCLLoginOK_Unk3_Element)
-              // structure with:
-              //  uint
-              //  byte
-              //  uint
-              //  string
-              //  byte
-              //  uint
-              // short
-              // byte
-              // byte
-              // structure with:
-              //  uint
-              //  uint
-              // structure with:
-              //  uint
-              //  uint
-              //  string
-              //  uint
-              // structure with:
-              //  byte
-              //  byte
-              // Very likely other players in the ranch
-              0x01, // List size, max 201
-
-                0xE9, 0xE2, 0x06, 0x00, // Self UID
-                'L', 'a', 'i', 't', 'h', 0x00, // Nick name ("rgnt\0")
-                1,
-                1,
-                1,
-                't', 'e', 's', 't', 0,
-
-                // Unk15: Another small structure
-                0x0A,
-                0x00,
-                0x00,
-                0x01,
-                0x01, 0x00,
-                0x04, 0x00,
-                0x08, 0x00,
-                0x08, 0x00,
-                0x08, 0x00,
-                0x00, 0x00,
-
+                0x01, 0x00, // horse index
                 // Horse: Big ass structure now, probably horse info
                 // Horse.TIDs
-                0x97, 0xA3, 0x79, 0x05, // Horse.TIDs.MountTID Unique horse identifier
+                0x99, 0xA3, 0x79, 0x05, // Horse.TIDs.MountTID Unique horse identifier
                 0x21, 0x4E, 0x00, 0x00, // Horse.TIDs.HorseTID Horse model
-                /* Horse name: */ 'R', 'o', 'c', 'i', 'n', 'a', 'n', 't', 'e', 0,
+                /* Horse name: */ 'R', 'a', 'm', 'o', 'n', 0,
                 // Horse.Appearance: Structure. Probably horse appearance
                 0x02,
                 0x03,
@@ -893,16 +841,145 @@ void alicia::Client::read_loop()
                 0xE4, 0x67, 0xA1, 0xB8, 
                 0x00, 0x00, 0x00, 0x00,
 
+
+              // Structure consisting of:
+              // uint
+              // string
+              // byte
+              // byte
+              // byte
+              // string
+              // AcCmdCLLoginOK.Unk15
+              // Horse
+              // list of equipment (AcCmdCLLoginOK_Unk3_Element)
+              // structure with:
+              //  uint
+              //  byte
+              //  uint
+              //  string
+              //  byte
+              //  uint
+              // short
+              // byte
+              // byte
+              // structure with:
+              //  uint
+              //  uint
+              // structure with:
+              //  uint
+              //  uint
+              //  string
+              //  uint
+              // structure with:
+              //  byte
+              //  byte
+              // Very likely other players in the ranch
+              0x02, // List size, max 201
+
+                // YOURSELF (Required or else you dont spawn in the ranch)
+                0xE8, 0xE2, 0x06, 0x00, // Self UID
+                'r', 'g', 'n', 't', 0x00, // Nick name ("rgnt\0")
+                0x01, // profile gender
+                1,
+                1,
+                'T', 'h', 'i', 's', ' ', 'p', 'e', 'r', 's', 'o', 'n', ' ', 'i', 's', ' ', 'm', 'e', 'n', 't', 'a', 'l', 'l', 'y', ' ', 'u', 'n', 's', 't', 'a', 'b', 'l', 'e', 0x00, // info, 100 chars long
+                
+                // Unk15: Another small structure
+                0x0A,
+                0x00,
+                0x00,
+                0x01,
+                0x01, 0x00,
+                0x04, 0x00,
+                0x08, 0x00,
+                0x08, 0x00,
+                0x08, 0x00,
+                0x00, 0x00,   
+
+                // Horse: Big ass structure now, probably horse info
+                // Horse.TIDs
+                0x96, 0xA3, 0x79, 0x05, // Horse.TIDs.MountTID Unique horse identifier
+                0x21, 0x4E, 0x00, 0x00, // Horse.TIDs.HorseTID Horse model
+                /* Horse name: "idontunderstand" */ 0x69, 0x64, 0x6F, 0x6E, 0x74, 0x75, 0x6E, 0x64, 0x65, 0x72, 0x73, 0x74, 0x61, 0x6E, 0x64, 0x00,
+                // Horse.Appearance: Structure. Probably horse appearance
+                0x02,
+                0x03,
+                0x03,
+                0x03,
+                0x04,
+                0x04,
+                0x05,
+                0x03,
+                0x04,
+                // Horse.Stats
+                0x04, 0x00, 0x00, 0x00, // agility
+                0x03, 0x00, 0x00, 0x00, // spirit
+                0x02, 0x00, 0x00, 0x00, // speed
+                0x01, 0x00, 0x00, 0x00, // strength 
+                0x13, 0x00, 0x00, 0x00, // control
+
+                0x00, 0x00, 0x00, 0x00, // Horse.Rating
+                0x15, // Horse.Class
+                0x01, // Horse.Unk4
+                0x02, // Horse.Unk5
+                0x02, 0x00, // Horse.AvailableGrowthPoints
+
+                // Horse.Unk7: An array of size 7. Each element has two 2 byte values
+                0xD0, 0x07,
+                0x3C, 0x00,
+
+                0x1C, 0x02,
+                0x00, 0x00,
+
+                0xE8, 0x03,
+                0x00, 0x00,
+
+                0x00, 0x00,
+                0x00, 0x00,
+
+                0xE8, 0x03,
+                0x1E, 0x00,
+
+                0x0A, 0x00,
+                0x0A, 0x00,
+
+                0x0A, 0x00,
+                0x00, 0x00,
+
+                // More horse fields
+                0x00,
+                0x00, 0x00, 0x00, 0x00, 
+                0xE4, 0x67, 0xA1, 0xB8, 
+                0x02, 
+                0x00, 
+                0x7D, 0x2E, 0x03, 0x00,
+                0x00, 0x00, 0x00, 0x00, 
+                0x00, 
+                0x00, 
+                0x00, 
+                0x00, 
+                0x04, 
+                0x00,
+                0x00,
+                0x00, 0x00,
+                0x00, 0x00,
+                0x01, 0x00,
+
+                // Horse field: Array of four 4 byte values
+                0xFE, 0x01, 0x00, 0x00,
+                0x21, 0x04, 0x00, 0x00, 
+                0xF8, 0x05, 0x00, 0x00, 
+                0xA4, 0xCF, 0x00, 0x00, 
+                
+                0xE4, 0x67, 0xA1, 0xB8, 
+                0x00, 0x00, 0x00, 0x00, 
+
                 // Back to player fields
                 0x01, // Equipment list size: List size, max 16 elements
-                0x01, 0x00, 0x00, 0x00,
-                0x31, 0x75, 0x00, 0x00,
-                0x01, 0x00, 0x00, 0x00,
-                0x01, 0x00, 0x00, 0x00,
-                  // 4 byte - type
-                  // 4 byte - TID
-                  // 4 byte - ???
-                  // 4 byte - ???
+                0x01, 0x00, 0x00, 0x00, // 4 byte - type
+                0x31, 0x75, 0x00, 0x00, // 4 byte - TID
+                0x01, 0x00, 0x00, 0x00, // 4 byte - ???
+                0x01, 0x00, 0x00, 0x00, // 4 byte - ???
 
                 // Buffer::ReadPlayerRelatedThing, shared with the structures in LoginOK
                 0x00, 0x00, 0x00, 0x00, 
@@ -912,95 +989,210 @@ void alicia::Client::read_loop()
                 0x00, 
                 0x00, 0x00, 0x00, 0x00,            
                 0x00, // Goes ignored?
+                  
+                0x01, 0x00, // PLAYER INDEX
+                0x00,
+                0x00,
 
-                0,0,
-                0,
-                0,
-            
                 // Buffer::ReadAnotherPlayerRelatedSomething, also shared
                 0x96, 0xA3, 0x79, 0x05, 
                 0x12, 0x00, 0x00, 0x00,             
-                0xE4, 0x67, 0x6E, 0x01, 
-
-                0x3A, 0x00, 0x00, 0x00, // Unk27
-                0x8E, 0x03, 0x00, 0x00, // Unk28
-                0xC6, 0x01, 0x00, 0x00, // Unk29
+                0xE4, 0x67, 0x6E, 0x01,
 
                 // Buffer::ReadYetAnotherPlayerRelatedSomething, also shared
                 0x00, 0x00, 0x00, 0x00, 
                 0x00, 0x00, 0x00, 0x00, 
                 0x00, // string
                 0x00, 0x00, 0x00, 0x00,
+                
+                0x00, 
+                0x00, 
 
-                0,
-                0,
+
+                // ANOTHER PLAYER
+                0xE9, 0xE2, 0x06, 0x00, // Self UID
+                'L', 'a', 'i', 't', 'h', 0x00, // Nick name ("rgnt\0")
+                0x01, // profile gender
+                1,
+                1,
+                'H', 'o', 'l', 'a', 0x00, // info, 100 chars long
+                
+                // Unk15: Another small structure
+                0x0A,
+                0x00,
+                0x00,
+                0x01,
+                0x01, 0x00,
+                0x04, 0x00,
+                0x08, 0x00,
+                0x08, 0x00,
+                0x08, 0x00,
+                0x00, 0x00,   
+
+                // Horse: Big ass structure now, probably horse info
+                // Horse.TIDs
+                0x97, 0xA3, 0x79, 0x05, // Horse.TIDs.MountTID Unique horse identifier
+                0x21, 0x4E, 0x00, 0x00, // Horse.TIDs.HorseTID Horse model
+                /* Horse name: "idontunderstand" */ 'R', 'o', 'c', 'i', 'n', 'a', 'n', 't', 'e', 0x00,
+                // Horse.Appearance: Structure. Probably horse appearance
+                0x02,
+                0x03,
+                0x03,
+                0x03,
+                0x04,
+                0x04,
+                0x05,
+                0x03,
+                0x04,
+                // Horse.Stats
+                0x04, 0x00, 0x00, 0x00, // agility
+                0x03, 0x00, 0x00, 0x00, // spirit
+                0x02, 0x00, 0x00, 0x00, // speed
+                0x01, 0x00, 0x00, 0x00, // strength 
+                0x13, 0x00, 0x00, 0x00, // control
+
+                0x00, 0x00, 0x00, 0x00, // Horse.Rating
+                0x15, // Horse.Class
+                0x01, // Horse.Unk4
+                0x02, // Horse.Unk5
+                0x02, 0x00, // Horse.AvailableGrowthPoints
+
+                // Horse.Unk7: An array of size 7. Each element has two 2 byte values
+                0xD0, 0x07,
+                0x3C, 0x00,
+
+                0x1C, 0x02,
+                0x00, 0x00,
+
+                0xE8, 0x03,
+                0x00, 0x00,
+
+                0x00, 0x00,
+                0x00, 0x00,
+
+                0xE8, 0x03,
+                0x1E, 0x00,
+
+                0x0A, 0x00,
+                0x0A, 0x00,
+
+                0x0A, 0x00,
+                0x00, 0x00,
+
+                // More horse fields
+                0x00,
+                0x00, 0x00, 0x00, 0x00, 
+                0xE4, 0x67, 0xA1, 0xB8, 
+                0x02, 
+                0x00, 
+                0x7D, 0x2E, 0x03, 0x00,
+                0x00, 0x00, 0x00, 0x00, 
+                0x00, 
+                0x00, 
+                0x00, 
+                0x00, 
+                0x04, 
+                0x00,
+                0x00,
+                0x00, 0x00,
+                0x00, 0x00,
+                0x01, 0x00,
+
+                // Horse field: Array of four 4 byte values
+                0xFE, 0x01, 0x00, 0x00,
+                0x21, 0x04, 0x00, 0x00, 
+                0xF8, 0x05, 0x00, 0x00, 
+                0xA4, 0xCF, 0x00, 0x00, 
+                
+                0xE4, 0x67, 0xA1, 0xB8, 
+                0x00, 0x00, 0x00, 0x00, 
+
+                // Back to player fields
+                0x01, // Equipment list size: List size, max 16 elements
+                0x01, 0x00, 0x00, 0x00, // 4 byte - type
+                0x31, 0x75, 0x00, 0x00, // 4 byte - TID
+                0x01, 0x00, 0x00, 0x00, // 4 byte - ???
+                0x01, 0x00, 0x00, 0x00, // 4 byte - ???
+
+                // Buffer::ReadPlayerRelatedThing, shared with the structures in LoginOK
+                0x00, 0x00, 0x00, 0x00, 
+                0x01, 
+                0x00, 0x00, 0x00, 0x00, 
+                0x00, // string
+                0x00, 
+                0x00, 0x00, 0x00, 0x00,            
+                0x00, // Goes ignored?
+                  
+                0x02, 0x00, // PLAYER INDEX
+                0x00,
+                0x00,
+
+                // Buffer::ReadAnotherPlayerRelatedSomething, also shared
+                0x96, 0xA3, 0x79, 0x05, 
+                0x12, 0x00, 0x00, 0x00,             
+                0xE4, 0x67, 0x6E, 0x01,
+
+                // Buffer::ReadYetAnotherPlayerRelatedSomething, also shared
+                0x00, 0x00, 0x00, 0x00, 
+                0x00, 0x00, 0x00, 0x00, 
+                0x00, // string
+                0x00, 0x00, 0x00, 0x00,
+                
+                0x00, 
+                0x00, 
 
 
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00,
+              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, //unk1
+              0x00, 0x00, 0x00, 0x00, //unk2
+              0x00, 0x00, 0x00, 0x00, //unk3
 
-              // structure with int, short, and something weird
+              // unk4: structure with int, short, and something weird
               0x00, // list size, max 13 values
 
-              0x00,
-              0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, // bitset, no idea what its for
+              0x00, //unk5
+              0x00, 0x00, 0x00, 0x00, //unk6
+              0x00, 0x00, 0x00, 0x00, //unk7 bitset, no idea what its for
 
+              0x00, 0x00, 0x00, 0x00, //unk8
+              0x00, 0x00, 0x00, 0x00, //unk9
+
+              // unk10: list of three structures, each with Horse.TID, uint, byte, int, int, int, int, int
               0x00, 0x00, 0x00, 0x00,
               0x00, 0x00, 0x00, 0x00,
-
-              // list of three structures, each with Horse.TID, uint, byte, int, int, int, int, int
-              // Horse.TIDs
-              0x97, 0xA3, 0x79, 0x05, // Horse.TIDs.MountTID Unique horse identifier
-              0x21, 0x4E, 0x00, 0x00, // Horse.TIDs.HorseTID Horse model
-
               0x00, 0x00, 0x00, 0x00, 
               0x00, 
-
-              // Horse.Unk1: Structure, no idea what this is
               0x00, 0x00, 0x00, 0x00,
               0x00, 0x00, 0x00, 0x00,
               0x00, 0x00, 0x00, 0x00,
               0x00, 0x00, 0x00, 0x00,
-              0x12, 0x00, 0x00, 0x00,
+              0x00, 0x00, 0x00, 0x00,
 
-
-              // Horse.TIDs
-              0x98, 0xA3, 0x79, 0x05, // Horse.TIDs.MountTID Unique horse identifier
-              0x21, 0x4E, 0x00, 0x00, // Horse.TIDs.HorseTID Horse model
-
+              0x00, 0x00, 0x00, 0x00,
+              0x00, 0x00, 0x00, 0x00,
               0x00, 0x00, 0x00, 0x00, 
               0x00, 
-
-              // Horse.Unk1: Structure, no idea what this is
               0x00, 0x00, 0x00, 0x00,
               0x00, 0x00, 0x00, 0x00,
               0x00, 0x00, 0x00, 0x00,
               0x00, 0x00, 0x00, 0x00,
-              0x12, 0x00, 0x00, 0x00,
+              0x00, 0x00, 0x00, 0x00,
 
-
-              // Horse.TIDs
-              0x99, 0xA3, 0x79, 0x05, // Horse.TIDs.MountTID Unique horse identifier
-              0x21, 0x4E, 0x00, 0x00, // Horse.TIDs.HorseTID Horse model
-
+              0x00, 0x00, 0x00, 0x00,
+              0x00, 0x00, 0x00, 0x00,
               0x00, 0x00, 0x00, 0x00, 
               0x00, 
+              0x00, 0x00, 0x00, 0x00,
+              0x00, 0x00, 0x00, 0x00,
+              0x00, 0x00, 0x00, 0x00,
+              0x00, 0x00, 0x00, 0x00,
+              0x00, 0x00, 0x00, 0x00,
 
-              // Horse.Unk1: Structure, no idea what this is
-              0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00,
-              0x12, 0x00, 0x00, 0x00,
-              
 
-              // structure
-              0x00,
-              0x00,
+              //unk11: structure
+              0x01,
+              0x01,
 
-              0x00, 0x00, 0x00, 0x00
+              0x00, 0x00, 0x00, 0x00 //unk12
           };
           send_command(_socket, response);
         } break;
@@ -1033,7 +1225,7 @@ void alicia::Client::read_loop()
       #endif
 
       default:
-        std::cout << "WARNING! Packet " << GetMessageName(message_magic.id) << "(0x" << std::hex << message_magic.id << std::dec << ") not handled" << std::endl << std::endl;
+        std::cout << "WARNING! Packet " << GetMessageName(message_magic.id) << " (0x" << std::hex << message_magic.id << std::dec << ") not handled" << std::endl << std::endl;
         break;
     }
     
