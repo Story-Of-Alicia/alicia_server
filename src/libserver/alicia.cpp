@@ -1313,6 +1313,15 @@ void alicia::Client::read_loop()
         break;
       #endif
 
+      #ifdef AcCmdCRLeaveRanch
+      case AcCmdCRLeaveRanch:
+        {
+          DummyCommand response(AcCmdCRLeaveRanchOK);
+          send_command(_socket, response);
+        }
+        break;
+      #endif
+
       #ifdef AcCmdCLHeartbeat
       case AcCmdCLHeartbeat:
         // Do nothing
