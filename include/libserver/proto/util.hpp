@@ -10,6 +10,21 @@
 #include <istream>
 #include <ostream>
 
+#define DECLARE_READER_WRITER_SPECIALIZATION(x) \
+template <> \
+struct Writer<x> \
+{ \
+  void operator()( \
+    const x& value, SinkBuffer& buffer) const; \
+}; \
+template<> \
+struct Reader<x> \
+{ \
+  void operator()( \
+    x& value, SourceBuffer& buffer) const; \
+};
+
+
 namespace alicia::proto
 {
 //! Forward declaration of a writer.
@@ -133,19 +148,7 @@ template <typename T> struct Reader
   }
 };
 
-template <>
-struct Writer<std::string>
-{
-  void operator()(
-    const std::string& value, SinkBuffer& buffer) const;
-};
-
-template<>
-struct Reader<std::string>
-{
-  void operator()(
-    std::string& value, SourceBuffer& buffer) const;
-};
+GENERATE_READER_WRITER_SPECIALIZATION(std::string)
 
 } // namespace alicia::proto
 
