@@ -1297,6 +1297,22 @@ void alicia::Client::read_loop()
       break;
       #endif
 
+      #ifdef AcCmdCRUpdateBusyState
+      case AcCmdCRUpdateBusyState:
+        {
+          // Request encodes one byte only supposedly even though i get more bytes in the buffer
+          uint8_t state = request.data[0];
+
+          DummyCommand response(AcCmdCRUpdateBusyStateNotify);
+          response.data = {
+            0xE8, 0xE2, 0x06, 0x00, // Self UID (confirmed)
+            state
+          };
+          send_command(_socket, response);
+        }
+        break;
+      #endif
+
       #ifdef AcCmdCLHeartbeat
       case AcCmdCLHeartbeat:
         // Do nothing
