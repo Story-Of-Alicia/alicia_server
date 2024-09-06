@@ -1,9 +1,7 @@
 #include <libserver/alicia.hpp>
+#include <libserver/proto/util.hpp>
 
 int main()
 {
-  alicia::Server server;
-  server.host();
-  server.run();
   return 0;
 }

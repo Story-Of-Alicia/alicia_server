@@ -5,38 +5,148 @@
 #ifndef UTIL_HPP
 #define UTIL_HPP
 
-#include <ranges>
-#include <string>
+#include <cassert>
+#include <functional>
+#include <istream>
+#include <ostream>
 
 namespace alicia::proto
 {
+//! Forward declaration of a writer.
+template <typename T> struct Writer;
 
-  using Buffer = std::span<uint8_t>;
+//! Sink buffer.
+class SinkBuffer
+{
+public:
+  //! Default constructor
+  //!
+  //! @param stream Sink stream.
+  explicit SinkBuffer(std::ostream& stream) : _sink(stream) {}
 
-  std::string readString(const Buffer& buffer);
+  //! Deleted copy constructor.
+  SinkBuffer(const SinkBuffer&) = delete;
+  //! Deleted copy assignement.
+  void operator=(const SinkBuffer&) = delete;
 
-  uint8_t readU8(const Buffer& buffer);
-  uint16_t readU16(const Buffer& buffer);
-  uint32_t readU32(const Buffer& buffer);
-  uint64_t readU64(const Buffer& buffer);
+  //! Deleted move constructor.
+  SinkBuffer(SinkBuffer&&) = delete;
+  //! Deleted move assignement.
+  void operator=(SinkBuffer&&) = delete;
 
-  int8_t readS8(const Buffer& buffer);
-  int16_t readS16(const Buffer& buffer);
-  int32_t readS32(const Buffer& buffer);
-  int64_t readS64(const Buffer& buffer);
+  //! Write a value to the sink stream.
+  //!
+  //! @param value Value to write.
+  //! @tparam T Type of value.
+  //! @return Reference to this.
+  template <typename T> SinkBuffer& Write(const T& value)
+  {
+    Writer<T>{}(value, *this);
+    return *this;
+  }
 
-  void writeU8(Buffer& buffer, uint8_t val);
-  void writeU16(Buffer& buffer, uint16_t val);
-  void writeU32(Buffer& buffer, uint32_t val);
-  void writeU64(Buffer& buffer, uint64_t val);
+  //! Get reference to the underlying sink stream.
+  //!
+  //! @return Reference to the stream.
+  std::ostream& Get() { return _sink; }
 
-  void writeS8(Buffer& buffer, uint8_t val);
-  void writeS16(Buffer& buffer, uint16_t val);
-  void writeS32(Buffer& buffer, uint32_t val);
-  void writeS64(Buffer& buffer, uint64_t val);
+protected:
+  //! A reference to source stream;
+  std::ostream& _sink;
+};
 
+//! General binary writer.
+//! Writes a little-endian byte sequence to the provided sink buffer.
+//!
+//! @tparam T Type of value.
+template <typename T> struct Writer
+{
+  void operator()(const T& value, SinkBuffer& buffer)
+  {
+    const auto requiredByteCount = sizeof(value);
+    buffer.Get().write(reinterpret_cast<const char*>(&value), requiredByteCount);
 
+    // Please, please work.
+    assert(buffer.Get().good());
+  }
+};
 
-}
+//! Forward declaration of a reader.
+template <typename T> struct Reader;
 
-#endif //UTIL_HPP
+//! Source buffer.
+class SourceBuffer
+{
+public:
+  //! Default constructor
+  //!
+  //! @param stream Source stream.
+  explicit SourceBuffer(std::istream& stream) : _source(stream) {}
+
+  //! Deleted copy constructor.
+  SourceBuffer(const SourceBuffer&) = delete;
+  //! Deleted copy assignement.
+  void operator=(const SourceBuffer&) = delete;
+
+  //! Deleted move constructor.
+  SourceBuffer(SourceBuffer&&) = delete;
+  //! Deleted move assignement.
+  void operator=(SourceBuffer&&) = delete;
+
+  //! Read a value from the source stream.
+  //!
+  //! @param value Value to read.
+  //! @tparam T Type of value.
+  //! @return Reference to this.
+  template <typename T> SourceBuffer& Read(T& value)
+  {
+    Reader<T>{}(value, *this);
+    return *this;
+  }
+
+  //! Get reference to the underlying souce stream.
+  //!
+  //! @return Reference to the stream.
+  std::istream& Get() { return _source; }
+
+protected:
+  //! A reference to source stream;
+  std::istream& _source;
+};
+
+//! General binary reader.
+//! Reads a little-endian byte sequence from the provided source buffer.
+//!
+//! @tparam T Type of value.
+template <typename T> struct Reader
+{
+  void operator()(T& value, SourceBuffer& buffer)
+  {
+    assert(buffer.Get().good());
+
+    const auto requiredByteCount = sizeof(value);
+    const auto actuallyRead =
+      buffer.Get().readsome(reinterpret_cast<char*>(&value), requiredByteCount);
+
+    // Please, please work.
+    assert(requiredByteCount == actuallyRead);
+  }
+};
+
+template <>
+struct Writer<std::string>
+{
+  void operator()(
+    const std::string& value, SinkBuffer& buffer) const;
+};
+
+template<>
+struct Reader<std::string>
+{
+  void operator()(
+    std::string& value, SourceBuffer& buffer) const;
+};
+
+} // namespace alicia::proto
+
+#endif // UTIL_HPP

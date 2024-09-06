@@ -5,6 +5,8 @@
 #ifndef ALICIA_HPP
 #define ALICIA_HPP
 
+#include "proto/lobby.hpp"
+
 #include <cstdint>
 #include <unordered_map>
 #include <istream>

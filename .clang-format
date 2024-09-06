@@ -4,7 +4,7 @@ ColumnLimit: 100
 IndentWidth: 2
 PPIndentWidth: 2
 ContinuationIndentWidth: 2
-NamespaceIndentation: All
+NamespaceIndentation: None
 BreakBeforeBraces: Allman
 AlwaysBreakAfterReturnType: None
 AlwaysBreakAfterDefinitionReturnType: None

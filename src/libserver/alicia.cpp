@@ -67,7 +67,7 @@ void alicia::Server::accept_loop()
     [&](boost::system::error_code error, asio::ip::tcp::socket client_socket)
     {
       printf("Accepted new client from port %d\n", client_socket.remote_endpoint().port());
-      const auto [itr, _] = _clients.emplace(client_id++, std::move(client_socket));
+      const auto [itr, _] = _clients.emplace(_client_id++, std::move(client_socket));
       itr->second.read_loop();
 
       accept_loop();
