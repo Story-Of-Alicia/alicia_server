@@ -6,13 +6,24 @@
 
 #define PORT 10030
 
-uint16_t MUTE_COMMAND_IDS[2] = {
+uint16_t MUTE_COMMAND_IDS[] = {
+  0x3cbb, // Messenger
+  0x3c87, // Messenger
+
   #ifdef AcCmdCLHeartbeat
   AcCmdCLHeartbeat,
   #endif
 
   #ifdef AcCmdCRHeartbeat
-  AcCmdCRHeartbeat
+  AcCmdCRHeartbeat,
+  #endif
+
+  #ifdef AcCmdCRRanchSnapshot
+  AcCmdCRRanchSnapshot,
+  #endif
+
+  #ifdef AcCmdCRRanchSnapshotNotify
+  AcCmdCRRanchSnapshotNotify
   #endif
 };
 
@@ -1280,7 +1291,10 @@ void alicia::Client::read_loop()
       #endif
 
       default:
-        std::cout << "WARNING! Packet " << GetMessageName(message_magic.id) << " (0x" << std::hex << message_magic.id << std::dec << ") not handled" << std::endl << std::endl;
+        if(!mute)
+        {
+          std::cout << "WARNING! Packet " << GetMessageName(message_magic.id) << " (0x" << std::hex << message_magic.id << std::dec << ") not handled" << std::endl << std::endl;
+        }
         break;
     }
     
