@@ -1322,6 +1322,25 @@ void alicia::Client::read_loop()
         break;
       #endif
 
+      #ifdef AcCmdCRChangeRoomOptions
+      case AcCmdCRChangeRoomOptions:
+        {
+          // Request consists of short, byte, byte, short, byte
+          // Response consists of: short as a bitfield
+          //  if & 1 != 0: string
+          //  if & 2 != 0: byte
+          //  if & 4 != 0: string
+          //  if & 8 != 0: byte
+          //  if  & 16 != 0: short
+          //  if  & 32 != 0: byte
+          // (same values as AcCmdCREnterRoomOK.Unk3?)
+          DummyCommand response(AcCmdCRChangeRoomOptionsNotify);
+          response.data = { 0x00, 0x00 };
+          send_command(_socket, response);
+        }
+        break;
+      #endif
+
       #ifdef AcCmdCLHeartbeat
       case AcCmdCLHeartbeat:
         // Do nothing
