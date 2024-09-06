@@ -1278,6 +1278,25 @@ void alicia::Client::read_loop()
         break;
       #endif
 
+      #ifdef AcCmdCRRanchSnapshot
+      case AcCmdCRRanchSnapshot:
+      {
+        // Command consists of byte and byte array
+        uint8_t unk0 = request.data[0];
+        size_t unk1Size = request.data.size() - 1;
+        uint8_t* unk1 = request.data.data()+1;
+
+        DummyCommand response(AcCmdCRRanchSnapshotNotify);
+        response.data.push_back(0x02);
+        response.data.push_back(0x00);
+        response.data.push_back(unk0);
+        for(size_t i = 0; i < unk1Size; ++i)
+          response.data.push_back(unk1[i]);
+        send_command(_socket, response);
+      }
+      break;
+      #endif
+
       #ifdef AcCmdCLHeartbeat
       case AcCmdCLHeartbeat:
         // Do nothing
