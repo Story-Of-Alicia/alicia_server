@@ -341,8 +341,11 @@ void alicia::Client::read_loop()
             0x90, 0x85, 0x0C, 0x11, // Unk14
 
             // Unk15: Another small structure
+            // character gender, 0x0A (10) is male and 0x14 (female)
             0x0A,
+            // mouth shape
             0x00,
+            // eye states 0 - idk avoid 5 this could even be face animation states
             0x00,
             0x01,
             0x01, 0x00,
@@ -628,6 +631,58 @@ void alicia::Client::read_loop()
           DummyCommand response(AcCmdCLShowMountListOK);
           response.data = {
               0x0};
+          send_command(_socket, response);
+        }
+        break;
+      #endif
+
+      #ifdef AcCmdCRMountFamilyTree
+      case AcCmdCRMountFamilyTree:
+        {
+          DummyCommand response(AcCmdCRMountFamilyTreeOK);
+          response.data = {
+            // int
+            0x00, 0x00, 0x00, 0x00,
+
+            // number of items up to 6
+            0x06,
+
+            // item structure
+            // byte
+            // string max length 17
+            // byte
+            // 2 bytes
+
+            0x00, 
+            't', 'e', 's', 't', '1', 0x00, 
+            0x02, 
+            0x02, 0x00, 
+
+            0x01, 
+            't', 'e', 's', 't', '2', 0x00, 
+            0x02, 
+            0x02, 0x00, 
+
+            0x02, 
+            't', 'e', 's', 't', '3', 0x00, 
+            0x02,
+            0x02, 0x00,
+
+            0x03,
+            't', 'e', 's', 't', '4', 0x00,
+            0x02,
+            0x02, 0x00,
+
+            0x04,
+            't', 'e', 's', 't', '5', 0x00,
+            0x02,
+            0x02, 0x00,
+
+            0x05,
+            't', 'e', 's', 't', '6', 0x00,
+            0x02,
+            0x02, 0x00,
+          };
           send_command(_socket, response);
         }
         break;
