@@ -5,30 +5,47 @@
 #ifndef UTIL_HPP
 #define UTIL_HPP
 
-#include <cassert>
-#include <functional>
-#include <istream>
-#include <ostream>
-
-#define DECLARE_READER_WRITER_SPECIALIZATION(x) \
+#define DECLARE_WRITER_READER(x) \
 template <> \
 struct Writer<x> \
 { \
-  void operator()( \
-    const x& value, SinkBuffer& buffer) const; \
+void operator()( \
+  const x& value, SinkBuffer& buffer) const; \
 }; \
 template<> \
 struct Reader<x> \
 { \
-  void operator()( \
-    x& value, SourceBuffer& buffer) const; \
+void operator()( \
+  x& value, SourceBuffer& buffer) const; \
 };
 
+#define DEFINE_WRITER_READER(x, writer, reader) \
+void Writer<x>::operator()( \
+  const x& value, SinkBuffer& buffer) const \
+{ \
+  writer(value, buffer); \
+} \
+void Reader<x>::operator()( \
+  x& value, SourceBuffer& buffer) const \
+{ \
+  reader(value, buffer); \
+}
 
-namespace alicia::proto
+#define COMMAND_WRITER_READER(x) \
+  DECLARE_WRITER_READER(x) \
+  DEFINE_WRITER_READER(x, x::Write, x::Read)
+
+
+#include <cassert>
+#include <istream>
+#include <ostream>
+
+namespace alicia
 {
+
 //! Forward declaration of a writer.
-template <typename T> struct Writer;
+template <typename T>
+struct Writer;
 
 //! Sink buffer.
 class SinkBuffer
@@ -37,7 +54,8 @@ public:
   //! Default constructor
   //!
   //! @param stream Sink stream.
-  explicit SinkBuffer(std::ostream& stream) : _sink(stream) {}
+  explicit SinkBuffer(std::ostream& stream)
+    : _sink(stream) {}
 
   //! Deleted copy constructor.
   SinkBuffer(const SinkBuffer&) = delete;
@@ -74,7 +92,8 @@ protected:
 //! Writes a little-endian byte sequence to the provided sink buffer.
 //!
 //! @tparam T Type of value.
-template <typename T> struct Writer
+template <typename T>
+struct Writer
 {
   void operator()(const T& value, SinkBuffer& buffer)
   {
@@ -148,7 +167,7 @@ template <typename T> struct Reader
   }
 };
 
-GENERATE_READER_WRITER_SPECIALIZATION(std::string)
+DECLARE_WRITER_READER(std::string)
 
 } // namespace alicia::proto
 

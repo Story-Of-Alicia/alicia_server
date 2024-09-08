@@ -11,11 +11,14 @@ target_compile_features(project-properties
         INTERFACE cxx_std_20)
 
 # Alicia server library
-add_library(alicia-libserver STATIC)
-target_sources(alicia-libserver PUBLIC
+add_library(alicia-libserver STATIC
         src/libserver/alicia.cpp
-        src/libserver/proto/util.cpp
-        src/libserver/proto/lobby.cpp)
+        src/libserver/util.cpp
+        src/libserver/proto/proto.cpp
+        src/libserver/proto/server.cpp
+        src/libserver/proto/lobby/messages.cpp
+        src/libserver/proto/ranch/messages.cpp
+)
 target_include_directories(alicia-libserver
         PUBLIC include/)
 target_link_libraries(alicia-libserver

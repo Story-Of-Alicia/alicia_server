@@ -1,7 +1,12 @@
-#include "libserver/proto/util.hpp"
+#include "libserver/util.hpp"
 
-void alicia::proto::Writer<std::string>::operator()(
-  const std::string& value, SinkBuffer& buffer) const
+namespace alicia::proto
+{
+
+namespace
+{
+
+void WriteCString(const std::string& value, SinkBuffer& buffer)
 {
   for (char b : value)
   {
@@ -11,8 +16,7 @@ void alicia::proto::Writer<std::string>::operator()(
   buffer.Write(static_cast<char>(0x00));
 }
 
-void alicia::proto::Reader<std::string>::operator()(
-  std::string& value, SourceBuffer& buffer) const
+void ReadCString(std::string& value, SourceBuffer& buffer)
 {
   value.reserve(512);
 
@@ -32,3 +36,10 @@ void alicia::proto::Reader<std::string>::operator()(
     }
   } while(readNext);
 }
+
+} // namespace anon
+
+DEFINE_WRITER_READER(std::string, WriteCString, ReadCString)
+
+} // namespace alicia::proto
+
