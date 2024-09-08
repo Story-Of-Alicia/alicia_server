@@ -15,32 +15,62 @@ void Client::read_loop()
     {
       if (error)
       {
+        // An error occured in client read loop,
+        // connection reset?
         return;
       }
 
+      // Commit the recieved bytes,
+      // so they can be read.
+      _buffer.commit(size);
+
+      // Create source buffer.
+      std::istream stream(&_buffer);
+      SourceBuffer source(stream);
+
+      MessageMagic magic;
+      source.Read(magic.id)
+        .Read(magic.length);
+
+      const auto payloadSize = magic.length - 4;
+      if (payloadSize > size)
+      {
+        // deal with fragmentation
+        assert(false);
+      }
+
+      // Handle reading of the command.
+      _commandReadHandler(magic.id, source);
+
+      // Continue the read loop.
       read_loop();
     });
 }
 
-void Server::host()
+void Server::Host(
+  const std::string_view& interface, uint16_t port)
 {
-  asio::ip::tcp::endpoint server_endpoint(asio::ip::tcp::v4(), 10030);
-  printf("Hosting the server on port 10030\n");
+  const asio::ip::tcp::endpoint server_endpoint(
+    asio::ip::make_address(interface.data()), port);
+
   _acceptor.open(server_endpoint.protocol());
   _acceptor.bind(server_endpoint);
   _acceptor.listen();
-  accept_loop();
-}
 
+  accept_loop();
+
+  _io_ctx.run();
+}
 void Server::accept_loop()
 {
   _acceptor.async_accept(
     [&](boost::system::error_code error, asio::ip::tcp::socket client_socket)
     {
-      printf("Accepted new client from port %d\n", client_socket.remote_endpoint().port());
+      // Create the client.
       const auto [itr, _] = _clients.emplace(
         _client_id++, std::move(client_socket));
 
+      // Continue the accept loop.
       accept_loop();
     });
 }

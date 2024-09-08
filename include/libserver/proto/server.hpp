@@ -5,16 +5,23 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-#include "proto.hpp"
+#include "libserver/util.hpp"
+#include "libserver/proto/proto.hpp"
 
-#include <boost/asio.hpp>
 #include <cstdint>
 #include <unordered_map>
+
+#include <boost/asio.hpp>
 
 namespace alicia
 {
 
 namespace asio = boost::asio;
+
+using CommandReadHandler = std::function<void(
+  CommandId commandId, SourceBuffer& commandBuffer)>;
+using CommandWriteHandler = std::function<void(
+  CommandId commandId, SinkBuffer& commandBuffer)>;
 
 //!
 class Client
@@ -27,6 +34,8 @@ public:
     read_loop();
   }
 
+  void Send();
+
 private:
   //!
   void read_loop();
@@ -35,22 +44,29 @@ private:
   asio::streambuf _buffer;
 };
 
-//!
+//! Command server.
 class Server
 {
 public:
+  //! Default constructor.
+  Server();
 
+  //! Hosts the server.
   //!
-  Server()
-    : _acceptor(_io_ctx)
+  //! @param interface Address of the interface to bind to.
+  //! @param port Port to bind to.
+  void Host(
+    const std::string_view& interface, uint16_t port);
+
+  void SetReadHandler(CommandReadHandler readHandler)
   {
-  }
+    _readHandler = readHandler;
+  };
 
-  //!
-  void host();
-
-  //!
-  void run() { _io_ctx.run(); }
+  void SetWriteHandler(CommandWriteHandler writeHandler)
+  {
+    _writeHandler = writeHandler;
+  };
 
 private:
   void accept_loop();
@@ -61,7 +77,9 @@ private:
   //! Sequential client ID.
   uint32_t _client_id = 0;
   std::unordered_map<uint32_t, Client> _clients;
-  std::unordered_map<CommandId>
+
+  CommandReadHandler _readHandler;
+  CommandWriteHandler _writeHandler;
 };
 
 }

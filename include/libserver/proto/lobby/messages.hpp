@@ -35,8 +35,6 @@ struct LobbyCommandLogin
     LobbyCommandLogin& command, SourceBuffer& buffer);
 };
 
-COMMAND_WRITER_READER(LobbyCommandLogin);
-
 //! Clientbound login OK command.
 struct LobbyCommandLoginOK
 {
@@ -52,8 +50,6 @@ struct LobbyCommandLoginOK
   static void Read(
     LobbyCommandLoginOK& command, SourceBuffer& buffer);
 };
-
-COMMAND_WRITER_READER(LobbyCommandLoginOK);
 
 //! Cancel reason for login.
 enum class LoginCancelReason : uint8_t
@@ -83,8 +79,6 @@ struct LobbyCommandLoginCancel
   static void Read(
     LobbyCommandLoginCancel& command, SourceBuffer& buffer);
 };
-
-COMMAND_WRITER_READER(LobbyCommandLoginCancel);
 
 } // namespace alica
 
