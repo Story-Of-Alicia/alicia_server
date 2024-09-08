@@ -231,8 +231,8 @@ void alicia::Client::read_loop()
 
             0x00, // Unk4: List size, max 250 elements
                   // Seems to be the same type of data as Unk3
-            0xFF, 0xFF, // Level
-            0xFF, 0xFF, 0xFF, 0x7F, // Carrots
+            0xFF, 0x00, // Level
+            0x00, 0x00, 0x00, 0x00, // Carrots
             0x30, 0x61, 0x00, 0x00, // Unk7
             0x01, 0x00, 0x00, 0x00, // Unk8
             0x00, // Unk9
@@ -372,15 +372,18 @@ void alicia::Client::read_loop()
             0x21, 0x4E, 0x00, 0x00, // Horse.TIDs.HorseTID Horse model
             /* Horse name: "idontunderstand" */ 0x69, 0x64, 0x6F, 0x6E, 0x74, 0x75, 0x6E, 0x64, 0x65, 0x72, 0x73, 0x74, 0x61, 0x6E, 0x64, 0x00,
             // Horse.Appearance: Structure. Probably horse appearance
-            0x02,
-            0x03,
-            0x03,
-            0x03,
-            0x04,
-            0x04,
-            0x05,
-            0x03,
-            0x04,
+
+            0x1, // Horse.SkinId (MountSkinInfo)
+            0x4, // Horse.ManeId (MountManeInfo)
+            0x4, // Horse.TailId (MountTailInfo)
+
+            0x05, // Horse.Face (MountFaceInfo)
+            0x00, // Horse.Height
+            0x00, // Horse.LegHeight
+            0x00, // Horse.LegThickness
+            0x00, // Horse.Length
+            0x00, // Horse.Weight (affects thickness of front/hind legs)
+
             // Horse.Stats
             0x04, 0x00, 0x00, 0x00, // agility
             0x03, 0x00, 0x00, 0x00, // spirit
