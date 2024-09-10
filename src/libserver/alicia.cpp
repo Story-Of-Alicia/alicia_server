@@ -32,32 +32,6 @@ namespace
 
 } // namespace anon
 
-void send_command(boost::asio::ip::tcp::socket& socket, alicia::ICommand& cmd)
-{
-  bool mute = false;
-  for (auto &muteCmdId : MUTE_COMMAND_IDS)
-  {
-    if (cmd.GetCommandId() == muteCmdId)
-    {
-      mute = true;
-      break;
-    }
-  }
-  if(!mute)
-  {
-    std::cout << ">>> SEND " << socket.remote_endpoint().address().to_string() << ":" << socket.remote_endpoint().port() << " ";
-    cmd.Log();
-  }
-
-  std::vector<uint8_t> cmdContents = cmd.AsBytes();
-  // gametree forgot to encode clientbound packets
-  //alicia::xor_codec_cpp(cmdContents);
-  uint16_t totalPacketSize = sizeof(uint32_t) + cmdContents.size(); // size of the magic header + size of the packet contents
-  uint32_t responseEncodedMagic = alicia::encode_message_magic({cmd.GetCommandId(), totalPacketSize});
-  socket.write_some(boost::asio::const_buffer(&responseEncodedMagic, sizeof(uint32_t)));
-  socket.write_some(boost::asio::const_buffer(cmdContents.data(), cmdContents.size()));
-}
-
 alicia::MessageMagic alicia::decode_message_magic(uint32_t value)
 {
   MessageMagic magic;
@@ -178,7 +152,11 @@ void alicia::Client::read_loop()
     read(stream, data);
 
     // XOR decode
-    //xor_codec_cpp(data);
+    if(data.size() > 0)
+    {
+      xor_codec_cpp(this->xor_key, data);
+      this->rotate_xor_key();
+    }
 
     DummyCommand request = DummyCommand(message_magic.id);
     request.timestamp = std::chrono::system_clock::now();
@@ -528,7 +506,7 @@ void alicia::Client::read_loop()
             0x00, // string
             0x00, 0x00, 0x00, 0x00
           };
-          send_command(_socket, response);
+          this->send_command(response);
         }
         break;
       #endif
@@ -703,7 +681,7 @@ void alicia::Client::read_loop()
 
             0x00
           };
-          send_command(_socket, response);
+          this->send_command(response);
         }
         break;
       #endif
@@ -717,7 +695,7 @@ void alicia::Client::read_loop()
               0x00, 0x00, 0x00, 0x00, // enum
               0x00,
             };
-            send_command(_socket, response);
+            this->send_command(response);
           }
       #endif
 
@@ -728,7 +706,7 @@ void alicia::Client::read_loop()
           DummyCommand response(AcCmdCLRequestLicenseInfoOK);
           response.data = {
               0x0};
-          send_command(_socket, response);
+          this->send_command(response);
         }
         break;
       #endif
@@ -741,7 +719,7 @@ void alicia::Client::read_loop()
             0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x12, 0x01, 0x01, 0x01,  0x00, 0x00, 0x34, 0x01, 0x00,
           };
-          send_command(_socket, response);
+          this->send_command(response);
         }
         break;
       #endif
@@ -780,7 +758,7 @@ void alicia::Client::read_loop()
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02,  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  0x00,
           };
-          send_command(_socket, response);
+          this->send_command(response);
         }
         break;
       #endif
@@ -791,7 +769,7 @@ void alicia::Client::read_loop()
           DummyCommand response(AcCmdCLShowMountListOK);
           response.data = {
               0x0};
-          send_command(_socket, response);
+          this->send_command(response);
         }
         break;
       #endif
@@ -843,7 +821,7 @@ void alicia::Client::read_loop()
             0x02,
             0x02, 0x00,
           };
-          send_command(_socket, response);
+          this->send_command(response);
         }
         break;
       #endif
@@ -854,7 +832,7 @@ void alicia::Client::read_loop()
           DummyCommand response(AcCmdCLShowEggListOK);
           response.data = {
               0x0};
-          send_command(_socket, response);
+          this->send_command(response);
         }
         break;
       #endif
@@ -865,7 +843,7 @@ void alicia::Client::read_loop()
           DummyCommand response(AcCmdCLShowCharListOK);
           response.data = {
               0x0};
-          send_command(_socket, response);
+          this->send_command(response);
         }
         break;
       #endif
@@ -878,7 +856,7 @@ void alicia::Client::read_loop()
             0xE8, 0xE2, 0x06, 0x00, // character ID?
             0x00, // length
           };
-          send_command(_socket, response);
+          this->send_command(response);
         }
         break;
       #endif
@@ -981,7 +959,7 @@ case AcCmdCLRequestPersonalInfo:
     }
     // TODO: add for when scenario is 8
 
-    send_command(_socket, response);
+    this->send_command(response);
   }
   break;
 #endif
@@ -997,7 +975,7 @@ case AcCmdCLRequestPersonalInfo:
               unk0,
               0x01, 0x00
           };
-          send_command(_socket, response);
+          this->send_command(response);
         }
         break;
       #endif
@@ -1014,7 +992,7 @@ case AcCmdCLRequestPersonalInfo:
               0x2E, 0x27, // port
               0x00, // member2
           };
-          send_command(_socket, response);
+          this->send_command(response);
         }
         break;
       #endif
@@ -1024,7 +1002,7 @@ case AcCmdCLRequestPersonalInfo:
         {  
           DummyCommand response(AcCmdCLRequestDailyQuestListOK);
           response.data = { 0xE8, 0xE2, 0x06, 0x00, 0x00, 0x00, 0x00, 0x00 };
-          send_command(_socket, response);
+          this->send_command(response);
         }
         break;
       #endif
@@ -1048,7 +1026,7 @@ case AcCmdCLRequestPersonalInfo:
             0x36, 0x00, 0x00, 0x00, 0x00, 0x03, 0x04, 0x00,  0x00, 0x00, 0x00, 0x03, 0xC1, 0x36, 0x00, 0x00,         
             0x00, 0x00, 0x03, 0x06, 0x00, 0x00, 0x00, 0x00,  0x03,                     
           };
-          send_command(_socket, response);
+          this->send_command(response);
         }
         break;
       #endif
@@ -1063,7 +1041,7 @@ case AcCmdCLRequestPersonalInfo:
             127, 0, 0, 1,
             0x2e, 0x27,
           };
-          send_command(_socket, response);
+          this->send_command(response);
         }
         break;
       #endif
@@ -1515,7 +1493,7 @@ case AcCmdCLRequestPersonalInfo:
 
               0x00, 0x00, 0x00, 0x00 //unk12
           };
-          send_command(_socket, response);
+          this->send_command(response);
         } break;
       #endif
 
@@ -1528,7 +1506,7 @@ case AcCmdCLRequestPersonalInfo:
             0x7F, 0x00, 0x00, 0x01, // 127.0.0.1, messenger server IP
             0x2E, 0x27, // port
           };
-          send_command(_socket, response);
+          this->send_command(response);
         }
         break;
       #endif
@@ -1547,7 +1525,8 @@ case AcCmdCLRequestPersonalInfo:
         response.data.push_back(unk0);
         for(size_t i = 0; i < unk1Size; ++i)
           response.data.push_back(unk1[i]);
-        send_command(_socket, response);
+
+        this->send_command(response);
       }
       break;
       #endif
@@ -1563,7 +1542,7 @@ case AcCmdCLRequestPersonalInfo:
             0xE8, 0xE2, 0x06, 0x00, // Self UID (confirmed)
             state
           };
-          send_command(_socket, response);
+          this->send_command(response);
         }
         break;
       #endif
@@ -1572,7 +1551,7 @@ case AcCmdCLRequestPersonalInfo:
       case AcCmdCRLeaveRanch:
         {
           DummyCommand response(AcCmdCRLeaveRanchOK);
-          send_command(_socket, response);
+          this->send_command(response);
         }
         break;
       #endif
@@ -1783,7 +1762,7 @@ case AcCmdCLRequestPersonalInfo:
             0x00, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x00
           };
-          send_command(_socket, response);
+          this->send_command(response);
         }
         break;
       #endif
@@ -1802,7 +1781,7 @@ case AcCmdCLRequestPersonalInfo:
           // (same values as AcCmdCREnterRoomOK.Unk3?)
           DummyCommand response(AcCmdCRChangeRoomOptionsNotify);
           response.data = { 0x00, 0x00 };
-          send_command(_socket, response);
+          this->send_command(response);
         }
         break;
       #endif
@@ -1866,7 +1845,7 @@ case AcCmdCLRequestPersonalInfo:
             // unk18: list of short and a nested list of int
             0x00, // list size
           };
-          send_command(_socket, response);
+          this->send_command(response);
         }
         break;
       #endif
@@ -1882,7 +1861,7 @@ case AcCmdCLRequestPersonalInfo:
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
           };
-          send_command(_socket, response);
+          this->send_command(response);
         }
         break;
       #endif
@@ -1896,7 +1875,7 @@ case AcCmdCLRequestPersonalInfo:
           response.data = { 
             0x00, 0x01 // index of the player who finished loading?
           };
-          send_command(_socket, response);
+          this->send_command(response);
         }
         break;
       #endif
@@ -1906,7 +1885,7 @@ case AcCmdCLRequestPersonalInfo:
       {
         DummyCommand response(AcCmdRCMissionEvent);
         response.data = request.data;
-        send_command(_socket, response);
+        this->send_command(response);
       }
       break;
       #endif
@@ -1933,6 +1912,38 @@ case AcCmdCLRequestPersonalInfo:
     
     read_loop();
   });
+}
+
+void alicia::Client::rotate_xor_key()
+{
+  this->xor_key = this->xor_key * xor_multiplier + xor_control;
+}
+
+void alicia::Client::send_command(alicia::ICommand& cmd)
+{
+  bool mute = false;
+  for (auto &muteCmdId : MUTE_COMMAND_IDS)
+  {
+    if (cmd.GetCommandId() == muteCmdId)
+    {
+      mute = true;
+      break;
+    }
+  }
+  if(!mute)
+  {
+    std::cout << ">>> SEND " << this->_socket.remote_endpoint().address().to_string() << ":" << this->_socket.remote_endpoint().port() << " ";
+    cmd.Log();
+  }
+
+  std::vector<uint8_t> cmdContents = cmd.AsBytes();
+
+  // gametree forgot to encode clientbound packets
+
+  uint16_t totalPacketSize = sizeof(uint32_t) + cmdContents.size(); // size of the magic header + size of the packet contents
+  uint32_t responseEncodedMagic = alicia::encode_message_magic({cmd.GetCommandId(), totalPacketSize});
+  this->_socket.write_some(boost::asio::const_buffer(&responseEncodedMagic, sizeof(uint32_t)));
+  this->_socket.write_some(boost::asio::const_buffer(cmdContents.data(), cmdContents.size()));
 }
 
 void alicia::Server::host()

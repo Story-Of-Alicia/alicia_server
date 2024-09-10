@@ -21,14 +21,10 @@ namespace alicia
   //! A constant buffer jumbo for message magic.
   constexpr uint16_t BufferJumbo = 16384;
 
-  //! A constant 4-byte XOR control value,
-  //! with which message bytes are XORed.
-  constexpr std::array xor_control{
-    static_cast<uint8_t>(0xCB),
-    static_cast<uint8_t>(0x91),
-    static_cast<uint8_t>(0x01),
-    static_cast<uint8_t>(0xA2),
-};
+  //! XOR scrambler constants
+  constexpr uint32_t xor_multiplier = -0x20080825;
+  constexpr uint32_t xor_control = 0xa20191cb;
+
 
   //! Message magix with which all messages are prefixed.
   struct MessageMagic
@@ -56,13 +52,13 @@ namespace alicia
 
   //! Appy XORcodec to buffer.
   //!
+  //! @param key Current key value.
   //! @param buffer Buffer.
-  //! @returns XORcoded buffer.
-  template <typename Buffer> void xor_codec_cpp(Buffer& buffer)
+  template <typename Buffer> void xor_codec_cpp(uint32_t key, Buffer& buffer)
   {
     for(size_t idx = 0; idx < buffer.size(); idx++) {
       const auto shift = idx % 4;
-      buffer[idx] ^= xor_control[shift];
+      buffer[idx] ^= ((uint8_t*) &key)[shift];
     }
   }
 
@@ -106,13 +102,17 @@ namespace alicia
    */
   class Client {
   public:
-    explicit Client(asio::ip::tcp::socket&& socket) noexcept : _socket(std::move(socket)) {}
+    explicit Client(asio::ip::tcp::socket&& socket) noexcept : _socket(std::move(socket)), xor_key(0) {}
 
     void read_loop();
 
+    void send_command(alicia::ICommand& command);
+    
+    void rotate_xor_key();
   private:
     asio::ip::tcp::socket _socket;
     asio::streambuf _buffer;
+    uint32_t xor_key;
   };
 
   /**
