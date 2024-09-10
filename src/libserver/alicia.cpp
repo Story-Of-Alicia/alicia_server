@@ -859,108 +859,114 @@ void alicia::Client::read_loop(Server& server)
         break;
       #endif
 
-#ifdef AcCmdCLRequestPersonalInfo
-case AcCmdCLRequestPersonalInfo:
-  {
-    uint8_t uVar2 = 7; // uVar2 checks for 6, 7, 8
+      #ifdef AcCmdCLRequestPersonalInfo
+      case AcCmdCLRequestPersonalInfo:
+      {
+        // Read uVar2 from the request data
+        if (request.data.size() < 8) {
+          // Handle error: not enough data in the request
+          std::cerr << "Error: Not enough data in the request!" << std::endl;
+          return;
+        }
+        // first 4 bytes of the request is player UID (request.data[0 - 3])
+        uint8_t uVar2 = request.data[4]; // The fifth byte (index 4) contains uVar2
 
-    DummyCommand response(AcCmdLCPersonalInfo);
-    response.data = {
-      0x01, 0x00, 0x00, 0x00,   // unknown, used in all 3 requests
-      uVar2, 0x00, 0x00, 0x00,   // client uses this to request general player info or player course info
-    };
+        DummyCommand response(AcCmdLCPersonalInfo);
+        response.data = {
+          0x01, 0x00, 0x00, 0x00,   // unknown, used in all requests
+          uVar2, 0x00, 0x00, 0x00,   // uVar2 value (6, 7, or 8)
+        };
 
-    if (uVar2 == 6) {
-      // player general info struct
-      response.data.insert(response.data.end(), {
-        0x08, 0x07, 0x06, 0x05,   // 4 bytes
-        0x0C, 0x0B, 0x0A, 0x09,   // 4 bytes
-        0x10, 0x0F, 0x0E, 0x0D,   // 4 bytes
-        0x00, 0x00, 0x20, 0x41,   // float 4 bytes, 10.0f
-        0x00, 0x00, 0x40, 0x41,   // float 4 bytes, 12.0f
-        0x00, 0x01,               // 2 bytes
-        0x02, 0x03,               // 2 bytes
-        0x04, 0x05,               // 2 bytes
-        0x06, 0x07,               // 2 bytes
-        0x00, 0x00, 0x80, 0x3F,   // float 4 bytes, 1.0f
-        0x00, 0x00, 0xA0, 0x40,   // float 4 bytes, 5.0f
-        0x00, 0x00, 0xC0, 0x40,   // float 4 bytes, 6.0f)
-        0x18, 0x17, 0x16, 0x15,   // 4 bytes
-        0x08, 0x09,               // 2 bytes
-        0x0A, 0x0B,               // 2 bytes
-        0x0C, 0x0D,               // 2 bytes
-    
-        // String data (null-terminated)
-        0x74, 0x65, 0x73, 0x74, 0x31, 0x00, // String data "test1"
-    
-        0x20, 0x1F, 0x1E, 0x1D,   // 4 bytes
-        0x24, 0x23, 0x22, 0x21,   // 4 bytes
-    
-        // String data (null-terminated)
-        0x74, 0x65, 0x73, 0x74, 0x32, 0x00, // string "test2"
-    
-        0x0E, 0x0F,               // 2 bytes
-        0x10, 0x11,               // 2 bytes
-        0x12, 0x13,               // 2 bytes
-        0x00, 0x00, 0xE0, 0x40,   // float 4 bytes, 7.0f)
-        0x00, 0x00, 0x00, 0x41,   // float 4 bytes, 8.0f)
-        0x00, 0x00, 0x10, 0x41,   // float 4 bytes, 9.0f)
-    
-        // String data (null-terminated)
-        0x74, 0x65, 0x73, 0x74, 0x33, 0x00, // String data "test3"
-    
-        0x01,                     // 1 byte
-        0x00                      // 1 byte
-      });
-    }
-    else if (uVar2 == 7) {
-      response.data.insert(response.data.end(), {
-        // FUN_004c1130
-        0x01, 0x00, 0x00, 0x00,   // 4 bytes
-        0x02, 0x00, 0x00, 0x00,   // 4 bytes
-        0x03, 0x00, 0x00, 0x00,   // 4 bytes
+        if (uVar2 == 6) {
+          // append data for when client is requesting 6
+          std::vector<uint8_t> response1_data = {
+              0x08, 0x07, 0x06, 0x05,   // 4 bytes
+              0x0C, 0x0B, 0x0A, 0x09,   // 4 bytes
+              0x10, 0x0F, 0x0E, 0x0D,   // 4 bytes
+              0x00, 0x00, 0x20, 0x41,   // float 4 bytes, 10.0f
+              0x00, 0x00, 0x40, 0x41,   // float 4 bytes, 12.0f
+              0x00, 0x01,               // 2 bytes
+              0x02, 0x03,               // 2 bytes
+              0x04, 0x05,               // 2 bytes
+              0x06, 0x07,               // 2 bytes
+              0x00, 0x00, 0x80, 0x3F,   // float 4 bytes, 1.0f
+              0x00, 0x00, 0xA0, 0x40,   // float 4 bytes, 5.0f
+              0x00, 0x00, 0xC0, 0x40,   // float 4 bytes, 6.0f)
+              0x18, 0x17, 0x16, 0x15,   // 4 bytes
+              0x08, 0x09,               // 2 bytes
+              0x0A, 0x0B,               // 2 bytes
+              0x0C, 0x0D,               // 2 bytes
+            
+              // String data (null-terminated)
+              0x74, 0x65, 0x73, 0x74, 0x31, 0x00, // String data "test1"
+            
+            
+              // String data (null-terminated)
+              0x74, 0x65, 0x73, 0x74, 0x32, 0x00, // string "test2"
+            
+              0x0E, 0x0F,               // 2 bytes
+              0x10, 0x11,               // 2 bytes
+              0x12, 0x13,               // 2 bytes
+              0x00, 0x00, 0xE0, 0x40,   // float 4 bytes, 7.0f)
+              0x00, 0x00, 0x00, 0x41,   // float 4 bytes, 8.0f)
+              0x00, 0x00, 0x10, 0x41,   // float 4 bytes, 9.0f)
+            
+              // String data (null-terminated)
+              0x74, 0x65, 0x73, 0x74, 0x33, 0x00, // String data "test3"
+            
+              0x01,                     // 1 byte
+              0x00                      // 1 byte
+          };
+          response.data.insert(response.data.end(), response1_data.begin(), response1_data.end());
+          }
+        else if (uVar2 == 7) 
+        {
+          // append data for when client is requesting 7
+          std::vector<uint8_t> response2_data = {
+            // FUN_004c1130
+            0x00, 0x00, 0x00, 0x00,   // 4 bytes
+            0x00, 0x00, 0x00, 0x00,   // 4 bytes
+            0x00, 0x00, 0x00, 0x00,   // 4 bytes
 
-        // FUN_004c0e70
-        0x05,   // Number of structs, max of 128
+            // FUN_004c0e70
+            0x02,   // Number of structs, max of 128
 
-        // FUN_004c05b0 (5 structs, 24 bytes each)
-        // Structure 1
-        0x00, 0x00,               // 2 bytes
-        0x00, 0x00, 0x00, 0x00,   // 4 bytes
-        0x00, 0x00, 0x00, 0x00,   // 4 bytes
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // 12 byte memcpy
+            // FUN_004c05b0 (2 structs, 24 bytes each)
+            // Structure 1
+            0x00, 0x00,               // 2 bytes
+            0x00, 0x00, 0x00, 0x00,   // 4 bytes
+            0x00, 0x00, 0x00, 0x00,   // 4 bytes
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // 12 byte memcpy
 
-        // Structure 2
-        0x00, 0x00,               // 2 bytes
-        0x00, 0x00, 0x00, 0x00,   // 4 bytes
-        0x00, 0x00, 0x00, 0x00,   // 4 bytes
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // 12 byte memcpy
+            // Structure 2
+            0x00, 0x00,               // 2 bytes
+            0x00, 0x00, 0x00, 0x00,   // 4 bytes
+            0x00, 0x00, 0x00, 0x00,   // 4 bytes
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // 12 byte memcpy
+          };
+          response.data.insert(response.data.end(), response2_data.begin(), response2_data.end());
+        }
+        else if (uVar2 == 8) 
+        {
+          // append data for when client is requesting 8
+          std::vector<uint8_t> response3_data = {
+              0x02,  // 2 structs, max size 31
 
-        // Structure 3
-        0x00, 0x00,               // 2 bytes
-        0x00, 0x00, 0x00, 0x00,   // 4 bytes
-        0x00, 0x00, 0x00, 0x00,   // 4 bytes
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // 12 byte memcpy
+              // FUN_004c07e0 structures
+              // struct 1
+              0x00, 0x00, 0x00, 0x00,  // First 4-byte value
+              0x00, 0x00, 0x00, 0x00,  // Second 4-byte value
 
-        // Structure 4
-        0x00, 0x00,               // 2 bytes
-        0x00, 0x00, 0x00, 0x00,   // 4 bytes
-        0x00, 0x00, 0x00, 0x00,   // 4 bytes
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // 12 byte memcpy
-
-        // Structure 5
-        0x00, 0x00,               // 2 byte value
-        0x00, 0x00, 0x00, 0x00,   // 4 byte value
-        0x00, 0x00, 0x00, 0x00,   // 4 byte value
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // 12 byte memcpy
-      });
-    }
-    // TODO: add for when scenario is 8
-
-    this->send_command(response);
-  }
-  break;
-#endif
+              // struct 2
+              0x00, 0x00, 0x00, 0x00,  // First 4-byte value
+              0x00, 0x00, 0x00, 0x00   // Second 4-byte value
+          };
+          response.data.insert(response.data.end(), response3_data.begin(), response3_data.end());
+        }
+        this->send_command(response);
+        }
+        break;
+      #endif
 
       #ifdef AcCmdCLEnterChannel
       case AcCmdCLEnterChannel:
