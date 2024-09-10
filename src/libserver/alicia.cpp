@@ -1171,7 +1171,7 @@ case AcCmdCLRequestPersonalInfo:
               //  byte
               //  byte
               // Very likely other players in the ranch
-              0x01, // List size, max 201
+              0x02, // List size, max 201
 
                 // YOURSELF (Required or else you dont spawn in the ranch)
                 0x01, 0x00, 0x00, 0x00, // Self UID
@@ -1307,136 +1307,136 @@ case AcCmdCLRequestPersonalInfo:
 
 
                 // ANOTHER PLAYER
-                // 0x02, 0x00, 0x00, 0x00, // Self UID
-                // 'L', 'a', 'i', 't', 'h', 0x00, // Nick name
-                // 0x01, // profile gender
-                // 1,
-                // 1,
-                // 'H', 'o', 'l', 'a', 0x00, // info, 100 chars long
-                //
-                // // Unk15: Another small structure
-                // 0x0A,
-                // 0x00,
-                // 0x00,
-                // 0x01,
-                // 0x01, 0x00,
-                // 0x04, 0x00,
-                // 0x08, 0x00,
-                // 0x08, 0x00,
-                // 0x08, 0x00,
-                // 0x00, 0x00,
-                //
-                // // Horse: Big ass structure now, probably horse info
-                // // Horse.TIDs
-                // 0x97, 0xA3, 0x79, 0x05, // Horse.TIDs.MountTID Unique horse identifier
-                // 0x21, 0x4E, 0x00, 0x00, // Horse.TIDs.HorseTID Horse model
-                // /* Horse name: "idontunderstand" */ 'R', 'o', 'c', 'i', 'n', 'a', 'n', 't', 'e', 0x00,
-                // // Horse.Appearance: Structure. Probably horse appearance
-                // 0x02,
-                // 0x03,
-                // 0x03,
-                // 0x03,
-                // 0x04,
-                // 0x04,
-                // 0x05,
-                // 0x03,
-                // 0x04,
-                // // Horse.Stats
-                // 0x04, 0x00, 0x00, 0x00, // agility
-                // 0x03, 0x00, 0x00, 0x00, // spirit
-                // 0x02, 0x00, 0x00, 0x00, // speed
-                // 0x01, 0x00, 0x00, 0x00, // strength
-                // 0x13, 0x00, 0x00, 0x00, // control
-                //
-                // 0x00, 0x00, 0x00, 0x00, // Horse.Rating
-                // 0x15, // Horse.Class
-                // 0x01, // Horse.Unk4
-                // 0x02, // Horse.Unk5
-                // 0x02, 0x00, // Horse.AvailableGrowthPoints
-                //
-                // // Horse.Unk7: An array of size 7. Each element has two 2 byte values
-                // 0xD0, 0x07,
-                // 0x3C, 0x00,
-                //
-                // 0x1C, 0x02,
-                // 0x00, 0x00,
-                //
-                // 0xE8, 0x03,
-                // 0x00, 0x00,
-                //
-                // 0x00, 0x00,
-                // 0x00, 0x00,
-                //
-                // 0xE8, 0x03,
-                // 0x1E, 0x00,
-                //
-                // 0x0A, 0x00,
-                // 0x0A, 0x00,
-                //
-                // 0x0A, 0x00,
-                // 0x00, 0x00,
-                //
-                // // More horse fields
-                // 0x00,
-                // 0x00, 0x00, 0x00, 0x00,
-                // 0xE4, 0x67, 0xA1, 0xB8,
-                // 0x02,
-                // 0x00,
-                // 0x7D, 0x2E, 0x03, 0x00,
-                // 0x00, 0x00, 0x00, 0x00,
-                // 0x00,
-                // 0x00,
-                // 0x00,
-                // 0x00,
-                // 0x04,
-                // 0x00,
-                // 0x00,
-                // 0x00, 0x00,
-                // 0x00, 0x00,
-                // 0x01, 0x00,
-                //
-                // // Horse field: Horse Mastery Array of four 4 int values
-                // 0xFE, 0x01, 0x00, 0x00, // speed booster/magic use
-                // 0x21, 0x04, 0x00, 0x00, // jumps
-                // 0xF8, 0x05, 0x00, 0x00, // sliding
-                // 0xA4, 0xCF, 0x00, 0x00, // gliding, value here is divided by 10 by client
-                //
-                // 0xE4, 0x67, 0xA1, 0xB8,
-                // 0x00, 0x00, 0x00, 0x00,
-                //
-                // // Back to player fields
-                // 0x01, // Equipment list size: List size, max 16 elements
-                // 0x01, 0x00, 0x00, 0x00, // 4 byte - type
-                // 0x31, 0x75, 0x00, 0x00, // 4 byte - TID
-                // 0x01, 0x00, 0x00, 0x00, // 4 byte - ???
-                // 0x01, 0x00, 0x00, 0x00, // 4 byte - ???
-                //
-                // // Buffer::ReadPlayerRelatedThing, shared with the structures in LoginOK
-                // 0x00, 0x00, 0x00, 0x00,
-                // 0x01,
-                // 0x00, 0x00, 0x00, 0x00,
-                // 0x00, // string
-                // 0x00,
-                // 0x00, 0x00, 0x00, 0x00,
-                // 0x00, // Goes ignored?
-                //
-                // 0x02, 0x00, // PLAYER INDEX
-                // 0x00,
-                // 0x00,
-                //
-                // // Buffer::ReadAnotherPlayerRelatedSomething, also shared
-                // 0x96, 0xA3, 0x79, 0x05,
-                // 0x12, 0x00, 0x00, 0x00,
-                // 0xE4, 0x67, 0x6E, 0x01,
-                //
-                // // Buffer::ReadYetAnotherPlayerRelatedSomething, also shared
-                // 0x00, 0x00, 0x00, 0x00,
-                // 0x00, 0x00, 0x00, 0x00,
-                // 0x00, // string
-                // 0x00, 0x00, 0x00, 0x00,
-                //
-                // 0x00,
-                // 0x00,
+                0x02, 0x00, 0x00, 0x00, // Self UID
+                'L', 'a', 'i', 't', 'h', 0x00, // Nick name
+                0x01, // profile gender
+                1,
+                1,
+                'H', 'o', 'l', 'a', 0x00, // info, 100 chars long
+                
+                // Unk15: Another small structure
+                0x0A,
+                0x00,
+                0x00,
+                0x01,
+                0x01, 0x00,
+                0x04, 0x00,
+                0x08, 0x00,
+                0x08, 0x00,
+                0x08, 0x00,
+                0x00, 0x00,
+                
+                // Horse: Big ass structure now, probably horse info
+                // Horse.TIDs
+                0x97, 0xA3, 0x79, 0x05, // Horse.TIDs.MountTID Unique horse identifier
+                0x21, 0x4E, 0x00, 0x00, // Horse.TIDs.HorseTID Horse model
+                /* Horse name: "idontunderstand" */ 'R', 'o', 'c', 'i', 'n', 'a', 'n', 't', 'e', 0x00,
+                // Horse.Appearance: Structure. Probably horse appearance
+                0x02,
+                0x03,
+                0x03,
+                0x03,
+                0x04,
+                0x04,
+                0x05,
+                0x03,
+                0x04,
+                // Horse.Stats
+                0x04, 0x00, 0x00, 0x00, // agility
+                0x03, 0x00, 0x00, 0x00, // spirit
+                0x02, 0x00, 0x00, 0x00, // speed
+                0x01, 0x00, 0x00, 0x00, // strength
+                0x13, 0x00, 0x00, 0x00, // control
+                
+                0x00, 0x00, 0x00, 0x00, // Horse.Rating
+                0x15, // Horse.Class
+                0x01, // Horse.Unk4
+                0x02, // Horse.Unk5
+                0x02, 0x00, // Horse.AvailableGrowthPoints
+                
+                // Horse.Unk7: An array of size 7. Each element has two 2 byte values
+                0xD0, 0x07,
+                0x3C, 0x00,
+                
+                0x1C, 0x02,
+                0x00, 0x00,
+                
+                0xE8, 0x03,
+                0x00, 0x00,
+                
+                0x00, 0x00,
+                0x00, 0x00,
+                
+                0xE8, 0x03,
+                0x1E, 0x00,
+                
+                0x0A, 0x00,
+                0x0A, 0x00,
+                
+                0x0A, 0x00,
+                0x00, 0x00,
+                
+                // More horse fields
+                0x00,
+                0x00, 0x00, 0x00, 0x00,
+                0xE4, 0x67, 0xA1, 0xB8,
+                0x02,
+                0x00,
+                0x7D, 0x2E, 0x03, 0x00,
+                0x00, 0x00, 0x00, 0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x04,
+                0x00,
+                0x00,
+                0x00, 0x00,
+                0x00, 0x00,
+                0x01, 0x00,
+                
+                // Horse field: Horse Mastery Array of four 4 int values
+                0xFE, 0x01, 0x00, 0x00, // speed booster/magic use
+                0x21, 0x04, 0x00, 0x00, // jumps
+                0xF8, 0x05, 0x00, 0x00, // sliding
+                0xA4, 0xCF, 0x00, 0x00, // gliding, value here is divided by 10 by client
+                
+                0xE4, 0x67, 0xA1, 0xB8,
+                0x00, 0x00, 0x00, 0x00,
+                
+                // Back to player fields
+                0x01, // Equipment list size: List size, max 16 elements
+                0x01, 0x00, 0x00, 0x00, // 4 byte - type
+                0x31, 0x75, 0x00, 0x00, // 4 byte - TID
+                0x01, 0x00, 0x00, 0x00, // 4 byte - ???
+                0x01, 0x00, 0x00, 0x00, // 4 byte - ???
+                
+                // Buffer::ReadPlayerRelatedThing, shared with the structures in LoginOK
+                0x00, 0x00, 0x00, 0x00,
+                0x01,
+                0x00, 0x00, 0x00, 0x00,
+                0x00, // string
+                0x00,
+                0x00, 0x00, 0x00, 0x00,
+                0x00, // Goes ignored?
+                
+                0x02, 0x00, // PLAYER INDEX
+                0x00,
+                0x00,
+                
+                // Buffer::ReadAnotherPlayerRelatedSomething, also shared
+                0x96, 0xA3, 0x79, 0x05,
+                0x12, 0x00, 0x00, 0x00,
+                0xE4, 0x67, 0x6E, 0x01,
+                
+                // Buffer::ReadYetAnotherPlayerRelatedSomething, also shared
+                0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00,
+                0x00, // string
+                0x00, 0x00, 0x00, 0x00,
+                
+                0x00,
+                0x00,
 
 
               0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, //unk1
@@ -1523,8 +1523,13 @@ case AcCmdCLRequestPersonalInfo:
         response.data.push_back(unk0);
         for(size_t i = 0; i < unk1Size; ++i)
           response.data.push_back(unk1[i]);
-
-        this->send_command(response);
+        
+        for (auto& [id, client]: server.clients) {
+          if(&client != this)
+          {
+            client.send_command(response);
+          }
+        }
       }
       break;
       #endif

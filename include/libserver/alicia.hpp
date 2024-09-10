@@ -128,6 +128,7 @@ namespace alicia
 
     void run() { _io_ctx.run(); }
 
+    std::unordered_map<uint32_t, Client> clients;
   private:
     void accept_loop();
 
@@ -135,7 +136,6 @@ namespace alicia
     asio::ip::tcp::acceptor _acceptor;
 
     uint32_t client_id = 0;
-    std::unordered_map<uint32_t, Client> _clients;
   };
 
 } // namespace alicia
