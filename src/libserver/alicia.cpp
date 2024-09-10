@@ -304,7 +304,8 @@ void alicia::Client::read_loop()
 
             // & 32 != 0: Gamepad bindings (Not present in this packet)
 
-            0x10, // Unk10.UnkSomething, 1 byte
+            // These two affect the age
+            0x10, // 1 byte
             0x00, // Unk10.UnkAnotherSomething, 1 byte
 
             // Unk11: Another structure
@@ -352,44 +353,44 @@ void alicia::Client::read_loop()
             0x00, 0x00, 0x00, 0x00, // Lobby scrambling constant
 
             // Unk15: Another small structure
-            // character gender, 0x0A (10) is male and 0x14 (female)
-            0x0A,
-            // mouth shape
-            0x00,
-            // eye states 0 - idk avoid 5 this could even be face animation states
-            0x00,
-            0x01,
-            0x01, 0x00,
-            0x04, 0x00,
-            0x08, 0x00,
-            0x08, 0x00,
-            0x08, 0x00,
-            0x00, 0x00,
+            // CharDefaultPartInfo (_ClientCharDefaultPartInfo)
+            0x0A, // .Id -0x0A (10) is male and 0x14 (female)
+            0x01, // .MouthPartSerial
+            0x02, // .FacePartSerial
+            0x01, // ??
+
+            0xFF, 0xFF,
+            0x04, 0x00, // Character.HeadSize
+            0x08, 0x00, // Character.Height
+            0x08, 0x00, // Character.ThighVolume
+            0x08, 0x00, // Character.LegVolume
+            0xFF, 0x00, //
 
             // Horse: Big ass structure now, probably horse info
             // Horse.TIDs
-            0x96, 0xA3, 0x79, 0x05, // Horse.TIDs.MountTID Unique horse identifier
-            0x21, 0x4E, 0x00, 0x00, // Horse.TIDs.HorseTID Horse model
+            0x96, 0xA3, 0x79, 0x05, // Horse.TIDs.HorseTID Unique horse identifier
+            0x21, 0x4E, 0x00, 0x00, // Horse.TIDs.MountTID
+
             /* Horse name: "idontunderstand" */ 0x69, 0x64, 0x6F, 0x6E, 0x74, 0x75, 0x6E, 0x64, 0x65, 0x72, 0x73, 0x74, 0x61, 0x6E, 0x64, 0x00,
             // Horse.Appearance: Structure. Probably horse appearance
 
-            0x1, // Horse.SkinId (MountSkinInfo)
-            0x4, // Horse.ManeId (MountManeInfo)
-            0x4, // Horse.TailId (MountTailInfo)
+            // MountPartSet
+            0x01, // .SkinId (MountSkinInfo)
+            0x04, // .ManeId (MountManeInfo)
+            0x04, // .TailId (MountTailInfo)
+            0x05, // .FaceId (MountFaceInfo)
+            0x00, // .Fig_Scale
+            0x00, // .Fig_LegLength
+            0x00, // .Fig_LegVol
+            0x00, // .Fig_BodyLength
+            0x00, // .Fig_BodyVol
 
-            0x05, // Horse.Face (MountFaceInfo)
-            0x00, // Horse.Height
-            0x00, // Horse.LegHeight
-            0x00, // Horse.LegThickness
-            0x00, // Horse.Length
-            0x00, // Horse.Weight (affects thickness of front/hind legs)
-
-            // Horse.Stats
-            0x04, 0x00, 0x00, 0x00, // agility
-            0x03, 0x00, 0x00, 0x00, // spirit
-            0x02, 0x00, 0x00, 0x00, // speed
-            0x01, 0x00, 0x00, 0x00, // strength 
-            0x13, 0x00, 0x00, 0x00, // control
+            // MountMultiAbility
+            0x01, 0x00, 0x00, 0x00, // .Agility
+            0x02, 0x00, 0x00, 0x00, // spirit
+            0x03, 0x00, 0x00, 0x00, // speed
+            0x04, 0x00, 0x00, 0x00, // strength
+            0x05, 0x00, 0x00, 0x00, // .Ambition
 
             0x00, 0x00, 0x00, 0x00, // Horse.Rating
             0x15, // Horse.Class
@@ -398,11 +399,10 @@ void alicia::Client::read_loop()
             0x02, 0x00, // Horse.AvailableGrowthPoints
 
             // Horse.Unk7: An array of size 7. Each element has two 2 byte values
-            0xD0, 0x07,
-            0x3C, 0x00,
-
-            0x1C, 0x02,
-            0x00, 0x00,
+            0xFF, 0xFF, // Stamina
+            0xFF, 0xFF, // Attractiveness
+            0xFF, 0xFF, // Hunger
+            0x00, 0x00, //
 
             0xE8, 0x03,
             0x00, 0x00,
@@ -422,14 +422,14 @@ void alicia::Client::read_loop()
             // More horse fields
             0x00,
             0x00, 0x00, 0x00, 0x00, 
-            0xE4, 0x67, 0xA1, 0xB8, 
-            0x02, 
+            0xE4, 0x67, 0xA1, 0xB8,
+            0x02,
             0x00, 
-            0x7D, 0x2E, 0x03, 0x00,
-            0x00, 0x00, 0x00, 0x00, 
-            0x00, 
-            0x00, 
-            0x00, 
+            0xFF, 0x00, 0x00, 0x00, // int32 - Class progression
+            0x00, 0x00, 0x00, 0x00,
+            0x00,
+            0x00,
+            0xFF,
             0x00, 
             0x04, 
             0x00,
@@ -1086,7 +1086,7 @@ case AcCmdCLRequestPersonalInfo:
                 0x01, 0x00, // horse index
                 // Horse: Big ass structure now, probably horse info
                 // Horse.TIDs
-                0x01, 0x00, 0x00, 0x00, // Horse.TIDs.MountTID Unique horse identifier
+                0x99, 0xA3, 0x79, 0x05, // Horse.TIDs.MountTID Unique horse identifier
                 0x21, 0x4E, 0x00, 0x00, // Horse.TIDs.HorseTID Horse model
                 /* Horse name: */ 'R', 'a', 'm', 'o', 'n', 0,
                 // Horse.Appearance: Structure. Probably horse appearance
@@ -1330,9 +1330,9 @@ case AcCmdCLRequestPersonalInfo:
                 0x00, 
 
 
-                // // ANOTHER PLAYER
+                // ANOTHER PLAYER
                 // 0x02, 0x00, 0x00, 0x00, // Self UID
-                // 'L', 'a', 'i', 't', 'h', 0x00, // Nick name ("rgnt\0")
+                // 'L', 'a', 'i', 't', 'h', 0x00, // Nick name
                 // 0x01, // profile gender
                 // 1,
                 // 1,
