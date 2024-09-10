@@ -97,6 +97,8 @@ namespace alicia
 
   namespace asio = boost::asio;
 
+  class Server;
+
   /**
    * Client
    */
@@ -104,7 +106,7 @@ namespace alicia
   public:
     explicit Client(asio::ip::tcp::socket&& socket) noexcept : _socket(std::move(socket)), xor_key(0) {}
 
-    void read_loop();
+    void read_loop(Server& server);
 
     void send_command(alicia::ICommand& command);
     
@@ -122,7 +124,7 @@ namespace alicia
   public:
     Server() : _acceptor(_io_ctx) {}
 
-    void host();
+    void host(short port);
 
     void run() { _io_ctx.run(); }
 

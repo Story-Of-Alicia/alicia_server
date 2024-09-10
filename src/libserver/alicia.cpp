@@ -4,8 +4,6 @@
 #include "libserver/alicia.hpp"
 #include "libserver/mapping.hpp"
 
-#define PORT 10030
-
 uint16_t MUTE_COMMAND_IDS[] = {
   0x3cbb, // Messenger
   0x3c87, // Messenger
@@ -121,7 +119,7 @@ void alicia::DummyCommand::Log()
   printf("%*s\t%s\n\n", (16-column)*3, "", rowString);
 }
 
-void alicia::Client::read_loop()
+void alicia::Client::read_loop(Server& server)
 {
   _socket.async_read_some(_buffer.prepare(4096), [&](boost::system::error_code error, std::size_t size) {
     if(error) {
@@ -989,7 +987,7 @@ case AcCmdCLRequestPersonalInfo:
               0xE8, 0xE2, 0x06, 0x00, // character id?
               0x44, 0x33, 0x22, 0x11, // probably made up
               0x7F, 0x00, 0x00, 0x01, // 127.0.0.1, game server IP
-              0x2E, 0x27, // port
+              0x2F, 0x27, // port
               0x00, // member2
           };
           this->send_command(response);
@@ -1039,7 +1037,7 @@ case AcCmdCLRequestPersonalInfo:
             0xE8, 0xE2, 0x06, 0x00, // character id?
             0x44, 0x33, 0x22, 0x11, // probably made up
             127, 0, 0, 1,
-            0x2e, 0x27,
+            0x30, 0x27,
           };
           this->send_command(response);
         }
@@ -1504,7 +1502,7 @@ case AcCmdCLRequestPersonalInfo:
           response.data = { 
             0x03, 0xBB, 0x2D, 0xD6, 
             0x7F, 0x00, 0x00, 0x01, // 127.0.0.1, messenger server IP
-            0x2E, 0x27, // port
+            0x31, 0x27, // port
           };
           this->send_command(response);
         }
@@ -1803,7 +1801,7 @@ case AcCmdCLRequestPersonalInfo:
             0x00,  // list size
 
             127, 0, 0, 1, // ip
-            0x39, 0x89, // Port
+            0x32, 0x2f, // Port
 
             0x00,
 
@@ -1910,7 +1908,7 @@ case AcCmdCLRequestPersonalInfo:
         break;
     }
     
-    read_loop();
+    read_loop(server);
   });
 }
 
@@ -1946,10 +1944,10 @@ void alicia::Client::send_command(alicia::ICommand& cmd)
   this->_socket.write_some(boost::asio::const_buffer(cmdContents.data(), cmdContents.size()));
 }
 
-void alicia::Server::host()
+void alicia::Server::host(short port)
 {
-  asio::ip::tcp::endpoint server_endpoint(asio::ip::tcp::v4(), PORT);
-  printf("Hosting the server on port %d\n", PORT);
+  asio::ip::tcp::endpoint server_endpoint(asio::ip::tcp::v4(), port);
+  printf("Hosting the server on port %d\n", port);
   _acceptor.open(server_endpoint.protocol());
   _acceptor.bind(server_endpoint);
   _acceptor.listen();
@@ -1960,8 +1958,8 @@ void alicia::Server::accept_loop()
 {
   _acceptor.async_accept([&](boost::system::error_code error, asio::ip::tcp::socket client_socket) {
     printf("+++ CONN %s:%d\n\n", client_socket.remote_endpoint().address().to_string().c_str(), client_socket.remote_endpoint().port());
-    const auto [itr, _] = _clients.emplace(client_id++, std::move(client_socket));
-    itr->second.read_loop();
+    const auto [itr, _] = clients.emplace(client_id++, std::move(client_socket));
+    itr->second.read_loop(*this);
 
     accept_loop();
   });
