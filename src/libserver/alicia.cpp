@@ -490,7 +490,7 @@ void alicia::Client::read_loop(Server& server)
             0x04, // Unk25
             
             // Unk26: Buffer::ReadAnotherPlayerRelatedSomething, also shared
-            0x96, 0xA3, 0x79, 0x05, 
+            0x96, 0xA3, 0x79, 0x05, // Horse UID?
             0x12, 0x00, 0x00, 0x00,             
             0xE4, 0x67, 0x6E, 0x01, 
 
@@ -1065,7 +1065,7 @@ void alicia::Client::read_loop(Server& server)
               // Likely index and horses in the ranch
               0x01, // List size, max 10
 
-                0x01, 0x00, // horse index
+                0x01, 0x00, // Ranch index
                 // Horse: Big ass structure now, probably horse info
                 // Horse.TIDs
                 0x99, 0xA3, 0x79, 0x05, // Horse.TIDs.MountTID Unique horse identifier
@@ -1293,12 +1293,12 @@ void alicia::Client::read_loop(Server& server)
                 0x00, 0x00, 0x00, 0x00,            
                 0x00, // Goes ignored?
                   
-                0x01, 0x00, // PLAYER INDEX
+                0x02, 0x00, // RANCH INDEX
                 0x00,
                 0x00,
 
                 // Buffer::ReadAnotherPlayerRelatedSomething, also shared
-                0x96, 0xA3, 0x79, 0x05, 
+                0x96, 0xA3, 0x79, 0x05, // Horse UID?
                 0x12, 0x00, 0x00, 0x00,             
                 0xE4, 0x67, 0x6E, 0x01,
 
@@ -1426,12 +1426,12 @@ void alicia::Client::read_loop(Server& server)
                 0x00, 0x00, 0x00, 0x00,
                 0x00, // Goes ignored?
                 
-                0x02, 0x00, // PLAYER INDEX
+                0x03, 0x00, // RANCH INDEX
                 0x00,
                 0x00,
                 
                 // Buffer::ReadAnotherPlayerRelatedSomething, also shared
-                0x96, 0xA3, 0x79, 0x05,
+                0x97, 0xA3, 0x79, 0x05, // Horse UID?
                 0x12, 0x00, 0x00, 0x00,
                 0xE4, 0x67, 0x6E, 0x01,
                 
@@ -1524,7 +1524,7 @@ void alicia::Client::read_loop(Server& server)
         uint8_t* unk1 = request.data.data()+1;
 
         DummyCommand response(AcCmdCRRanchSnapshotNotify);
-        response.data.push_back(0x02);
+        response.data.push_back(0x03); // player 2 ranch index
         response.data.push_back(0x00);
         response.data.push_back(unk0);
         for(size_t i = 0; i < unk1Size; ++i)
@@ -1708,8 +1708,9 @@ void alicia::Client::read_loop(Server& server)
               // last uint
               0x00, 0x00, 0x00, 0x00,
 
+              0x00,
               // Unk26: Buffer::ReadAnotherPlayerRelatedSomething, also shared
-              0x96, 0xA3, 0x79, 0x05, 
+              0x96, 0xA3, 0x79, 0x05, // Horse UID?
               0x12, 0x00, 0x00, 0x00,             
               0xE4, 0x67, 0x6E, 0x01, 
 
