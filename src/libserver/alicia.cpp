@@ -186,7 +186,7 @@ void alicia::Client::read_loop(Server& server)
                                     // This FileTime dates to 6/6/2024 09:19
             0x94, 0xA7, 0x0C, 0x00,
 
-            0x01, 0x00, 0x00, 0x00, // Self UID
+            0xE8, 0xE2, 0x06, 0x00, // Self UID
             'r', 'g', 'n', 't', 0x00, // Nick name ("rgnt\0")
             'W', 'e', 'l', 'c', 'o', 'm', 'e', ' ', 't', 'o', ' ', 'S', 't', 'o', 'r', 'y', ' ', 'o', 'f', ' ', 'A', 'l', 'i', 'c', 'i', 'a', '!', 0x00, // motd, 100 chars long
             0x01, // profile gender:
@@ -1180,7 +1180,7 @@ void alicia::Client::read_loop(Server& server)
               0x02, // List size, max 201
 
                 // YOURSELF (Required or else you dont spawn in the ranch)
-                0x01, 0x00, 0x00, 0x00, // Self UID
+                0xE8, 0xE2, 0x06, 0x00, // Self UID
                 'r', 'g', 'n', 't', 0x00, // Nick name ("rgnt\0")
                 0x01, // profile gender
                 1,
