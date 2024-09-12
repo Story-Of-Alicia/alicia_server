@@ -179,11 +179,23 @@ void alicia::Client::read_loop(Server& server)
       #ifdef AcCmdCLLogin
       case AcCmdCLLogin:
         {
+          FILETIME time{};
+          ZeroMemory(&time, sizeof(time));
+          GetSystemTimeAsFileTime(&time);
+
           DummyCommand response(AcCmdCLLoginOK);
           response.data = {
-            0xC2, 0x08, 0x40, 0xA7, // FileTime lsb
-            0xF2, 0xB7, 0xDA, 0x01, // FileTime msb
-                                    // This FileTime dates to 6/6/2024 09:19
+            // Lobby filetime lsb
+            time.dwLowDateTime >> 0 & 0xFF,
+            time.dwLowDateTime >> 8 & 0xFF,
+            time.dwLowDateTime >> 16 & 0xFF,
+            time.dwLowDateTime >> 24 & 0xFF,
+            // Lobby filetime msb
+            time.dwHighDateTime >> 0 & 0xFF,
+            time.dwHighDateTime >> 8 & 0xFF,
+            time.dwHighDateTime >> 16 & 0xFF,
+            time.dwHighDateTime >> 24 & 0xFF,
+
             0x94, 0xA7, 0x0C, 0x00,
 
             0xE8, 0xE2, 0x06, 0x00, // Self UID
@@ -195,23 +207,27 @@ void alicia::Client::read_loop(Server& server)
                   // 0x02 - girl
             'T', 'h', 'i', 's', ' ', 'p', 'e', 'r', 's', 'o', 'n', ' ', 'i', 's', ' ', 'm', 'e', 'n', 't', 'a', 'l', 'l', 'y', ' ', 'u', 'n', 's', 't', 'a', 'b', 'l', 'e', 0x00, // info, 100 chars long
 
-            0x01, // Equipment list size: List size, max 16 elements
-                0x01, 0x00, 0x00, 0x00,
-                0x38, 0x75, 0x00, 0x00,
-                0x01, 0x00, 0x00, 0x00,
-                0x01, 0x00, 0x00, 0x00,
+            0x01, // Character items (equipment), max 16 elements
+                0x01, 0x00, 0x00, 0x00, // Item UID
+                0x38, 0x75, 0x00, 0x00, // Item TID
+                0x00, 0x00, 0x00, 0x00,
+                0x01, 0x00, 0x00, 0x00, // Count
                   // 4 byte - type
                   // 4 byte - TID
                   // 4 byte - ???
                   // 4 byte - ???
 
-            0x00, // Unk4: List size, max 250 elements
-                  // Seems to be the same type of data as Unk3
-            0xFF, 0x00, // Level
-            0x00, 0x00, 0x00, 0x00, // Carrots
+            0x01, // Horse items (equipment), max 250 elements
+              0x28, 0x4E, 0x00, 0x02, // Item UID
+              0x28, 0x4E, 0x00, 0x00, // Item TID - forest armor
+              0x00, 0x00, 0x00, 0x00,
+              0x01, 0x00, 0x00, 0x00, // Count
+
+            0xA1, 0x00, // Level
+            0xFF, 0x00, 0x00, 0x00, // Carrots
             0x30, 0x61, 0x00, 0x00, // Unk7
-            0x01, 0x00, 0x00, 0x00, // Unk8
-            0x00, // Unk9
+            0xFF, 0x00, 0x00, 0x00, // Unk8
+            0xFF, // Unk9
 
             // Unk10: Data structure with keybinds and macros
             0x19, 0x00, 0x00, 0x00, // Unk10.Unk0: Bitmask indicating what this structure contains
@@ -281,7 +297,10 @@ void alicia::Client::read_loop(Server& server)
             // & 32 != 0: Gamepad bindings (Not present in this packet)
 
             // These two affect the age
-            0x10, // 1 byte
+            0x13, // 0x0C - <12
+                  // 0x0D - 13-15
+                  // 0x10 - 16-18
+                  // 0x13 - 19+
             0x00, // Unk10.UnkAnotherSomething, 1 byte
 
             // Unk11: Another structure
@@ -344,8 +363,8 @@ void alicia::Client::read_loop(Server& server)
 
             // Horse: Big ass structure now, probably horse info
             // Horse.TIDs
-            0x96, 0xA3, 0x79, 0x05, // Horse.TIDs.HorseTID Unique horse identifier
-            0x21, 0x4E, 0x00, 0x00, // Horse.TIDs.MountTID
+            0x96, 0xA3, 0x79, 0x05, // Horse.TIDs.HorseUID Unique horse identifier
+            0x21, 0x4E, 0x00, 0x00, // Horse.TIDs.MountTID Horse model identifier
 
             /* Horse name: "idontunderstand" */ 0x69, 0x64, 0x6F, 0x6E, 0x74, 0x75, 0x6E, 0x64, 0x65, 0x72, 0x73, 0x74, 0x61, 0x6E, 0x64, 0x00,
             // Horse.Appearance: Structure. Probably horse appearance
@@ -362,17 +381,17 @@ void alicia::Client::read_loop(Server& server)
             0x00, // .Fig_BodyVol
 
             // MountMultiAbility
-            0x01, 0x00, 0x00, 0x00, // .Agility
-            0x02, 0x00, 0x00, 0x00, // spirit
-            0x03, 0x00, 0x00, 0x00, // speed
-            0x04, 0x00, 0x00, 0x00, // strength
-            0x05, 0x00, 0x00, 0x00, // .Ambition
+            0x09, 0x00, 0x00, 0x00, // .Agility
+            0x09, 0x00, 0x00, 0x00, // spirit
+            0x09, 0x00, 0x00, 0x00, // speed
+            0x09, 0x00, 0x00, 0x00, // strength
+            0x09, 0x00, 0x00, 0x00, // .Ambition
 
             0x00, 0x00, 0x00, 0x00, // Horse.Rating
             0x15, // Horse.Class
             0x01, // Horse.Unk4
-            0x02, // Horse.Unk5
-            0x02, 0x00, // Horse.AvailableGrowthPoints
+            0x05, // Horse.Grade
+            0x00, 0x00, // Horse.AvailableGrowthPoints
 
             // Horse.Unk7: An array of size 7. Each element has two 2 byte values
             0xFF, 0xFF, // Stamina
@@ -1083,16 +1102,16 @@ void alicia::Client::read_loop(Server& server)
                 0x03,
                 0x04,
                 // Horse.Stats
-                0x04, 0x00, 0x00, 0x00, // agility
-                0x03, 0x00, 0x00, 0x00, // spirit
-                0x02, 0x00, 0x00, 0x00, // speed
-                0x01, 0x00, 0x00, 0x00, // strength 
+                0x09, 0x00, 0x00, 0x00, // agility
+                0x09, 0x00, 0x00, 0x00, // spirit
+                0x09, 0x00, 0x00, 0x00, // speed
+                0x09, 0x00, 0x00, 0x00, // strength
                 0x13, 0x00, 0x00, 0x00, // control
 
                 0x00, 0x00, 0x00, 0x00, // Horse.Rating
                 0x15, // Horse.Class
                 0x01, // Horse.Unk4
-                0x02, // Horse.Unk5
+                0x05, // Horse.Unk5
                 0x02, 0x00, // Horse.AvailableGrowthPoints
 
                 // Horse.Unk7: An array of size 7. Each element has two 2 byte values
@@ -1202,7 +1221,7 @@ void alicia::Client::read_loop(Server& server)
 
                 // Horse: Big ass structure now, probably horse info
                 // Horse.TIDs
-                0x96, 0xA3, 0x79, 0x05, // Horse.TIDs.MountTID Unique horse identifier
+                0x96, 0xA3, 0x79, 0x06, // Horse.TIDs.MountTID Unique horse identifier
                 0x21, 0x4E, 0x00, 0x00, // Horse.TIDs.HorseTID Horse model
                 /* Horse name: "idontunderstand" */ 0x69, 0x64, 0x6F, 0x6E, 0x74, 0x75, 0x6E, 0x64, 0x65, 0x72, 0x73, 0x74, 0x61, 0x6E, 0x64, 0x00,
                 // Horse.Appearance: Structure. Probably horse appearance
@@ -1299,7 +1318,7 @@ void alicia::Client::read_loop(Server& server)
                 0x00,
 
                 // Buffer::ReadAnotherPlayerRelatedSomething, also shared
-                0x96, 0xA3, 0x79, 0x05, // Horse UID?
+                0x96, 0xA3, 0x79, 0x06, // Horse UID?
                 0x12, 0x00, 0x00, 0x00,             
                 0xE4, 0x67, 0x6E, 0x01,
 
@@ -1934,6 +1953,137 @@ void alicia::Client::read_loop(Server& server)
       {
         DummyCommand response(AcCmdRCMissionEvent);
         response.data = request.data;
+        this->send_command(response);
+      }
+      break;
+      #endif
+
+      #ifdef AcCmdCRBreedingWishlist
+      case AcCmdCRBreedingWishlist:
+      {
+        DummyCommand response(AcCmdCRBreedingWishlistOK);
+        response.data = {
+          0x00, // size
+        };
+        this->send_command(response);
+      }
+      break;
+      #endif
+
+      #ifdef AcCmdCRSearchStallion
+      case AcCmdCRSearchStallion:
+      {
+        DummyCommand response(AcCmdCRSearchStallionOK);
+        response.data = {
+          0x00, 0x00, 0x00, 0x00,
+          0x00, 0x00, 0x00, 0x00,
+
+          // Horses to breed with
+          0x01, // count, max 11 elements
+
+          't', 'e', 's', 't', 0x00, // max 17 chars
+          0x21, 0x4E, 0x00, 0x03,
+          0x21, 0x4E, 0x00, 0x00,
+          'i', 'u', 'n', 'd', 'e', 'r', 's', 't', 'a', 'n', 'd', 0x00, // max 17 chars
+          0x04, // Grade
+          0x00, // Chance
+          0x01, 0x00, 0x00, 0x00, // Price
+          0xFF, 0xFF, 0xFF, 0xFF,
+          0xFF, 0xFF, 0xFF, 0xFF,
+
+          // Stats (abilities) (MountMultiAbility)
+          0x09, 0x00, 0x00, 0x00, // .Agility
+          0x09, 0x00, 0x00, 0x00, // spirit
+          0x09, 0x00, 0x00, 0x00, // speed
+          0x09, 0x00, 0x00, 0x00, // strength
+          0x09, 0x00, 0x00, 0x00, // .Ambition
+
+          // Appearance (MountPartSet)
+          0x01, // .SkinId (MountSkinInfo)
+          0x04, // .ManeId (MountManeInfo)
+          0x04, // .TailId (MountTailInfo)
+          0x05, // .FaceId (MountFaceInfo)
+          0x00, // .Fig_Scale
+          0x00, // .Fig_LegLength
+          0x00, // .Fig_LegVol
+          0x00, // .Fig_BodyLength
+          0x00, // .Fig_BodyVol
+
+          0x05,
+          0x00, // Coat bonus
+        };
+        this->send_command(response);
+      }
+      break;
+      #endif
+
+      #ifdef AcCmdCREnterBreedingMarket
+      case AcCmdCREnterBreedingMarket:
+      {
+        DummyCommand response(AcCmdCREnterBreedingMarketOK);
+        response.data = {
+          0x01, // List of horses
+
+          // User horses available for breeding
+          0x96, 0xA3, 0x79, 0x05, // Horse.TIDs.HorseUID Unique horse identifier
+          0x21, 0x4E, 0x00, 0x00, // Horse.TIDs.MountTID Horse model identifier
+          0x00,
+          0x00, 0x00, 0x00, 0x00,
+          0x00,
+          0x00,
+        };
+        this->send_command(response);
+      }
+      break;
+      #endif
+
+      #ifdef AcCmdCRTryBreeding
+      case AcCmdCRTryBreeding:
+      {
+        // mare UID
+        // stalion UID
+
+        DummyCommand response(AcCmdCRTryBreedingOK);
+        response.data = {
+
+          0x96, 0xA3, 0x79, 0xFF, // Horse.TIDs.HorseUID Unique horse identifier
+          0x21, 0x4E, 0x00, 0x00, // Horse.TIDs.MountTID Horse model identifier
+          0x00, 0x00, 0x00, 0x00, // val
+          0x00, 0x00, 0x00, 0x00, // count
+
+          0x00,
+
+          // Appearance (MountPartSet)
+          0x01, // .SkinId (MountSkinInfo)
+          0x04, // .ManeId (MountManeInfo)
+          0x04, // .TailId (MountTailInfo)
+          0x05, // .FaceId (MountFaceInfo)
+          0x00, // .Fig_Scale
+          0x00, // .Fig_LegLength
+          0x00, // .Fig_LegVol
+          0x00, // .Fig_BodyLength
+          0x00, // .Fig_BodyVol
+
+          // Stats (abilities) (MountMultiAbility)
+          0x09, 0x00, 0x00, 0x00, // .Agility
+          0x09, 0x00, 0x00, 0x00, // spirit
+          0x09, 0x00, 0x00, 0x00, // speed
+          0x09, 0x00, 0x00, 0x00, // strength
+          0x09, 0x00, 0x00, 0x00, // .Ambition
+
+
+          0x00, 0x00, 0x00, 0x00,
+          0x00,
+          0x00,
+          0x00,
+          0x00,
+          0x00,
+          0x00,
+          0x00,
+          0x00, 0x00,
+          0x00,
+
+        };
         this->send_command(response);
       }
       break;
