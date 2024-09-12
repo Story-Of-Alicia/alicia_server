@@ -897,12 +897,13 @@ void alicia::Client::read_loop(Server& server)
               0x0A, 0x0B,               // 2 bytes
               0x0C, 0x0D,               // 2 bytes
             
-              // String data (null-terminated)
-              0x74, 0x65, 0x73, 0x74, 0x31, 0x00, // String data "test1"
+              0x74, 0x65, 0x73, 0x74, 0x31, 0x00, // string "test1" null-terminated
             
+              0x20, 0x1F, 0x1E, 0x1D,   // 4 bytes
+              0x24, 0x23, 0x22, 0x21,   // 4 bytes
             
               // String data (null-terminated)
-              0x74, 0x65, 0x73, 0x74, 0x32, 0x00, // string "test2"
+              0x74, 0x65, 0x73, 0x74, 0x32, 0x00, // string "test2" null-terminated
             
               0x0E, 0x0F,               // 2 bytes
               0x10, 0x11,               // 2 bytes
@@ -1536,6 +1537,44 @@ void alicia::Client::read_loop(Server& server)
             client.send_command(response);
           }
         }
+      }
+      break;
+      #endif
+
+      #ifdef AcCmdCRRanchCmdAction
+      case AcCmdCRRanchCmdAction:
+      {
+        DummyCommand response(AcCmdCRRanchCmdActionNotify);
+        response.data = {
+
+          0x02, 0x00, // 2 bytes, unknown
+          0x03, 0x00, // 2 bytes, unknown
+
+          0x01, 0x00, 0x00, 0x00,   // 4 bytes, unknown
+
+          0x01, // 1 byte, unknown
+        };
+        this->send_command(response);
+      }
+      break;
+      #endif
+
+      #ifdef AcCmdCREmblemList
+      case AcCmdCREmblemList:
+      {
+        DummyCommand response(AcCmdCREmblemListOK);
+        response.data = {
+          0x03, // list size, up to 64 (< 0x41)
+
+          // struct of 2-byte values
+          // struct for which emblems are unlocked
+          // if first value is 0x03,
+          // 'first' unlocked emblem should be the third one
+          0x03, 0x00,
+          0x05, 0x00,
+          0x07, 0x00,
+        };
+        this->send_command(response);
       }
       break;
       #endif
