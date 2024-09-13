@@ -887,16 +887,14 @@ void alicia::Client::read_loop(Server& server)
           std::cerr << "Error: Not enough data in the request!" << std::endl;
           return;
         }
-        // first 4 bytes of the request is player UID (request.data[0 - 3])
-        uint8_t uVar2 = request.data[4]; // The fifth byte (index 4) contains uVar2
 
         DummyCommand response(AcCmdLCPersonalInfo);
         response.data = {
-          0x01, 0x00, 0x00, 0x00,   // unknown, used in all requests
-          uVar2, 0x00, 0x00, 0x00,   // uVar2 value (6, 7, or 8)
+          request.data[0], request.data[1], request.data[2], request.data[3], // player uid first 4 bytes of request
+          request.data[4], 0x00, 0x00, 0x00,   // 6, 7, or 8 depending on what request is sending
         };
 
-        if (uVar2 == 6) {
+        if (request.data[4] == 6) {
           // append data for when client is requesting 6
           std::vector<uint8_t> response1_data = {
               0x08, 0x07, 0x06, 0x05,   // 4 bytes
@@ -910,7 +908,7 @@ void alicia::Client::read_loop(Server& server)
               0x06, 0x07,               // 2 bytes
               0x00, 0x00, 0x80, 0x3F,   // float 4 bytes, 1.0f
               0x00, 0x00, 0xA0, 0x40,   // float 4 bytes, 5.0f
-              0x00, 0x00, 0xC0, 0x40,   // float 4 bytes, 6.0f)
+              0x00, 0x00, 0xC0, 0x40,   // float 4 bytes, 6.0f
               0x18, 0x17, 0x16, 0x15,   // 4 bytes
               0x08, 0x09,               // 2 bytes
               0x0A, 0x0B,               // 2 bytes
@@ -921,25 +919,23 @@ void alicia::Client::read_loop(Server& server)
               0x20, 0x1F, 0x1E, 0x1D,   // 4 bytes
               0x24, 0x23, 0x22, 0x21,   // 4 bytes
             
-              // String data (null-terminated)
               0x74, 0x65, 0x73, 0x74, 0x32, 0x00, // string "test2" null-terminated
             
               0x0E, 0x0F,               // 2 bytes
               0x10, 0x11,               // 2 bytes
               0x12, 0x13,               // 2 bytes
-              0x00, 0x00, 0xE0, 0x40,   // float 4 bytes, 7.0f)
-              0x00, 0x00, 0x00, 0x41,   // float 4 bytes, 8.0f)
-              0x00, 0x00, 0x10, 0x41,   // float 4 bytes, 9.0f)
+              0x00, 0x00, 0xE0, 0x40,   // float 4 bytes, 7.0f
+              0x00, 0x00, 0x00, 0x41,   // float 4 bytes, 8.0f
+              0x00, 0x00, 0x10, 0x41,   // float 4 bytes, 9.0f
             
-              // String data (null-terminated)
-              0x74, 0x65, 0x73, 0x74, 0x33, 0x00, // String data "test3"
+              0x74, 0x65, 0x73, 0x74, 0x33, 0x00, // string "test3" null-terminated
             
               0x01,                     // 1 byte
               0x00                      // 1 byte
           };
           response.data.insert(response.data.end(), response1_data.begin(), response1_data.end());
           }
-        else if (uVar2 == 7) 
+        else if (request.data[4] == 7) 
         {
           // append data for when client is requesting 7
           std::vector<uint8_t> response2_data = {
@@ -952,6 +948,7 @@ void alicia::Client::read_loop(Server& server)
             0x02,   // Number of structs, max of 128
 
             // FUN_004c05b0 (2 structs, 24 bytes each)
+            // each struct might be related to player's info on each course
             // Structure 1
             0x00, 0x00,               // 2 bytes
             0x00, 0x00, 0x00, 0x00,   // 4 bytes
@@ -966,20 +963,19 @@ void alicia::Client::read_loop(Server& server)
           };
           response.data.insert(response.data.end(), response2_data.begin(), response2_data.end());
         }
-        else if (uVar2 == 8) 
+        else if (request.data[4] == 8) 
         {
           // append data for when client is requesting 8
           std::vector<uint8_t> response3_data = {
               0x02,  // 2 structs, max size 31
 
-              // FUN_004c07e0 structures
               // struct 1
-              0x00, 0x00, 0x00, 0x00,  // First 4-byte value
-              0x00, 0x00, 0x00, 0x00,  // Second 4-byte value
+              0x00, 0x00, 0x00, 0x00,  // 4 bytes
+              0x00, 0x00, 0x00, 0x00,  // 4 bytes
 
               // struct 2
-              0x00, 0x00, 0x00, 0x00,  // First 4-byte value
-              0x00, 0x00, 0x00, 0x00   // Second 4-byte value
+              0x00, 0x00, 0x00, 0x00,  // 4 bytes
+              0x00, 0x00, 0x00, 0x00   // 4 bytes
           };
           response.data.insert(response.data.end(), response3_data.begin(), response3_data.end());
         }
@@ -1566,17 +1562,63 @@ void alicia::Client::read_loop(Server& server)
         DummyCommand response(AcCmdCRRanchCmdActionNotify);
         response.data = {
 
-          0x02, 0x00, // 2 bytes, unknown
-          0x03, 0x00, // 2 bytes, unknown
+          0x02, 0x00, // 2 byte unknown
+          0x03, 0x00, // 2 byte unknown
 
-          0x01, 0x00, 0x00, 0x00,   // 4 bytes, unknown
+          0x01, 0x00, 0x00, 0x00,   // 4 byte unknown
 
-          0x01, // 1 byte, unknown
+          0x01, // 1 byte unknown
         };
         this->send_command(response);
       }
       break;
       #endif
+
+      #ifdef AcCmdCRUpdateDailyQuest
+      case AcCmdCRUpdateDailyQuest:
+      {
+        DummyCommand response(AcCmdCRUpdateDailyQuestOK);
+        response.data = {
+          0x00, 0x00, 0x00, 0x00,   // 4 bytes unknown maybe player id?
+    
+          // FUN_00473650 result (4 fields)
+          0x00, 0x00,               // 2 bytes unknown
+          0x00, 0x00, 0x00, 0x00,   // 4 bytes unknown
+          0x00,                     // 1 byte unknown
+          0x00,                     // 1 byte unknown
+    
+          0x00, 0x00, 0x00, 0x00,   // 4 bytes unknown
+          0x00, 0x00, 0x00, 0x00,   // 4 bytes unknown
+        };
+        this->send_command(response);
+      }
+      break;
+      #endif
+
+      /*
+      #ifdef AcCmdCRUpdateDailyQuest
+      case AcCmdCRUpdateDailyQuest:
+      {
+        DummyCommand response(AcCmdRCUpdateDailyQuestNotify);
+        response.data = {
+          0x00, 0x00, 0x00, 0x00,   // 4 bytes unknown
+          0x00, 0x00,               // 2 bytes unknown
+    
+          // FUN_004caf70 result (3 fields)
+          0x00,                     // 1 byte unknown
+          0x00, 0x00, 0x00, 0x00,   // 4 bytes unknown
+          0x00,                     // 1 byte unknown
+    
+          0x00, 0x00, 0x00, 0x00,   // 4 bytes unknown
+          0x00,                     // 1 byte unknown
+          0x00, 0x00, 0x00, 0x00,   // 4 bytes unknown
+          0x00, 0x00, 0x00, 0x00,   // 4 bytes unknown
+        };
+        this->send_command(response);
+      }
+      break;
+      #endif
+      */
 
       #ifdef AcCmdCREmblemList
       case AcCmdCREmblemList:
@@ -1592,6 +1634,31 @@ void alicia::Client::read_loop(Server& server)
           0x03, 0x00,
           0x05, 0x00,
           0x07, 0x00,
+        };
+        this->send_command(response);
+      }
+      break;
+      #endif
+
+      #ifdef AcCmdCRRequestNpcDressList
+      case AcCmdCRRequestNpcDressList:
+      {
+        DummyCommand response(AcCmdCRRequestNpcDressListOK);
+        response.data = {
+          request.data[0], request.data[1], request.data[2], request.data[3],   // First 4 bytes from request data, player uid
+
+          0x03,                     // 1 byte: number of npc dress items max of 10
+
+          // NPCDressInfo table in config may shed some light on this
+
+          0x00, 0x00, 0x00, 0x00,   // 4 bytes: First TID 
+          0x00, 0x00, 0x00, 0x00,   // 4 bytes: Second TID
+
+          0x00, 0x00, 0x00, 0x00,   // 4 bytes: first TID
+          0x00, 0x00, 0x00, 0x00,   // 4 bytes: second TID
+
+          0x00, 0x00, 0x00, 0x00,   // 4 bytes first TID
+          0x00, 0x00, 0x00, 0x00,   // 4 bytes second TID
         };
         this->send_command(response);
       }
