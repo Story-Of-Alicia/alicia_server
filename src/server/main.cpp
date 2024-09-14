@@ -33,14 +33,7 @@ public:
 
   void HandleLoginRequest(alicia::LobbyCommandLogin& loginCommand, alicia::Client& client)
   {
-    const auto playerIter = _players.find(loginCommand.loginId);
-    if (playerIter == _players.cend())
-    {
-      client.Send();
-      return;
-    }
 
-    client.Send();
   }
 
 private:
@@ -75,14 +68,14 @@ int main()
 
   std::jthread lobbyThread([]()
   {
-    alicia::Server lobbyServer;
-    lobbyServer.Host("127.0.0.1", 10030);
+    // alicia::Server lobbyServer;
+    // lobbyServer.Host("127.0.0.1", 10030);
   });
 
   std::jthread ranchThread([]()
   {
-    alicia::Server ranchServer;
-    ranchServer.Host("127.0.0.1", 10031);
+    // alicia::Server ranchServer;
+    // ranchServer.Host("127.0.0.1", 10031);
   });
 
 

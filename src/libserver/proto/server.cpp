@@ -12,7 +12,7 @@ Client::Client(
   read_loop();
 }
 
-void Client::Send(const WriteSupplier& writeSupplier)
+void Client::Send(const WriteSupplier& writeSupplier) noexcept
 {
   std::ostream stream(&_writeBuffer);
 
@@ -38,7 +38,7 @@ void Client::Send(const WriteSupplier& writeSupplier)
     });
 }
 
-void Client::read_loop()
+void Client::read_loop() noexcept
 {
   _socket.async_read_some(
     _readBuffer.prepare(4096),
@@ -82,7 +82,7 @@ void Server::Host(
   _io_ctx.run();
 }
 
-void Server::accept_loop()
+void Server::accept_loop() noexcept
 {
   _acceptor.async_accept(
     [&](

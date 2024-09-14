@@ -3,7 +3,7 @@
 namespace alicia
 {
 
-MessageMagic alicia::decode_message_magic(uint32_t value)
+MessageMagic decode_message_magic(uint32_t value)
 {
   MessageMagic magic;
   if (value & 1 << 15)

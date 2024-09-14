@@ -87,6 +87,127 @@ struct MacroOptions
   std::array<std::string, 8> macros;
 };
 
+
+struct Character
+{
+  //! Used to build character from the _ClientCharDefaultPartInfo table.
+  struct CharacterParts
+  {
+    uint8_t id{};
+    uint8_t mouthSerialId{};
+    uint8_t faceSerialId{};
+    uint8_t val0{};
+  } parts{};
+
+  //! Seems to not be based on any physical units...
+  struct CharacterAppearance
+  {
+    uint16_t val0{};
+    uint16_t headSize{};
+    uint16_t height{};
+    uint16_t thighVolume{};
+    uint16_t legVolume{};
+    uint16_t val1{};
+  } appearance{};
+};
+
+
+struct Horse
+{
+  uint32_t uid{};
+  uint32_t tid{};
+  std::string name{};
+
+  struct Parts
+  {
+    uint8_t skinId{};
+    uint8_t maneId{};
+    uint8_t tailId{};
+    uint8_t faceId{};
+  } parts{};
+
+  //! Figure
+  struct Appearance
+  {
+    uint8_t scale{};
+    uint8_t legLength{};
+    uint8_t legVolume{};
+    uint8_t bodyLength{};
+    uint8_t bodyVolume{};
+  } appearance;
+
+  struct Stats
+  {
+    uint32_t agility{};
+    uint32_t spirit{};
+    uint32_t speed{};
+    uint32_t strength{};
+    uint32_t ambition{};
+  };
+
+  uint32_t rating{};
+  uint8_t clazz{};
+  uint8_t val0{};
+  uint8_t grade{};
+  uint16_t growthPoints{};
+
+  struct
+  {
+    uint16_t stamina{};
+    uint16_t attractiveness{};
+    uint16_t hunger{};
+    uint16_t val0{};
+
+    uint16_t val1{};
+    uint16_t val2{};
+
+    uint16_t val3{};
+    uint16_t val4{};
+
+    uint16_t val5{};
+    uint16_t val6{};
+
+    uint16_t val7{};
+    uint16_t val8{};
+
+    uint16_t val9{};
+    uint16_t val10{};
+  } vals{};
+
+  struct
+  {
+    uint8_t val0{};
+    uint32_t val1{};
+    uint32_t val2{};
+    uint8_t val3{};
+    uint8_t val4{};
+    uint32_t classProgression{};
+    uint32_t val5{};
+
+    uint8_t val6{};
+    uint8_t val7{};
+    uint8_t val8{};
+    uint8_t val9{};
+    uint8_t val10{};
+    uint8_t val11{};
+    uint8_t val12{};
+
+    uint16_t val13{};
+    uint16_t val14{};
+    uint16_t val15{};
+  } vals0;
+
+  struct Mastery
+  {
+    uint32_t magic{};
+    uint32_t jumping{};
+    uint32_t sliding{};
+    //! Divided by 10?
+    uint32_t gliding{};
+  } mastery;
+
+};
+
 //! Clientbound login OK command.
 struct LobbyCommandLoginOK
 {
@@ -118,7 +239,24 @@ struct LobbyCommandLoginOK
   AgeGroup ageGroup{};
   uint8_t val4{};
 
-  std::array<struct {}, 16> val5;
+  struct Unk
+  {
+    uint16_t val0{};
+    uint8_t val1{};
+    uint32_t val2{};
+    uint32_t val3{};
+  };
+  std::array<Unk, 16> val5;
+
+  std::string val6{};
+
+  uint32_t address{};
+  uint16_t port{};
+  uint16_t scramblingConstant{};
+
+  Character character{};
+  Horse horse{};
+
 
   //! Writes the command to a provided sink buffer.
   //! @param command Command.

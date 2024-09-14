@@ -1,6 +1,6 @@
 #include "libserver/util.hpp"
 
-namespace alicia::proto
+namespace alicia
 {
 
 namespace

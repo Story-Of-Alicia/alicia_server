@@ -64,7 +64,7 @@ uint32_t encode_message_magic(MessageMagic magic);
 //! @returns XORcoded buffer.
 template <typename Buffer> void xor_codec_cpp(Buffer &buffer)
 {
-  for (size_t idx = 0; idx < buffer.size(); idx++)
+  for (std::size_t idx = 0; idx < buffer.size(); idx++)
   {
     const auto shift = idx % 4;
     buffer[idx] ^= xor_control[shift];
