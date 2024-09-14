@@ -7,14 +7,46 @@
 namespace alicia
 {
 
-void Client::read_loop()
+Client::Client(asio::ip::tcp::socket&& socket, ReadHandler&& readHandler) noexcept
+    : _readHandler(readHandler)
+    , _socket(std::move(socket))
 {
-  _socket.async_read_some(
-    _buffer.prepare(4096),
+  read_loop();
+}
+
+void Client::Send(const WriteSupplier& writeSupplier)
+{
+  std::ostream stream(&_writeBuffer);
+
+  // Supply the stream with bytes to send.
+  writeSupplier(stream);
+
+  asio::async_write(
+    _socket,
+    _writeBuffer.data(),
     [&](boost::system::error_code error, std::size_t size)
     {
       if (error)
       {
+        printf("Failed to write");
+        return;
+      }
+
+      // Consume the sent bytes.
+      // Remove them from the input sequence.
+      _writeBuffer.consume(size);
+    });
+}
+
+void Client::read_loop()
+{
+  _socket.async_read_some(
+    _readBuffer.prepare(4096),
+    [&](boost::system::error_code error, std::size_t size)
+    {
+      if (error)
+      {
+        printf("Failed to read");
         // An error occured in client read loop,
         // connection reset?
         return;
@@ -22,25 +54,11 @@ void Client::read_loop()
 
       // Commit the recieved bytes,
       // so they can be read.
-      _buffer.commit(size);
+      _readBuffer.commit(size);
 
       // Create source buffer.
-      std::istream stream(&_buffer);
-      SourceBuffer source(stream);
-
-      MessageMagic magic;
-      source.Read(magic.id)
-        .Read(magic.length);
-
-      const auto payloadSize = magic.length - 4;
-      if (payloadSize > size)
-      {
-        // deal with fragmentation
-        assert(false);
-      }
-
-      // Handle reading of the command.
-      _commandReadHandler(magic.id, source);
+      std::istream stream(&_readBuffer);
+      _readHandler(stream);
 
       // Continue the read loop.
       read_loop();
@@ -61,6 +79,7 @@ void Server::Host(
 
   _io_ctx.run();
 }
+
 void Server::accept_loop()
 {
   _acceptor.async_accept(

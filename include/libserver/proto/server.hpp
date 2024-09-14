@@ -1,15 +1,9 @@
-//
-// Created by rgnter on 8/09/2024.
-//
-
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-#include "libserver/util.hpp"
-#include "libserver/proto/proto.hpp"
-
 #include <cstdint>
 #include <unordered_map>
+#include <functional>
 
 #include <boost/asio.hpp>
 
@@ -18,68 +12,72 @@ namespace alicia
 
 namespace asio = boost::asio;
 
-using CommandReadHandler = std::function<void(
-  CommandId commandId, SourceBuffer& commandBuffer)>;
-using CommandWriteHandler = std::function<void(
-  CommandId commandId, SinkBuffer& commandBuffer)>;
+//! A read handler.
+//! todo: comment about cyclic buffer
+using ReadHandler = std::function<bool(std::istream&)>;
+//! A write handler.
+using WriteSupplier = std::function<void(std::ostream&)>;
 
-//!
+//! Client Id.
+using ClientId = std::size_t;
+
+//! Client with event driven reads and writes
+//! to the underlying socket connection.
 class Client
 {
 public:
-  //!
-  explicit Client(asio::ip::tcp::socket &&socket) noexcept
-    : _socket(std::move(socket))
-  {
-    read_loop();
-  }
+  //! Default constructor.
+  //! @param socket Underlying socket.
+  //! @param readHandler Read handler.
+  Client(
+    asio::ip::tcp::socket&& socket,
+    ReadHandler&& readHandler) noexcept;
 
-  void Send();
+  void Send(const WriteSupplier& writeSupplier) noexcept;
 
 private:
-  //!
-  void read_loop();
+  //! Begins the event-driven read loop of the client socket.
+  void read_loop() noexcept;
 
+  //! A read handler.
+  ReadHandler _readHandler;
+
+  //! A client socket.
   asio::ip::tcp::socket _socket;
-  asio::streambuf _buffer;
+  //! A read buffer.
+  asio::streambuf _readBuffer;
+  //! A write buffer.
+  asio::streambuf _writeBuffer;
 };
 
-//! Command server.
+//! Server with event-driven acceptor, reads and writes.
 class Server
 {
 public:
   //! Default constructor.
-  Server();
+  explicit Server(ReadHandler&& readHandler) noexcept;
 
   //! Hosts the server.
   //!
   //! @param interface Address of the interface to bind to.
   //! @param port Port to bind to.
   void Host(
-    const std::string_view& interface, uint16_t port);
-
-  void SetReadHandler(CommandReadHandler readHandler)
-  {
-    _readHandler = readHandler;
-  };
-
-  void SetWriteHandler(CommandWriteHandler writeHandler)
-  {
-    _writeHandler = writeHandler;
-  };
+    const std::string_view& interface,
+    uint16_t port);
 
 private:
-  void accept_loop();
+  void accept_loop() noexcept;
+
+  //! A read handler.
+  ReadHandler _readHandler;
 
   asio::io_context _io_ctx;
   asio::ip::tcp::acceptor _acceptor;
 
   //! Sequential client ID.
-  uint32_t _client_id = 0;
-  std::unordered_map<uint32_t, Client> _clients;
-
-  CommandReadHandler _readHandler;
-  CommandWriteHandler _writeHandler;
+  ClientId _client_id = 0;
+  //! Map of clients.
+  std::unordered_map<ClientId, Client> _clients;
 };
 
 }
