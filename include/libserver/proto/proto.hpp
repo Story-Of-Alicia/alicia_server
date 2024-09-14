@@ -1,7 +1,3 @@
-//
-// Created by rgnter on 8/09/2024.
-//
-
 #ifndef PROTO_HPP
 #define PROTO_HPP
 
@@ -40,7 +36,7 @@ constexpr std::array xor_control{
   static_cast<uint8_t>(0xA2),
 };
 
-//! Message magix with which all messages are prefixed.
+//! Message magic with which all messages are prefixed.
 struct MessageMagic
 {
   //! An ID of the message.

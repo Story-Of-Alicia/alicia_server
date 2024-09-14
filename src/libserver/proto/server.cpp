@@ -1,15 +1,13 @@
-//
-// Created by rgnter on 8/09/2024.
-//
-
 #include "libserver/proto/server.hpp"
 
 namespace alicia
 {
 
-Client::Client(asio::ip::tcp::socket&& socket, ReadHandler&& readHandler) noexcept
-    : _readHandler(readHandler)
-    , _socket(std::move(socket))
+Client::Client(
+  asio::ip::tcp::socket&& socket,
+  ReadHandler readHandler) noexcept
+  : _readHandler(std::move(readHandler))
+  , _socket(std::move(socket))
 {
   read_loop();
 }
@@ -24,7 +22,9 @@ void Client::Send(const WriteSupplier& writeSupplier)
   asio::async_write(
     _socket,
     _writeBuffer.data(),
-    [&](boost::system::error_code error, std::size_t size)
+    [&](
+      boost::system::error_code error,
+      std::size_t size)
     {
       if (error)
       {
@@ -42,7 +42,9 @@ void Client::read_loop()
 {
   _socket.async_read_some(
     _readBuffer.prepare(4096),
-    [&](boost::system::error_code error, std::size_t size)
+    [&](
+      boost::system::error_code error,
+      std::size_t size)
     {
       if (error)
       {
@@ -52,7 +54,7 @@ void Client::read_loop()
         return;
       }
 
-      // Commit the recieved bytes,
+      // Commit the received bytes,
       // so they can be read.
       _readBuffer.commit(size);
 
@@ -83,11 +85,22 @@ void Server::Host(
 void Server::accept_loop()
 {
   _acceptor.async_accept(
-    [&](boost::system::error_code error, asio::ip::tcp::socket client_socket)
+    [&](
+      boost::system::error_code error,
+      asio::ip::tcp::socket client_socket)
     {
+      if (error)
+      {
+        printf("Failed to accept connection");
+        return;
+      }
+
       // Create the client.
-      const auto [itr, _] = _clients.emplace(
-        _client_id++, std::move(client_socket));
+      const auto [itr, emplaced] = _clients.try_emplace(
+        _client_id++, std::move(client_socket), _readHandler);
+
+      // Id is sequential so emplacement should never fail.
+      assert(emplaced == true);
 
       // Continue the accept loop.
       accept_loop();

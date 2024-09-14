@@ -1,7 +1,3 @@
-//
-// Created by rgnter on 8/09/2024.
-//
-
 #include "libserver/proto/proto.hpp"
 
 namespace alicia
@@ -36,5 +32,4 @@ uint32_t encode_message_magic(MessageMagic magic)
   return encoded;
 }
 
-
-}
+} // namespace alicia

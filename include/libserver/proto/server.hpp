@@ -31,7 +31,7 @@ public:
   //! @param readHandler Read handler.
   Client(
     asio::ip::tcp::socket&& socket,
-    ReadHandler&& readHandler) noexcept;
+    ReadHandler readHandler) noexcept;
 
   void Send(const WriteSupplier& writeSupplier) noexcept;
 
@@ -55,7 +55,8 @@ class Server
 {
 public:
   //! Default constructor.
-  explicit Server(ReadHandler&& readHandler) noexcept;
+  explicit Server(
+    ReadHandler&& readHandler) noexcept;
 
   //! Hosts the server.
   //!

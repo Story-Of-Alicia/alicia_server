@@ -1,12 +1,10 @@
-//
-// Created by rgnter on 4/09/2024.
-//
-
 #ifndef LOBBY_MESSAGES_HPP
 #define LOBBY_MESSAGES_HPP
 
 #include "libserver/util.hpp"
 
+#include <array>
+#include <vector>
 #include <cstdint>
 #include <string>
 
@@ -35,9 +33,93 @@ struct LobbyCommandLogin
     LobbyCommandLogin& command, SourceBuffer& buffer);
 };
 
+enum class Gender : uint8_t
+{
+  Baby = 0x0,
+  Boy = 0x1,
+  Girl = 0x2
+};
+
+enum class AgeGroup : uint8_t
+{
+  //! Age <12
+  Kid = 0x0C,
+  //! Age 13-15
+  Teenager = 0x0D,
+  //! Age 16-18
+  Highschooler = 0x10,
+  //! Age 19+
+  Adult = 0x13,
+};
+
+//! Item
+struct Item
+{
+  uint32_t uid{};
+  uint32_t tid{};
+  uint32_t val{};
+  uint32_t count{};
+};
+
+enum class OptionType : uint32_t
+{
+  Keyboard = 1 << 0,
+  Macros = 1 << 3,
+  Value = 1 << 4,
+  Gamepad = 1 << 5,
+};
+
+struct KeyboardOptions
+{
+  struct Option
+  {
+    uint16_t index{};
+    uint8_t type{};
+    uint8_t key{};
+  };
+
+  uint8_t size;
+  std::array<Option, 16> bindings{};
+};
+
+struct MacroOptions
+{
+  std::array<std::string, 8> macros;
+};
+
 //! Clientbound login OK command.
 struct LobbyCommandLoginOK
 {
+  // filetime
+  uint64_t lobbyTime{};
+  uint32_t val0{};
+
+  uint32_t selfUid{};
+  std::string nickName{};
+  Gender profileGender{Gender::Baby};
+
+  uint8_t characterEquipmentCount{};
+  std::array<Item, 16> characterEquipment{};
+  uint8_t horseEquipmentCount{};
+  std::array<Item, 250> horseEquipment{};
+
+  uint16_t level{};
+  int32_t carrots{};
+  int32_t val1{};
+  int32_t val2{};
+  int8_t val3{};
+
+  OptionType optionType{};
+  KeyboardOptions keyboardOptions{};
+  MacroOptions macroOptions{};
+  uint32_t valueOptions{};
+  // GamepadOptions gamepadOptions{};
+
+  AgeGroup ageGroup{};
+  uint8_t val4{};
+
+  std::array<struct {}, 16> val5;
+
   //! Writes the command to a provided sink buffer.
   //! @param command Command.
   //! @param buffer Sink buffer.
