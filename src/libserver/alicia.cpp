@@ -2120,14 +2120,14 @@ void alicia::Client::read_loop(Server& server)
       #ifdef AcCmdUserRaceTimer
       case AcCmdUserRaceTimer:
         {
-          // Request contains a long, i assume with the time
+          // Request contains a 64 bit value, i assume with the time
+          uint64_t time = *((uint64_t*) request.data.data());
 
-          // Response contains two longs
+          // Response contains two 64 bit values
           DummyCommand response(AcCmdUserRaceTimerOK);
-          response.data = {
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-          };
+          response.data = std::vector<uint8_t>(sizeof(uint64_t)*2);
+          ((uint64_t*) response.data.data())[0] = time;
+          ((uint64_t*) response.data.data())[1] = 0;
           this->send_command(response);
         }
         break;
