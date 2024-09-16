@@ -1985,6 +1985,83 @@ void alicia::Client::read_loop(Server& server)
         break;
       #endif
 
+      #ifdef AcCmdCLRoomList
+      case AcCmdCLRoomList:
+        {
+          DummyCommand response(AcCmdCLRoomListOK);
+          response.data = {
+            0x00, // unk0
+            0x00, // unk1
+            0x00, // unk2
+
+            // Room List: list of uint string byte byte bool byte byte short byte short byte byte uint
+            0x04, // list size
+              0x69, 0x00, 0x00, 0x00, // room id?
+              'S', 'o', 'u', 't', 'h', ' ', 'A', 's', 'h', 'f', 'i', 'e', 'l', 'd', ' ', 'H', 'e', 'i', 'g', 'h', 't', 's', 0x00, // room name
+              0x01, // player count
+              0x02, // max players
+              0x00, // is locked
+              0x00, // unk
+              0x00, // unk
+              0x01, 0x00, // map
+              0x00, // 0 if in the waiting room, 1 if the race started
+              0x00, 0x00, // unk
+              0x00, // unk
+              0x02, // 0: 3lv, 1: 12lv, 2 and beyond: nothing
+              0x00, 0x00, 0x00, 0x00, // unk
+
+              0x70, 0x00, 0x00, 0x00,
+              'R', 'o', 'o', 'm', ' ', '3', '0', '1', 0x00,
+              0x06,
+              0x08,
+              0x01,
+              0x00,
+              0x00,
+              0x02, 0x00,
+              0x00,
+              0x00, 0x00,
+              0x00,
+              0x01,
+              0x00, 0x00, 0x00, 0x00,
+
+              0x71, 0x00, 0x00, 0x00,
+              'R', 'o', 'o', 'm', ' ', '3', '0', '2', 0x00,
+              0x03,
+              0x04,
+              0x00,
+              0x00,
+              0x00,
+              0x03, 0x00,
+              0x01,
+              0x00, 0x00, 
+              0x00,
+              0x00,
+              0x00, 0x00, 0x00, 0x00,
+
+              0x72, 0x00, 0x00, 0x00,
+              'R', 'o', 'o', 'm', ' ', '3', '0', '3', 0x00,
+              0x03,
+              0x08,
+              0x01,
+              0x00,
+              0x00,
+              0x04, 0x00,
+              0x01,
+              0x00, 0x00,
+              0x00,
+              0x03,
+              0x00, 0x00, 0x00, 0x00,
+
+            // unk4: structure
+            0x00, 0x00, 0x00, 0x00,
+            'R', 'o', 'o', 'm', ' ', 'L', 'i', 's', 't', 0x00, // string
+            0x00, 0x00
+          };
+          this->send_command(response);
+        }
+        break;
+      #endif
+
       #ifdef AcCmdUserRaceTimer
       case AcCmdUserRaceTimer:
         {
