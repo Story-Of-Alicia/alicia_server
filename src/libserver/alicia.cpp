@@ -2140,7 +2140,12 @@ void alicia::Client::read_loop(Server& server)
           // Response contains short
           DummyCommand response(AcCmdCRLoadingCompleteNotify);
           response.data = { 
-            0x00, 0x01 // index of the player who finished loading?
+            0x01, 0x00 // index of the player who finished loading?
+          };
+          this->send_command(response);
+        }
+        break;
+      #endif
           };
           this->send_command(response);
         }
