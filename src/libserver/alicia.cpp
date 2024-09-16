@@ -2038,11 +2038,16 @@ void alicia::Client::read_loop(Server& server)
       #ifdef AcCmdCLRoomList
       case AcCmdCLRoomList:
         {
+          // Request is three bytes
+          uint8_t unk0 = request.data[0];
+          uint8_t unk1 = request.data[1];
+          uint8_t unk2 = request.data[2];
+
           DummyCommand response(AcCmdCLRoomListOK);
           response.data = {
-            0x00, // unk0
-            0x00, // unk1
-            0x00, // unk2
+            unk0,
+            unk1,
+            unk2,
 
             // Room List: list of uint string byte byte bool byte byte short byte short byte byte uint
             0x04, // list size
