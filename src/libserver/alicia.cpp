@@ -1976,11 +1976,12 @@ void alicia::Client::read_loop(Server& server)
 
           DummyCommand response(AcCmdCRStartRaceNotify);
           response.data = {
-            0x00,
-            0x00,
+            // i havent tried all combinations but this is a mess
+            0x01, // 0: empty void, 1: map, 2: map, 3: crashes
+            0x00, // weird bonus ui
             0x00, 0x00,
             0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00,
+            0x08, 0x00, // map? 0: static camera, 1: empty void, 2: intro cutscene, 3: intro cutscene, 4: empty void but at dusk, 5: empty void but green sky, 6: different map, 7: map at dusk, 8: port map, 9: void, A: void, B: port Adv, C: void, D: first map again, E: second map again, F: void at dusk
 
             // list of short string byte byte short int short int
             0x00,  // list size
@@ -1997,6 +1998,7 @@ void alicia::Client::read_loop(Server& server)
             0x00, 0x00, 0x00, 0x00,
             // unk9.unk5: list of ints
             0x00, // list size
+
             // if this+8 == 3?
             0x00, 0x00,
             0x00, 0x00,
