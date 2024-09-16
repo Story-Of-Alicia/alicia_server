@@ -2146,6 +2146,22 @@ void alicia::Client::read_loop(Server& server)
         }
         break;
       #endif
+
+      #ifdef AcCmdCLRequestSpecialEventList
+      case AcCmdCLRequestSpecialEventList:
+        {
+          // Request contains uint
+          uint32_t unk0 = *((uint32_t*) request.data.data());
+
+          DummyCommand response(AcCmdCLRequestSpecialEventListOK);
+          response.data = {
+            ((uint8_t*) &unk0)[0], ((uint8_t*) &unk0)[1], ((uint8_t*) &unk0)[2], ((uint8_t*) &unk0)[3],
+            
+            // unk1: list of short, uint, byte, uint, byte, byte
+            0x00, 0x00, // list size
+
+            // unk2: list of short, uint
+            0x00, 0x00, // list size
           };
           this->send_command(response);
         }
