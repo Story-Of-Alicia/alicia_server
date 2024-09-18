@@ -14,10 +14,11 @@ target_compile_features(project-properties
 add_library(alicia-libserver STATIC
         src/libserver/alicia.cpp
         src/libserver/util.cpp
-        src/libserver/proto/proto.cpp
-        src/libserver/proto/server.cpp
-        src/libserver/proto/lobby/messages.cpp
-        src/libserver/proto/ranch/messages.cpp
+        src/libserver/base/server.cpp
+        src/libserver/command/command_protocol.cpp
+        src/libserver/command/command_server.cpp
+        src/libserver/command/lobby/messages.cpp
+        src/libserver/command/ranch/messages.cpp
 )
 target_include_directories(alicia-libserver
         PUBLIC include/)

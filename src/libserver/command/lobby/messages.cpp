@@ -1,8 +1,4 @@
-//
-// Created by rgnter on 8/09/2024.
-//
-
-#include "libserver/proto/lobby/messages.hpp"
+#include "libserver/command/lobby/messages.hpp"
 
 namespace alicia
 {

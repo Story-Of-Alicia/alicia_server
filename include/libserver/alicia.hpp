@@ -9,6 +9,5 @@
 #include <cstdint>
 
 #include "util.hpp"
-#include "proto/server.hpp"
 
 #endif // ALICIA_HPP

@@ -1,23 +1,15 @@
-#ifndef PROTO_HPP
-#define PROTO_HPP
+//
+// Created by rgnter on 18/09/2024.
+//
 
-#include <array>
-#include <cstdint>
+#ifndef COMMAND_PROTOCOL_HPP
+#define COMMAND_PROTOCOL_HPP
+
+#include "lobby/messages.hpp"
+#include "ranch/messages.hpp"
 
 namespace alicia
 {
-
-//!
-enum class CommandId
-{
-  LobbyCommandLogin = 0x0007,
-  LobbyCommandLoginOK = 0x0008,
-  LobbyCommandLoginCancel = 0x0009,
-
-  LobbyShowInventory = 0x007e,
-  LobbyShowInventoryOK = 0x007f,
-  LobbyShowInventoryCancel = 0x0080,
-};
 
 //! A constant buffer size for message magic.
 //! The maximum size of message payload is 4092 bytes.
@@ -71,6 +63,20 @@ template <typename Buffer> void xor_codec_cpp(Buffer &buffer)
   }
 }
 
+//!
+enum class CommandId
+  : uint16_t
+{
+  LobbyCommandLogin = 0x0007,
+  LobbyCommandLoginOK = 0x0008,
+  LobbyCommandLoginCancel = 0x0009,
+
+  LobbyShowInventory = 0x007e,
+  LobbyShowInventoryOK = 0x007f,
+  LobbyShowInventoryCancel = 0x0080,
+};
+
 } // namespace alicia
 
-#endif //PROTO_HPP
+
+#endif //COMMAND_PROTOCOL_HPP

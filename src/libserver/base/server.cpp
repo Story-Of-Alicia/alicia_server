@@ -1,4 +1,4 @@
-#include "libserver/proto/server.hpp"
+#include "libserver/base/server.hpp"
 
 namespace alicia
 {
@@ -42,9 +42,7 @@ void Client::read_loop() noexcept
 {
   _socket.async_read_some(
     _readBuffer.prepare(4096),
-    [&](
-      boost::system::error_code error,
-      std::size_t size)
+    [&](boost::system::error_code error, std::size_t size)
     {
       if (error)
       {
@@ -67,8 +65,17 @@ void Client::read_loop() noexcept
     });
 }
 
+Server::Server(ReadHandler&& readHandler) noexcept
+  : _readHandler(_readHandler)
+  , _io_ctx()
+  , _acceptor(_io_ctx)
+{
+
+}
+
 void Server::Host(
-  const std::string_view& interface, uint16_t port)
+  const std::string_view& interface,
+  uint16_t port)
 {
   const asio::ip::tcp::endpoint server_endpoint(
     asio::ip::make_address(interface.data()), port);

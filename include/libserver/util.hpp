@@ -35,7 +35,6 @@ void Reader<x>::operator()( \
   DECLARE_WRITER_READER(x) \
   DEFINE_WRITER_READER(x, x::Write, x::Read)
 
-
 #include <cassert>
 #include <istream>
 #include <ostream>
