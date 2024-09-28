@@ -14,7 +14,7 @@ namespace alicia
 {
 
 //! A command handler.
-using CommandHandler = std::function<void(CommandId, SourceBuffer&)>;
+using CommandHandler = std::function<void(SourceBuffer&)>;
 
 //! A command server
 class CommandServer

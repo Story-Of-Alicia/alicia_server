@@ -42,12 +42,13 @@ private:
   //! A read handler.
   ReadHandler _readHandler;
 
-  //! A client socket.
-  asio::ip::tcp::socket _socket;
   //! A read buffer.
   asio::streambuf _readBuffer;
   //! A write buffer.
   asio::streambuf _writeBuffer;
+
+  //! A client socket.
+  asio::ip::tcp::socket _socket;
 };
 
 //! Server with event-driven acceptor, reads and writes.
