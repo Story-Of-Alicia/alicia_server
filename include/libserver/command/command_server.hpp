@@ -15,6 +15,7 @@ namespace alicia
 
 //! A command handler.
 using CommandHandler = std::function<void(SourceBuffer&)>;
+using CommandSupplier = std::function<void(SinkBuffer&)>;
 
 //! A command server
 class CommandServer
@@ -34,9 +35,10 @@ public:
     CommandHandler handler);
 
   //!
-  void SendCommand(CommandId command, SinkBuffer& buffer);
-  //!
-  bool HandleCommand(CommandId command, SourceBuffer& buffer);
+  void QueueCommand(
+    ClientId client,
+    CommandId command,
+    CommandSupplier supplier);
 
 private:
   std::unordered_map<CommandId, CommandHandler> _handlers{};

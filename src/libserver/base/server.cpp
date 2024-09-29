@@ -3,22 +3,32 @@
 namespace alicia
 {
 
-Client::Client(
-  asio::ip::tcp::socket&& socket,
-  ReadHandler readHandler) noexcept
-  : _readHandler(std::move(readHandler))
-  , _socket(std::move(socket))
+Client::Client(asio::ip::tcp::socket&& socket) noexcept
+    : _socket(std::move(socket))
 {
-  read_loop();
 }
 
-void Client::Send(const WriteSupplier& writeSupplier) noexcept
+void Client::SetReadHandler(ReadHandler readHandler)
 {
+  _readHandler = std::move(readHandler);
+}
+
+void Client::SetWriteHandler(WriteHandler writeHandler)
+{
+  _writeHandler = std::move(writeHandler);
+}
+
+void Client::QueueWrite(WriteSupplier writeSupplier)
+{
+  // ToDo: Consider frame-based write loop instead of real-time writes.
+
+  std::scoped_lock writeLock(_writeMutex);
+
+  // Call the supplier.
   std::ostream stream(&_writeBuffer);
+  _writeHandler(stream, writeSupplier);
 
-  // Supply the stream with bytes to send.
-  writeSupplier(stream);
-
+  // Send the whole buffer.
   asio::async_write(
     _socket,
     _writeBuffer.data(),
@@ -36,10 +46,15 @@ void Client::Send(const WriteSupplier& writeSupplier) noexcept
       // Remove them from the input sequence.
       _writeBuffer.consume(size);
     });
+
+  // ToDo: Write & send timing.
+  // ToDo: Write & send batching.
 }
 
 void Client::read_loop() noexcept
 {
+  // ToDo: Consider frame-based read loop instead of real-time reads.
+
   _socket.async_read_some(
     _readBuffer.prepare(4096),
     [&](boost::system::error_code error, std::size_t size)
@@ -47,7 +62,7 @@ void Client::read_loop() noexcept
       if (error)
       {
         printf("Failed to read");
-        // An error occured in client read loop,
+        // An error occurred in client read loop,
         // connection reset?
         return;
       }
@@ -56,29 +71,34 @@ void Client::read_loop() noexcept
       // so they can be read.
       _readBuffer.commit(size);
 
+      // ToDo: Read & handle timing.
+
       // Create source buffer.
       std::istream stream(&_readBuffer);
-      _readHandler(stream);
+
+      {
+        // Call the read handler
+        std::scoped_lock readLock(_readMutex);
+        if (_readHandler)
+        {
+          _readHandler(stream);
+        }
+      }
 
       // Continue the read loop.
       read_loop();
     });
 }
 
-Server::Server(ReadHandler&& readHandler) noexcept
-  : _readHandler(_readHandler)
-  , _io_ctx()
+Server::Server() noexcept
+  : _io_ctx()
   , _acceptor(_io_ctx)
 {
-
 }
 
-void Server::Host(
-  const std::string_view& interface,
-  uint16_t port)
+void Server::Host(const std::string_view& interface, uint16_t port)
 {
-  const asio::ip::tcp::endpoint server_endpoint(
-    asio::ip::make_address(interface.data()), port);
+  const asio::ip::tcp::endpoint server_endpoint(asio::ip::make_address(interface.data()), port);
 
   _acceptor.open(server_endpoint.protocol());
   _acceptor.bind(server_endpoint);
@@ -87,6 +107,22 @@ void Server::Host(
   accept_loop();
 
   _io_ctx.run();
+}
+
+void Server::SetClientHandler(ClientHandler handler)
+{
+  _clientHandler = std::move(handler);
+}
+
+Client& Server::GetClient(ClientId clientId)
+{
+  const auto clientItr = _clients.find(clientId);
+  if (clientItr != _clients.end())
+  {
+    throw std::runtime_error("Invalid client Id");
+  }
+
+  return clientItr->second;
 }
 
 void Server::accept_loop() noexcept
@@ -102,12 +138,17 @@ void Server::accept_loop() noexcept
         return;
       }
 
+      // Sequential Id.
+      const ClientId clientId = _client_id++;
+
       // Create the client.
       const auto [itr, emplaced] = _clients.try_emplace(
-        _client_id++, std::move(client_socket), _readHandler);
+        clientId, std::move(client_socket));
 
       // Id is sequential so emplacement should never fail.
       assert(emplaced == true);
+
+      _clientHandler(clientId);
 
       // Continue the accept loop.
       accept_loop();

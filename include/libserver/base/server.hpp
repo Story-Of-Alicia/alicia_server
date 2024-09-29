@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <unordered_map>
 #include <functional>
+#include <queue>
 
 #include <boost/asio.hpp>
 
@@ -12,14 +13,19 @@ namespace alicia
 
 namespace asio = boost::asio;
 
+//! Client Id.
+using ClientId = std::size_t;
+
+//! A write handler.
+using WriteSupplier = std::function<void(std::ostream&)>;
+
 //! A read handler.
 //! todo: comment about cyclic buffer
 using ReadHandler = std::function<bool(std::istream&)>;
 //! A write handler.
-using WriteSupplier = std::function<void(std::ostream&)>;
-
-//! Client Id.
-using ClientId = std::size_t;
+using WriteHandler = std::function<bool(std::ostream&, WriteSupplier&)>;
+//! A client handler.
+using ClientHandler = std::function<void(ClientId)>;
 
 //! Client with event driven reads and writes
 //! to the underlying socket connection.
@@ -28,24 +34,33 @@ class Client
 public:
   //! Default constructor.
   //! @param socket Underlying socket.
-  //! @param readHandler Read handler.
-  Client(
-    asio::ip::tcp::socket&& socket,
-    ReadHandler readHandler) noexcept;
+  Client(asio::ip::tcp::socket&& socket) noexcept;
 
-  void Send(const WriteSupplier& writeSupplier) noexcept;
+  //! Sets the read handler of the client.
+  void SetReadHandler(ReadHandler readHandler);
+  //! Sets the write handler of the client.
+  void SetWriteHandler(WriteHandler writeHandler);
+
+  //! Queues a write.
+  void QueueWrite(WriteSupplier writeSupplier);
 
 private:
-  //! Begins the event-driven read loop of the client socket.
+  //! Begins the event-driven read loop.
   void read_loop() noexcept;
-
-  //! A read handler.
-  ReadHandler _readHandler;
 
   //! A read buffer.
   asio::streambuf _readBuffer;
+  //! A read mutex.
+  std::mutex _readMutex;
+  //! A read handler.
+  ReadHandler _readHandler;
+
   //! A write buffer.
   asio::streambuf _writeBuffer;
+  //! A write mutex.
+  std::mutex _writeMutex;
+  //! A write handler.
+  WriteHandler _writeHandler;
 
   //! A client socket.
   asio::ip::tcp::socket _socket;
@@ -56,8 +71,7 @@ class Server
 {
 public:
   //! Default constructor.
-  explicit Server(
-    ReadHandler&& readHandler) noexcept;
+  explicit Server() noexcept;
 
   //! Hosts the server.
   //!
@@ -67,11 +81,17 @@ public:
     const std::string_view& interface,
     uint16_t port);
 
+  //! Set the client handler.
+  void SetClientHandler(ClientHandler handler);
+
+  //! Get client.
+  Client& GetClient(ClientId clientId);
+
 private:
   void accept_loop() noexcept;
 
-  //! A read handler.
-  ReadHandler _readHandler;
+  //! A client handler.
+  ClientHandler _clientHandler;
 
   asio::io_context _io_ctx;
   asio::ip::tcp::acceptor _acceptor;

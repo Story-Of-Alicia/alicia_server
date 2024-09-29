@@ -6,11 +6,17 @@
 namespace
 {
 
+//! Unique user identifier.
 using UserId = std::uint32_t;
+//! Invalid user identifier.
+constexpr UserId InvalidUserId = std::numeric_limits<UserId>::max();
 
 struct User
 {
+  UserId id{};
   std::string nickName;
+  alicia::Gender gender;
+
   uint16_t level{};
   int32_t carrots{};
 };
@@ -18,28 +24,58 @@ struct User
 class LoginDirector
 {
 public:
-  LoginDirector()
+  LoginDirector(alicia::CommandServer& lobbyServer)
+    : _lobbyServer(lobbyServer)
   {
+    // TODO: Dummy data
     _userTokens[1] = "test";
+    _users[1] = {
+      .id = 1,
+      .nickName = "rgnt",
+      .gender = alicia::Gender::Boy,
+      .level = 60,
+      .carrots = 5000,};
   }
 
-  bool AuthorizeUser(UserId user, const std::string& providedToken)
+  void HandleUserLogin(
+    const alicia::LobbyCommandLogin& login)
   {
-    const auto tokenItr = _userTokens.find(user);
-    if (tokenItr == _userTokens.cend())
+    const auto& userTokenItr = _userTokens.find(login.memberNo);
+
+    // If the user does not have an active token,
+    // or the token is invalid - cancel the login.
+    if (userTokenItr == _userTokens.cend()
+      || login.authKey != userTokenItr->second)
     {
-      // User doesn't have any tokens.
-      return false;
+      _lobbyServer.QueueCommand(
+        alicia::CommandId::LobbyCommandLoginCancel,
+        [](alicia::SinkBuffer& buffer)
+        {
+          const alicia::LobbyCommandLoginCancel command{
+            .reason = alicia::LoginCancelReason::InvalidUser};
+
+          alicia::LobbyCommandLoginCancel::Write(
+            command,
+            buffer);
+        });
+
+      return;
     }
 
-    const auto& token = tokenItr->second;
-    if (token == providedToken)
-    {
-      // The tokens match.
-      return true;
-    }
+    // TODO: Get the user from data source if needed.
+    const auto& user = _users[login.memberNo];
 
-    return false;
+    // The token is valid, accept the login.
+    _lobbyServer.SendCommand([&user]()
+    {
+      return alicia::LobbyCommandLoginOK {
+        .lobbyTime = 0,
+        .selfUid = user.id,
+        .nickName = user.nickName,
+        .profileGender = user.gender,
+        .level = user.level,
+        .carrots = user.carrots};
+    });
   }
 
   User& GetUser(UserId user)
@@ -48,9 +84,13 @@ public:
   }
 
 private:
+  alicia::CommandServer& _lobbyServer;
+
   std::unordered_map<UserId, std::string> _userTokens;
   std::unordered_map<UserId, User> _users;
-} g_loginDirector;
+};
+
+std::unique_ptr<LoginDirector> g_loginDirector;
 
 }
 
@@ -60,6 +100,9 @@ int main()
   {
     alicia::CommandServer lobbyServer;
     lobbyServer.Host("127.0.0.1", 10030);
+
+    g_loginDirector = std::make_unique<>(lobbyServer);
+
     lobbyServer.RegisterCommandHandler(
       alicia::CommandId::LobbyCommandLogin,
       [&](auto& buffer)
@@ -68,25 +111,7 @@ int main()
         alicia::LobbyCommandLogin::Read(
           loginCommand, buffer);
 
-        const bool result = g_loginDirector.AuthorizeUser(
-          loginCommand.memberNo, loginCommand.authKey);
-        if (result)
-        {
-          const auto& user = g_loginDirector.GetUser(
-            loginCommand.memberNo);
-
-          lobbyServer.SendCommand([&](auto& buffer)
-          {
-            const alicia::LobbyCommandLoginOK loginOkCommand {
-              .lobbyTime = 0 /* todo: win filetime*/,
-              .selfUid = loginCommand.memberNo,
-              .nickName = user.nickName,
-              .level = user.level,
-              .carrots = user.carrots};
-
-            alicia::LobbyCommandLoginOK::Write(loginOkCommand, buffer);
-          });
-        }
+        g_loginDirector.HandleUserLogin(loginCommand);
       });
   });
 
