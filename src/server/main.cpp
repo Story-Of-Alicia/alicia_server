@@ -38,6 +38,7 @@ public:
   }
 
   void HandleUserLogin(
+    alicia::ClientId clientId,
     const alicia::LobbyCommandLogin& login)
   {
     const auto& userTokenItr = _userTokens.find(login.memberNo);
@@ -48,6 +49,8 @@ public:
       || login.authKey != userTokenItr->second)
     {
       _lobbyServer.QueueCommand(
+        clientId,
+        alicia::CommandId::LobbyCommandLoginOK,
         alicia::CommandId::LobbyCommandLoginCancel,
         [](alicia::SinkBuffer& buffer)
         {
@@ -66,7 +69,10 @@ public:
     const auto& user = _users[login.memberNo];
 
     // The token is valid, accept the login.
-    _lobbyServer.SendCommand([&user]()
+    _lobbyServer.QueueCommand(
+      clientId,
+      alicia::CommandId::LobbyCommandLoginOK,
+      [&user]()
     {
       return alicia::LobbyCommandLoginOK {
         .lobbyTime = 0,
