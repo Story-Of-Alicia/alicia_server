@@ -3,6 +3,13 @@
 namespace alicia
 {
 
+namespace
+{
+
+constexpr std::size_t MaxBufferSize = 4096;
+
+} // anon namespace
+
 Client::Client(asio::ip::tcp::socket&& socket) noexcept
     : _socket(std::move(socket))
 {
@@ -25,8 +32,7 @@ void Client::QueueWrite(WriteSupplier writeSupplier)
   std::scoped_lock writeLock(_writeMutex);
 
   // Call the supplier.
-  std::ostream stream(&_writeBuffer);
-  _writeHandler(stream, writeSupplier);
+  _writeHandler(_writeBuffer, writeSupplier);
 
   // Send the whole buffer.
   asio::async_write(
@@ -56,7 +62,7 @@ void Client::read_loop() noexcept
   // ToDo: Consider frame-based read loop instead of real-time reads.
 
   _socket.async_read_some(
-    _readBuffer.prepare(4096),
+    _readBuffer.prepare(MaxBufferSize),
     [&](boost::system::error_code error, std::size_t size)
     {
       if (error)
@@ -72,16 +78,12 @@ void Client::read_loop() noexcept
       _readBuffer.commit(size);
 
       // ToDo: Read & handle timing.
-
-      // Create source buffer.
-      std::istream stream(&_readBuffer);
-
       {
         // Call the read handler
         std::scoped_lock readLock(_readMutex);
         if (_readHandler)
         {
-          _readHandler(stream);
+          _readHandler(_readBuffer);
         }
       }
 

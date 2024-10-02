@@ -9,15 +9,29 @@
 #include "libserver/base/server.hpp"
 
 #include <unordered_map>
+#include <queue>
 
 namespace alicia
 {
 
 //! A command handler.
 using CommandHandler = std::function<void(SourceBuffer&)>;
+//! A command supplier.
 using CommandSupplier = std::function<void(SinkBuffer&)>;
 
-//! A command server
+//! A command client.
+class CommandClient
+{
+public:
+  void RollCode(uint32_t factor);
+  uint32_t GetRollingCode();
+
+private:
+  std::queue<CommandSupplier> _commandQueue;
+  uint32_t _rollingCode = 0x0;
+};
+
+//! A command server.
 class CommandServer
 {
 public:
@@ -42,6 +56,8 @@ public:
 
 private:
   std::unordered_map<CommandId, CommandHandler> _handlers{};
+  std::unordered_map<ClientId, CommandClient> _clients{};
+
   Server _server;
 };
 

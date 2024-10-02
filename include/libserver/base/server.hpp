@@ -21,9 +21,9 @@ using WriteSupplier = std::function<void(std::ostream&)>;
 
 //! A read handler.
 //! todo: comment about cyclic buffer
-using ReadHandler = std::function<bool(std::istream&)>;
+using ReadHandler = std::function<bool(asio::streambuf&)>;
 //! A write handler.
-using WriteHandler = std::function<bool(std::ostream&, WriteSupplier&)>;
+using WriteHandler = std::function<bool(asio::streambuf&, WriteSupplier&)>;
 //! A client handler.
 using ClientHandler = std::function<void(ClientId)>;
 

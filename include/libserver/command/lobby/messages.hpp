@@ -87,7 +87,6 @@ struct MacroOptions
   std::array<std::string, 8> macros;
 };
 
-
 struct Character
 {
   //! Used to build character from the _ClientCharDefaultPartInfo table.
@@ -256,7 +255,6 @@ struct LobbyCommandLoginOK
 
   Character character{};
   Horse horse{};
-
 
   //! Writes the command to a provided sink buffer.
   //! @param command Command.

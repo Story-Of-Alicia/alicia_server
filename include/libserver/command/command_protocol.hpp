@@ -74,6 +74,8 @@ enum class CommandId
   LobbyShowInventory = 0x007e,
   LobbyShowInventoryOK = 0x007f,
   LobbyShowInventoryCancel = 0x0080,
+
+  Count = 0x0FFF,
 };
 
 } // namespace alicia

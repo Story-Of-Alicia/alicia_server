@@ -1,6 +1,7 @@
 #include <libserver/alicia.hpp>
-
 #include <libserver/command/command_server.hpp>
+
+#include <memory>
 #include <thread>
 
 namespace
@@ -50,7 +51,6 @@ public:
     {
       _lobbyServer.QueueCommand(
         clientId,
-        alicia::CommandId::LobbyCommandLoginOK,
         alicia::CommandId::LobbyCommandLoginCancel,
         [](alicia::SinkBuffer& buffer)
         {
@@ -72,16 +72,17 @@ public:
     _lobbyServer.QueueCommand(
       clientId,
       alicia::CommandId::LobbyCommandLoginOK,
-      [&user]()
-    {
-      return alicia::LobbyCommandLoginOK {
-        .lobbyTime = 0,
-        .selfUid = user.id,
-        .nickName = user.nickName,
-        .profileGender = user.gender,
-        .level = user.level,
-        .carrots = user.carrots};
-    });
+      [&user](alicia::SinkBuffer& sink)
+      {
+        const alicia::LobbyCommandLoginOK command{
+           .lobbyTime = 0,
+           .selfUid = user.id,
+           .nickName = user.nickName,
+           .profileGender = user.gender,
+           .level = user.level,
+           .carrots = user.carrots};
+        alicia::LobbyCommandLoginOK::Write(command, sink);
+      });
   }
 
   User& GetUser(UserId user)
@@ -107,7 +108,7 @@ int main()
     alicia::CommandServer lobbyServer;
     lobbyServer.Host("127.0.0.1", 10030);
 
-    g_loginDirector = std::make_unique<>(lobbyServer);
+    g_loginDirector = std::make_unique<LoginDirector>(lobbyServer);
 
     lobbyServer.RegisterCommandHandler(
       alicia::CommandId::LobbyCommandLogin,
@@ -117,7 +118,7 @@ int main()
         alicia::LobbyCommandLogin::Read(
           loginCommand, buffer);
 
-        g_loginDirector.HandleUserLogin(loginCommand);
+        g_loginDirector->HandleUserLogin(0, loginCommand);
       });
   });
 

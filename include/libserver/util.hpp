@@ -158,8 +158,9 @@ template <typename T> struct Reader
     assert(buffer.Get().good());
 
     const auto requiredByteCount = sizeof(value);
-    const auto actuallyRead =
-      buffer.Get().readsome(reinterpret_cast<char*>(&value), requiredByteCount);
+    const auto actuallyRead = buffer.Get().readsome(
+      reinterpret_cast<char*>(&value),
+      requiredByteCount);
 
     // Please, please work.
     assert(requiredByteCount == actuallyRead);
