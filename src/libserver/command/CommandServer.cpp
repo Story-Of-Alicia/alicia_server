@@ -1,5 +1,5 @@
 
-#include "libserver/command/command_server.hpp"
+#include "libserver/command/CommandServer.hpp"
 #include "libserver/util.hpp"
 
 namespace alicia
@@ -10,7 +10,7 @@ namespace
 
 constexpr std::size_t MaxCommandSize = 2048;
 
-} // namespace
+} // anon namespace
 
 void CommandClient::RollCode(uint32_t factor)
 {
@@ -60,6 +60,8 @@ CommandServer::CommandServer()
           return false;
         }
 
+        // Message is
+        // Consume the bytes of the message magic.
         readBuffer.consume(
           sizeof(MessageMagic));
 
@@ -88,6 +90,7 @@ CommandServer::CommandServer()
         // Call the handler.
         handler(sourceBuffer);
 
+        // Consume the bytes of the command data.
         readBuffer.consume(commandDataSize);
 
         return true;

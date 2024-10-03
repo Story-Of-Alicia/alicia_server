@@ -5,7 +5,7 @@
 #ifndef COMMAND_SERVER_HPP
 #define COMMAND_SERVER_HPP
 
-#include "command_protocol.hpp"
+#include "CommandProtocol.hpp"
 #include "libserver/base/server.hpp"
 
 #include <unordered_map>

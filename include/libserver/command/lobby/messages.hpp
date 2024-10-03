@@ -142,7 +142,7 @@ struct Horse
     uint32_t speed{};
     uint32_t strength{};
     uint32_t ambition{};
-  };
+  } stats;
 
   uint32_t rating{};
   uint8_t clazz{};
@@ -229,6 +229,7 @@ struct LobbyCommandLoginOK
   int32_t val2{};
   int8_t val3{};
 
+  //! Option type mask.
   OptionType optionType{};
   KeyboardOptions keyboardOptions{};
   MacroOptions macroOptions{};

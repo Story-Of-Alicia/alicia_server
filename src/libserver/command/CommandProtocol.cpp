@@ -1,4 +1,4 @@
-#include "libserver/command/command_protocol.hpp"
+#include "libserver/command/CommandProtocol.hpp"
 
 namespace alicia
 {

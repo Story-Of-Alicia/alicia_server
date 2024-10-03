@@ -1,5 +1,5 @@
 #include <libserver/alicia.hpp>
-#include <libserver/command/command_server.hpp>
+#include <libserver/command/CommandServer.hpp>
 
 #include <memory>
 #include <thread>
