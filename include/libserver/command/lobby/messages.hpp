@@ -205,6 +205,8 @@ struct Horse
     uint32_t gliding{};
   } mastery;
 
+  uint32_t val16{};
+  uint32_t val17{};
 };
 
 //! Clientbound login OK command.
@@ -218,9 +220,7 @@ struct LobbyCommandLoginOK
   std::string nickName{};
   Gender profileGender{Gender::Baby};
 
-  uint8_t characterEquipmentCount{};
   std::array<Item, 16> characterEquipment{};
-  uint8_t horseEquipmentCount{};
   std::array<Item, 250> horseEquipment{};
 
   uint16_t level{};
@@ -239,15 +239,16 @@ struct LobbyCommandLoginOK
   AgeGroup ageGroup{};
   uint8_t val4{};
 
-  struct Unk
+  struct Unk1
   {
     uint16_t val0{};
     uint8_t val1{};
     uint32_t val2{};
     uint32_t val3{};
   };
-  std::array<Unk, 16> val5;
+  std::array<Unk1, 16> val5;
 
+  // 256 characters max
   std::string val6{};
 
   uint32_t address{};
@@ -256,6 +257,94 @@ struct LobbyCommandLoginOK
 
   Character character{};
   Horse horse{};
+
+  struct Struct0
+  {
+    struct Unk2
+    {
+      uint32_t val0{};
+      uint32_t val1{};
+    };
+    std::array<Unk2, 16> values;
+  } val7{};
+
+  // std::bitset
+  uint32_t val8{};
+
+  struct Struct1
+  {
+    uint16_t val0{};
+    uint16_t val1{};
+    uint16_t val2{};
+  } val9{};
+
+  uint32_t val10{};
+
+  struct Struct2
+  {
+    uint8_t val0{};
+    uint32_t val1{};
+    uint16_t val2{};
+  } val11{};
+
+  struct Struct3
+  {
+    struct Unk
+    {
+      uint8_t val0{};
+      uint8_t val1{};
+    };
+
+    std::array<Unk, 12> values;
+  } val12{};
+
+  struct Struct4
+  {
+    struct Unk
+    {
+      uint16_t val0{};
+      uint8_t val1{};
+      uint8_t val2{};
+    };
+
+    std::array<Unk, 128> values;
+  } val13{};
+
+  uint32_t val14{};
+
+  struct Struct5
+  {
+    uint32_t val0{};
+    uint8_t val1{};
+    uint32_t val2{};
+    std::string val3{};
+    uint8_t val4{};
+    uint32_t val5{};
+    // ignored by the client?
+    uint8_t val6{};
+  } val15{};
+
+  uint8_t val16{};
+
+  struct Struct6
+  {
+    uint32_t val0{};
+    uint32_t val1{};
+    uint32_t val2{};
+    uint32_t val3{};
+  } val17{};
+
+  uint32_t val18{};
+  uint32_t val19{};
+  uint32_t val20{};
+
+  struct Struct7
+  {
+    uint32_t val0{};
+    uint32_t val1{};
+    std::string val2{};
+    uint32_t val3{};
+  } val21{};
 
   //! Writes the command to a provided sink buffer.
   //! @param command Command.

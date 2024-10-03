@@ -14,7 +14,7 @@ target_compile_features(project-properties
 add_library(alicia-libserver STATIC
         src/libserver/alicia.cpp
         src/libserver/util.cpp
-        src/libserver/base/server.cpp
+        src/libserver/base/Server.cpp
         src/libserver/command/CommandProtocol.cpp
         src/libserver/command/CommandServer.cpp
         src/libserver/command/lobby/messages.cpp

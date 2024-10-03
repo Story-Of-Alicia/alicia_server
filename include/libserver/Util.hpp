@@ -2,6 +2,8 @@
 // Created by rgnter on 4/09/2024.
 //
 
+#include <iostream>
+
 #ifndef UTIL_HPP
 #define UTIL_HPP
 
@@ -9,26 +11,26 @@
 template <> \
 struct Writer<x> \
 { \
-void operator()( \
+std::size_t operator()( \
   const x& value, SinkBuffer& buffer) const; \
 }; \
 template<> \
 struct Reader<x> \
 { \
-void operator()( \
+std::size_t operator()( \
   x& value, SourceBuffer& buffer) const; \
 };
 
 #define DEFINE_WRITER_READER(x, writer, reader) \
-void Writer<x>::operator()( \
+std::size_t Writer<x>::operator()( \
   const x& value, SinkBuffer& buffer) const \
 { \
-  writer(value, buffer); \
+  return writer(value, buffer); \
 } \
-void Reader<x>::operator()( \
+std::size_t Reader<x>::operator()( \
   x& value, SourceBuffer& buffer) const \
 { \
-  reader(value, buffer); \
+  return reader(value, buffer); \
 }
 
 #define COMMAND_WRITER_READER(x) \
@@ -73,7 +75,7 @@ public:
   //! @return Reference to this.
   template <typename T> SinkBuffer& Write(const T& value)
   {
-    Writer<T>{}(value, *this);
+    _cursor += Writer<T>{}(value, *this);
     return *this;
   }
 
@@ -85,6 +87,7 @@ public:
 protected:
   //! A reference to source stream;
   std::ostream& _sink;
+  std::size_t _cursor{};
 };
 
 //! General binary writer.
@@ -94,13 +97,15 @@ protected:
 template <typename T>
 struct Writer
 {
-  void operator()(const T& value, SinkBuffer& buffer)
+  std::size_t operator()(const T& value, SinkBuffer& buffer)
   {
     const auto requiredByteCount = sizeof(value);
     buffer.Get().write(reinterpret_cast<const char*>(&value), requiredByteCount);
 
     // Please, please work.
-    assert(buffer.Get().good());
+    assert(buffer.Get().good() && "Couldn't write bytes to the output stream.");
+
+    return requiredByteCount;
   }
 };
 
@@ -114,7 +119,8 @@ public:
   //! Default constructor
   //!
   //! @param stream Source stream.
-  explicit SourceBuffer(std::istream& stream) : _source(stream) {}
+  explicit SourceBuffer(std::istream& stream)
+    : _source(stream) {}
 
   //! Deleted copy constructor.
   SourceBuffer(const SourceBuffer&) = delete;
@@ -133,11 +139,11 @@ public:
   //! @return Reference to this.
   template <typename T> SourceBuffer& Read(T& value)
   {
-    Reader<T>{}(value, *this);
+    _cursor += Reader<T>{}(value, *this);
     return *this;
   }
 
-  //! Get reference to the underlying souce stream.
+  //! Get reference to the underlying source stream.
   //!
   //! @return Reference to the stream.
   std::istream& Get() { return _source; }
@@ -145,6 +151,7 @@ public:
 protected:
   //! A reference to source stream;
   std::istream& _source;
+  std::size_t _cursor{};
 };
 
 //! General binary reader.
@@ -153,7 +160,7 @@ protected:
 //! @tparam T Type of value.
 template <typename T> struct Reader
 {
-  void operator()(T& value, SourceBuffer& buffer)
+  std::size_t operator()(T& value, SourceBuffer& buffer)
   {
     assert(buffer.Get().good());
 
@@ -164,6 +171,9 @@ template <typename T> struct Reader
 
     // Please, please work.
     assert(requiredByteCount == actuallyRead);
+    assert(buffer.Get().good() && "Couldn't read bytes from the output stream.");
+
+    return actuallyRead;
   }
 };
 

@@ -4,6 +4,8 @@
 #include <memory>
 #include <thread>
 
+#include <libserver/base/server.hpp>
+
 namespace
 {
 
@@ -42,6 +44,10 @@ public:
     alicia::ClientId clientId,
     const alicia::LobbyCommandLogin& login)
   {
+    assert(login.constant0 == 26482);
+    assert(login.constant1 == 29806);
+
+    // ToDo: Treat input.
     const auto& userTokenItr = _userTokens.find(login.memberNo);
 
     // If the user does not have an active token,
@@ -103,29 +109,41 @@ std::unique_ptr<LoginDirector> g_loginDirector;
 
 int main()
 {
+
+  boost::asio::streambuf buf;
+  std::iostream output(&buf);
+
+  uint32_t t = 1;
+  output.write(reinterpret_cast<const char*>(&t), 4);
+  assert(output.good());
+
   std::jthread lobbyThread([]()
   {
     alicia::CommandServer lobbyServer;
-    lobbyServer.Host("127.0.0.1", 10030);
-
     g_loginDirector = std::make_unique<LoginDirector>(lobbyServer);
 
+    // Handlers
     lobbyServer.RegisterCommandHandler(
       alicia::CommandId::LobbyCommandLogin,
-      [&](auto& buffer)
+      [](alicia::ClientId clientId, auto& buffer)
       {
         alicia::LobbyCommandLogin loginCommand;
         alicia::LobbyCommandLogin::Read(
           loginCommand, buffer);
 
-        g_loginDirector->HandleUserLogin(0, loginCommand);
+        g_loginDirector->HandleUserLogin(clientId, loginCommand);
       });
+
+    // Host
+    lobbyServer.Host("127.0.0.1", 10030);
+    printf("Lobby server running on loopback port %d\n", 10030);
   });
 
   std::jthread ranchThread([]()
   {
     alicia::CommandServer ranchServer;
     ranchServer.Host("127.0.0.1", 10031);
+    printf("Ranch server running on loopback port %d\n", 10031);
   });
 
   return 0;

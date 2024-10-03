@@ -25,6 +25,11 @@ void Client::SetWriteHandler(WriteHandler writeHandler)
   _writeHandler = std::move(writeHandler);
 }
 
+void Client::Begin()
+{
+  read_loop();
+}
+
 void Client::QueueWrite(WriteSupplier writeSupplier)
 {
   // ToDo: Consider frame-based write loop instead of real-time writes.
@@ -32,7 +37,8 @@ void Client::QueueWrite(WriteSupplier writeSupplier)
   std::scoped_lock writeLock(_writeMutex);
 
   // Call the supplier.
-  _writeHandler(_writeBuffer, writeSupplier);
+  std::ostream outputStream(&_writeBuffer);
+  writeSupplier(outputStream);
 
   // Send the whole buffer.
   asio::async_write(
@@ -119,7 +125,7 @@ void Server::SetClientHandler(ClientHandler handler)
 Client& Server::GetClient(ClientId clientId)
 {
   const auto clientItr = _clients.find(clientId);
-  if (clientItr != _clients.end())
+  if (clientItr == _clients.end())
   {
     throw std::runtime_error("Invalid client Id");
   }
@@ -151,6 +157,7 @@ void Server::accept_loop() noexcept
       assert(emplaced == true);
 
       _clientHandler(clientId);
+      itr->second.Begin();
 
       // Continue the accept loop.
       accept_loop();

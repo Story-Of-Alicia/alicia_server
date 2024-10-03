@@ -42,9 +42,11 @@ CommandServer::CommandServer()
         SinkBuffer sinkBuffer(outputStream);
 
         // Read the message magic.
-        MessageMagic magic{};
-        sourceBuffer.Read(magic.id)
-          .Read(magic.length);
+        uint32_t magicValue{};
+        sourceBuffer.Read(magicValue);
+
+        const MessageMagic magic = decode_message_magic(
+          magicValue);
 
         // Handle invalid magic.
         if (magic.id > static_cast<uint16_t>(CommandId::Count)
@@ -53,9 +55,11 @@ CommandServer::CommandServer()
           throw std::runtime_error("Invalid message magic.");
         }
 
+        const auto commandDataSize = magic.length - sizeof(MessageMagic);
+
         // If the message data are not buffered,
         // wait for more data to arrive.
-        if (magic.length > readBuffer.in_avail())
+        if (commandDataSize > readBuffer.in_avail())
         {
           return false;
         }
@@ -73,7 +77,6 @@ CommandServer::CommandServer()
         // streamBuf.commit(scramble_data(code, sourceBuffer, sinkBuffer))
 
         const auto commandId = static_cast<CommandId>(magic.id);
-        const auto commandDataSize = magic.length - sizeof(MessageMagic);
 
         // Find the handler of the command.
         const auto handlerIter = _handlers.find(commandId);
@@ -88,7 +91,7 @@ CommandServer::CommandServer()
         assert(handler);
 
         // Call the handler.
-        handler(sourceBuffer);
+        handler(clientId, sourceBuffer);
 
         // Consume the bytes of the command data.
         readBuffer.consume(commandDataSize);
@@ -98,8 +101,11 @@ CommandServer::CommandServer()
 
     // Set the write handler for the new client.
     client.SetWriteHandler(
-      [this](std::streambuf& writeBuffer, const WriteSupplier& supplier)
+      [this](asio::streambuf& writeBuffer, const WriteSupplier& supplier)
       {
+        std::ostream stream(&writeBuffer);
+        supplier(stream);
+
         return true;
       });
 
@@ -134,34 +140,33 @@ void CommandServer::QueueCommand(
   _server.GetClient(client).QueueWrite(
     [command, supplier = std::move(supplier)](std::ostream& stream)
     {
-      SinkBuffer sink(stream);
-
-      const auto origin = stream.tellp();
-
-      // Reserve bytes for the message magic.
-      stream.seekp(sizeof(MessageMagic))
-        .tellp();
-
-      // Write the message data.
-      supplier(sink);
-
-      // Determine the size of the message data.
-      const auto messageDataSize = stream.tellp() - origin;
-
-      // Payload is the message data size
-      // with the size of the message magic.
-      const uint16_t payloadSize = messageDataSize + sizeof(MessageMagic);
-
-      // Traverse back the stream before the message data,
-      // and write the message magic.
-      stream.seekp(-payloadSize);
-
-      // Write the message magic.
-      const MessageMagic magic{
-        .id = static_cast<uint16_t>(command),
-        .length = payloadSize};
-      sink.Write(magic.id)
-        .Write(magic.length);
+      // asio::streambuf commandBuffer(MaxCommandSize);
+      // std::ostream commandStream(&commandBuffer);
+      // SinkBuffer commandSink(commandStream);
+      //
+      // commandBuffer.
+      //
+      // // Write the message data.
+      // supplier(commandSink);
+      //
+      // SinkBuffer messageSink(stream);
+      //
+      // // Payload is the message data size
+      // // with the size of the message magic.
+      // const uint16_t payloadSize = messageSize;
+      //
+      // // Traverse back the stream before the message data,
+      // // and write the message magic.
+      // stream.seekp(
+      //   -payloadSize, std::ios_base::cur);
+      //
+      // // Write the message magic.
+      // const MessageMagic magic{
+      //   .id = static_cast<uint16_t>(command),
+      //   .length = payloadSize};
+      //
+      // magicValue = encode_message_magic(magic);
+      // messageSink.Write(magicValue);
     });
 }
 

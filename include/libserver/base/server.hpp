@@ -41,6 +41,8 @@ public:
   //! Sets the write handler of the client.
   void SetWriteHandler(WriteHandler writeHandler);
 
+  void Begin();
+
   //! Queues a write.
   void QueueWrite(WriteSupplier writeSupplier);
 
@@ -49,14 +51,14 @@ private:
   void read_loop() noexcept;
 
   //! A read buffer.
-  asio::streambuf _readBuffer;
+  asio::streambuf _readBuffer{};
   //! A read mutex.
   std::mutex _readMutex;
   //! A read handler.
   ReadHandler _readHandler;
 
   //! A write buffer.
-  asio::streambuf _writeBuffer;
+  asio::streambuf _writeBuffer{};
   //! A write mutex.
   std::mutex _writeMutex;
   //! A write handler.

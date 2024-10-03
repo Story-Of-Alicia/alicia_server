@@ -106,6 +106,9 @@ void WriteHorse(
     .Write(mastery.jumping)
     .Write(mastery.sliding)
     .Write(mastery.gliding);
+
+  buf.Write(horse.val16)
+    .Write(horse.val17);
 }
 
 } // anon namespace
@@ -138,14 +141,16 @@ void LobbyCommandLoginOK::Write(
     .Write(static_cast<uint16_t>(command.profileGender));
 
   // Character equipment
-  buffer.Write(command.characterEquipmentCount);
+  buffer.Write(static_cast<uint8_t>(
+    command.characterEquipment.size()));
   for (const Item& item : command.characterEquipment)
   {
     WriteItem(buffer, item);
   }
 
   // Horse equipment
-  buffer.Write(command.horseEquipmentCount);
+  buffer.Write(static_cast<uint8_t>(
+    command.horseEquipment.size()));
   for (const Item& item : command.horseEquipment)
   {
     WriteItem(buffer, item);
@@ -220,6 +225,77 @@ void LobbyCommandLoginOK::Write(
 
   WriteCharacter(buffer, command.character);
   WriteHorse(buffer, command.horse);
+
+  // Struct1
+  const auto& struct1 = command.val7;
+  buffer.Write(
+    static_cast<uint8_t>(struct1.values.size()));
+  for (const auto& value : struct1.values)
+  {
+    buffer.Write(value.val0)
+      .Write(value.val1);
+  }
+
+  buffer.Write(command.val8);
+
+  // Struct2
+  const auto& struct2 = command.val11;
+  buffer.Write(struct2.val0)
+    .Write(struct2.val1)
+    .Write(struct2.val2);
+
+  // Struct3
+  const auto& struct3 = command.val12;
+  buffer.Write(
+    static_cast<uint8_t>(struct3.values.size()));
+  for (const auto& value : struct3.values)
+  {
+    buffer.Write(value.val0)
+      .Write(value.val1);
+  }
+
+  // Struct4
+  const auto& struct4 = command.val13;
+  buffer.Write(
+    static_cast<uint8_t>(struct4.values.size()));
+  for (const auto& value : struct4.values)
+  {
+    buffer.Write(value.val0)
+      .Write(value.val1)
+      .Write(value.val2);
+  }
+
+  buffer.Write(command.val14);
+
+  // Struct5
+  const auto& struct5 = command.val15;
+  buffer.Write(struct5.val0)
+    .Write(struct5.val1)
+    .Write(struct5.val2)
+    .Write(struct5.val3)
+    .Write(struct5.val4)
+    .Write(struct5.val5)
+    .Write(struct5.val6);
+
+  buffer.Write(command.val16);
+
+  // Struct6
+  const auto& struct6 = command.val17;
+  buffer.Write(struct6.val0)
+    .Write(struct6.val1)
+    .Write(struct6.val2)
+    .Write(struct6.val3);
+
+  buffer.Write(command.val18)
+    .Write(command.val19)
+    .Write(command.val20);
+
+  // Struct7
+  const auto& struct7 = command.val21;
+  buffer.Write(struct7.val0)
+    .Write(struct7.val1)
+    .Write(struct7.val2)
+    .Write(struct7.val3);
 }
 
 void LobbyCommandLoginOK::Read(
@@ -231,7 +307,7 @@ void LobbyCommandLoginOK::Read(
 void LobbyCommandLoginCancel::Write(
   const LobbyCommandLoginCancel& command, SinkBuffer& buffer)
 {
-  throw std::logic_error("Not implemented.");
+  buffer.Write(static_cast<uint8_t>(command.reason));
 }
 
 void LobbyCommandLoginCancel::Read(

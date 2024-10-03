@@ -6,7 +6,7 @@ namespace alicia
 namespace
 {
 
-void WriteCString(const std::string& value, SinkBuffer& buffer)
+std::size_t WriteCString(const std::string& value, SinkBuffer& buffer)
 {
   for (char b : value)
   {
@@ -14,9 +14,10 @@ void WriteCString(const std::string& value, SinkBuffer& buffer)
   }
 
   buffer.Write(static_cast<char>(0x00));
+  return 1;
 }
 
-void ReadCString(std::string& value, SourceBuffer& buffer)
+std::size_t ReadCString(std::string& value, SourceBuffer& buffer)
 {
   value.reserve(512);
 
@@ -35,6 +36,8 @@ void ReadCString(std::string& value, SourceBuffer& buffer)
       value += read;
     }
   } while(readNext);
+
+  return value.size();
 }
 
 } // namespace anon
