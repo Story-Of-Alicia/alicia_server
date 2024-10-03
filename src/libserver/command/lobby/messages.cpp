@@ -129,9 +129,8 @@ void LobbyCommandLogin::Read(
 void LobbyCommandLoginOK::Write(
   const LobbyCommandLoginOK& command, SinkBuffer& buffer)
 {
-  buffer
-  .Write(command.lobbyTime)
-  .Write(command.val0);
+  buffer.Write(command.lobbyTime)
+    .Write(command.val0);
 
   // Profile
   buffer.Write(command.selfUid)
@@ -221,7 +220,6 @@ void LobbyCommandLoginOK::Write(
 
   WriteCharacter(buffer, command.character);
   WriteHorse(buffer, command.horse);
-
 }
 
 void LobbyCommandLoginOK::Read(
