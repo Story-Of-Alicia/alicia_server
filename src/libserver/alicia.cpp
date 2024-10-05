@@ -1555,7 +1555,7 @@ void alicia::Client::read_loop(Server& server)
       }
       break;
       #endif
-
+      
       #ifdef AcCmdCRRanchCmdAction
       case AcCmdCRRanchCmdAction:
       {
@@ -1573,52 +1573,20 @@ void alicia::Client::read_loop(Server& server)
       }
       break;
       #endif
-
+      
       #ifdef AcCmdCRUpdateDailyQuest
       case AcCmdCRUpdateDailyQuest:
       {
-        DummyCommand response(AcCmdCRUpdateDailyQuestOK);
+        DummyCommand response(AcCmdRCCompleteDailyQuestNotify);
         response.data = {
-          0x00, 0x00, 0x00, 0x00,   // 4 bytes unknown maybe player id?
+          request.data[0], request.data[1], request.data[2], request.data[3],   // 4 bytes unknown not player id
     
-          // FUN_00473650 result (4 fields)
-          0x00, 0x00,               // 2 bytes unknown
-          0x00, 0x00, 0x00, 0x00,   // 4 bytes unknown
-          0x00,                     // 1 byte unknown
-          0x00,                     // 1 byte unknown
-    
-          0x00, 0x00, 0x00, 0x00,   // 4 bytes unknown
-          0x00, 0x00, 0x00, 0x00,   // 4 bytes unknown
+          request.data[4], request.data[5],
         };
         this->send_command(response);
       }
       break;
       #endif
-
-      /*
-      #ifdef AcCmdCRUpdateDailyQuest
-      case AcCmdCRUpdateDailyQuest:
-      {
-        DummyCommand response(AcCmdRCUpdateDailyQuestNotify);
-        response.data = {
-          0x00, 0x00, 0x00, 0x00,   // 4 bytes unknown
-          0x00, 0x00,               // 2 bytes unknown
-    
-          // FUN_004caf70 result (3 fields)
-          0x00,                     // 1 byte unknown
-          0x00, 0x00, 0x00, 0x00,   // 4 bytes unknown
-          0x00,                     // 1 byte unknown
-    
-          0x00, 0x00, 0x00, 0x00,   // 4 bytes unknown
-          0x00,                     // 1 byte unknown
-          0x00, 0x00, 0x00, 0x00,   // 4 bytes unknown
-          0x00, 0x00, 0x00, 0x00,   // 4 bytes unknown
-        };
-        this->send_command(response);
-      }
-      break;
-      #endif
-      */
 
       #ifdef AcCmdCREmblemList
       case AcCmdCREmblemList:
