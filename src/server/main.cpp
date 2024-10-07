@@ -109,6 +109,25 @@ std::unique_ptr<LoginDirector> g_loginDirector;
 
 int main()
 {
+  alicia::Buffer<4096> buffer;
+
+  uint64_t val { 0xDEAD'BEEF'CAFE'BABE };
+
+  buffer.Write(&val, sizeof val);
+  buffer.Seek(0);
+
+  uint32_t val0 {};
+  uint32_t val1 {};
+
+  buffer.Read(&val0, sizeof val0);
+  assert(buffer.GetCursor() == sizeof val0);
+  buffer.Read(&val1, sizeof val1);
+  assert(buffer.GetCursor() == sizeof val0 + sizeof val1);
+
+  assert(buffer.GetCursor() == sizeof val);
+  // Little endian!
+  assert(val1 == 0xDEAD'BEEF);
+  assert(val0 == 0xCAFE'BABE);
 
   boost::asio::streambuf buf;
   std::iostream output(&buf);

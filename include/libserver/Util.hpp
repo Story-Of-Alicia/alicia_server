@@ -3,6 +3,8 @@
 //
 
 #include <iostream>
+#include <format>
+#include <vector>
 
 #ifndef UTIL_HPP
 #define UTIL_HPP
@@ -48,7 +50,86 @@ namespace alicia
 template <typename T>
 struct Writer;
 
+//! A simple constant-size buffer with simple I/O operations.
+//! ToDo: A test suite
+template<std::size_t Capacity>
+class Buffer
+{
+public:
+  //! Writes to the buffer storage.
+  //! Fails if the operation can't be completed wholly.
+  //!
+  //! @param data Data.
+  //! @param size Size of data.
+  void Write(const void* data, std::size_t size)
+  {
+    if (_cursor + size > _capacity)
+    {
+      throw std::overflow_error(
+        std::format(
+          "Couldn't write {} bytes to the buffer. Not enough space.",
+          size));
+    }
+
+    // Write the bytes.
+    for (std::size_t byteIdx = 0; byteIdx < size; ++byteIdx)
+    {
+      _storage[_cursor++] = static_cast<const std::byte*>(data)[byteIdx];
+    }
+  };
+
+  //! Read from the buffer storage.
+  //! Fails if the operation can't be completed wholly.
+  //!
+  //! @param data Data.
+  //! @param size Size of data.
+  void Read(void* data, std::size_t size)
+  {
+    if (_cursor + size > _capacity)
+    {
+      throw std::overflow_error(
+        std::format(
+          "Couldn't read {} bytes from the buffer. Not enough space.",
+          size));
+    }
+
+    // Read the bytes.
+    for (std::size_t byteIdx = 0; byteIdx < size; ++byteIdx)
+    {
+      static_cast<std::byte*>(data)[byteIdx] = _storage[_cursor++];
+    }
+  }
+
+  //! Seeks to the cursor specified.
+  //! @param cursor Cursor position.
+  void Seek(std::size_t cursor)
+  {
+    if (cursor > _capacity)
+    {
+      throw std::overflow_error(
+        std::format(
+          "Couldn't seek to {}. Not enough space.",
+          cursor));
+    }
+
+    _cursor = cursor;
+  }
+
+  //! Gets the cursor of the storage.
+  //! @returns Cursor position.
+  [[nodiscard]] std::size_t GetCursor() const
+  {
+    return _cursor;
+  };
+
+public:
+  std::array<std::byte, Capacity> _storage{};
+  std::size_t _cursor{};
+  const std::size_t _capacity = Capacity;
+};
+
 //! Sink buffer.
+//! ToDo: A test suite
 class SinkBuffer
 {
 public:
@@ -113,6 +194,7 @@ struct Writer
 template <typename T> struct Reader;
 
 //! Source buffer.
+//! ToDo: A test suite
 class SourceBuffer
 {
 public:
