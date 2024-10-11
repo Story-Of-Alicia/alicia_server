@@ -388,6 +388,597 @@ struct LobbyCommandLoginCancel
     LobbyCommandLoginCancel& command, SourceBuffer& buffer);
 };
 
+
+//! Serverbound show inventory command.
+struct LobbyCommandShowInventory
+{
+  //! Writes the command to a provided sink buffer.
+  //! @param command Command.
+  //! @param buffer Sink buffer.
+  static void Write(
+    const LobbyCommandShowInventory& command, SinkBuffer& buffer);
+
+  //! Reader a command from a provided source buffer.
+  //! @param command Command.
+  //! @param buffer Source buffer.
+  static void Read(
+    LobbyCommandShowInventory& command, SourceBuffer& buffer);
+};
+
+//! Clientbound show inventory response.
+struct LobbyCommandShowInventoryOK
+{
+  uint8_t itemCount;
+  std::array<Item, 252> items{};
+
+  uint8_t horseCount;
+  std::array<Horse, 12> horses{};
+
+  //! Writes the command to a provided sink buffer.
+  //! @param command Command.
+  //! @param buffer Sink buffer.
+  static void Write(
+    const LobbyCommandShowInventoryOK& command, SinkBuffer& buffer);
+
+  //! Reader a command from a provided source buffer.
+  //! @param command Command.
+  //! @param buffer Source buffer.
+  static void Read(
+    LobbyCommandShowInventoryOK& command, SourceBuffer& buffer);
+};
+
+//! Clientbound show inventory cancel response.
+struct LobbyCommandShowInventoryCancel
+{
+  //! Writes the command to a provided sink buffer.
+  //! @param command Command.
+  //! @param buffer Sink buffer.
+  static void Write(
+    const LobbyCommandShowInventoryCancel& command, SinkBuffer& buffer);
+
+  //! Reader a command from a provided source buffer.
+  //! @param command Command.
+  //! @param buffer Source buffer.
+  static void Read(
+    LobbyCommandShowInventoryCancel& command, SourceBuffer& buffer);
+};
+
+
+//! Serverbound request league info command.
+struct LobbyCommandRequestLeagueInfo
+{
+  //! Writes the command to a provided sink buffer.
+  //! @param command Command.
+  //! @param buffer Sink buffer.
+  static void Write(
+    const LobbyCommandRequestLeagueInfo& command, SinkBuffer& buffer);
+
+  //! Reader a command from a provided source buffer.
+  //! @param command Command.
+  //! @param buffer Source buffer.
+  static void Read(
+    LobbyCommandRequestLeagueInfo& command, SourceBuffer& buffer);
+};
+
+//! Clientbound request league info response.
+struct LobbyCommandRequestLeagueInfoOK
+{
+  uint8_t unk0;
+  uint8_t unk1;
+  uint32_t unk2;
+  uint32_t unk3;
+  uint8_t unk4;
+  uint8_t unk5;
+  uint32_t unk6;
+  uint32_t unk7;
+  uint8_t unk8;
+  uint8_t unk9;
+  uint32_t unk10;
+  uint8_t unk11;
+  uint8_t unk12;
+  uint8_t unk13;
+
+  //! Writes the command to a provided sink buffer.
+  //! @param command Command.
+  //! @param buffer Sink buffer.
+  static void Write(
+    const LobbyCommandRequestLeagueInfoOK& command, SinkBuffer& buffer);
+
+  //! Reader a command from a provided source buffer.
+  //! @param command Command.
+  //! @param buffer Source buffer.
+  static void Read(
+    LobbyCommandRequestLeagueInfoOK& command, SourceBuffer& buffer);
+};
+
+//! Serverbound request league info command.
+struct LobbyCommandRequestLeagueInfoCancel
+{
+  //! Writes the command to a provided sink buffer.
+  //! @param command Command.
+  //! @param buffer Sink buffer.
+  static void Write(
+    const LobbyCommandRequestLeagueInfoCancel& command, SinkBuffer& buffer);
+
+  //! Reader a command from a provided source buffer.
+  //! @param command Command.
+  //! @param buffer Source buffer.
+  static void Read(
+    LobbyCommandRequestLeagueInfoCancel& command, SourceBuffer& buffer);
+};
+
+
+//! Serverbound achievement complete list command.
+struct LobbyCommandAchievementCompleteList
+{
+  uint32_t unk0;
+
+  //! Writes the command to a provided sink buffer.
+  //! @param command Command.
+  //! @param buffer Sink buffer.
+  static void Write(
+    const LobbyCommandAchievementCompleteList& command, SinkBuffer& buffer);
+
+  //! Reader a command from a provided source buffer.
+  //! @param command Command.
+  //! @param buffer Source buffer.
+  static void Read(
+    LobbyCommandAchievementCompleteList& command, SourceBuffer& buffer);
+};
+
+//! Clientbound achievement complete list response.
+struct LobbyCommandAchievementCompleteListOK
+{
+  uint32_t unk0;
+  uint16_t achievementCount;
+  std::vector<CompletedAchievement> achievements;
+
+  //! Writes the command to a provided sink buffer.
+  //! @param command Command.
+  //! @param buffer Sink buffer.
+  static void Write(
+    const LobbyCommandAchievementCompleteListOK& command, SinkBuffer& buffer);
+
+  //! Reader a command from a provided source buffer.
+  //! @param command Command.
+  //! @param buffer Source buffer.
+  static void Read(
+    LobbyCommandAchievementCompleteListOK& command, SourceBuffer& buffer);
+};
+
+struct CompletedAchievement
+{
+  uint16_t unk0;
+  uint8_t unk1;
+  uint32_t unk2;
+  uint8_t unk3;
+  uint8_t unk4;
+};
+
+
+//! Serverbound enter channel command.
+struct LobbyCommandEnterChannel
+{
+  uint8_t channel;
+
+  //! Writes the command to a provided sink buffer.
+  //! @param command Command.
+  //! @param buffer Sink buffer.
+  static void Write(
+    const LobbyCommandEnterChannel& command, SinkBuffer& buffer);
+
+  //! Reader a command from a provided source buffer.
+  //! @param command Command.
+  //! @param buffer Source buffer.
+  static void Read(
+    LobbyCommandEnterChannel& command, SourceBuffer& buffer);
+};
+
+//! Clientbound enter channel response.
+struct LobbyCommandEnterChannelOK
+{
+  uint8_t unk0;
+  uint16_t unk1;
+
+  //! Writes the command to a provided sink buffer.
+  //! @param command Command.
+  //! @param buffer Sink buffer.
+  static void Write(
+    const LobbyCommandEnterChannelOK& command, SinkBuffer& buffer);
+
+  //! Reader a command from a provided source buffer.
+  //! @param command Command.
+  //! @param buffer Source buffer.
+  static void Read(
+    LobbyCommandEnterChannelOK& command, SourceBuffer& buffer);
+};
+
+//! Serverbound enter channel command.
+struct LobbyCommandEnterChannelCancel
+{
+  //! Writes the command to a provided sink buffer.
+  //! @param command Command.
+  //! @param buffer Sink buffer.
+  static void Write(
+    const LobbyCommandEnterChannelCancel& command, SinkBuffer& buffer);
+
+  //! Reader a command from a provided source buffer.
+  //! @param command Command.
+  //! @param buffer Source buffer.
+  static void Read(
+    LobbyCommandEnterChannelCancel& command, SourceBuffer& buffer);
+};
+
+
+//! Serverbound make room command.
+struct LobbyCommandMakeRoom
+{
+  // presumably
+  std::string name;
+  std::string description;
+  uint8_t unk0;
+  uint8_t unk1;
+  uint8_t unk2;
+  uint16_t unk3;
+  uint8_t unk4;
+  uint16_t unk5;
+  uint8_t unk6;
+
+  //! Writes the command to a provided sink buffer.
+  //! @param command Command.
+  //! @param buffer Sink buffer.
+  static void Write(
+    const LobbyCommandMakeRoom& command, SinkBuffer& buffer);
+
+  //! Reader a command from a provided source buffer.
+  //! @param command Command.
+  //! @param buffer Source buffer.
+  static void Read(
+    LobbyCommandMakeRoom& command, SourceBuffer& buffer);
+};
+
+//! Clientbound make room response.
+struct LobbyCommandMakeRoomOK
+{
+  uint32_t unk0;
+  uint32_t unk1;
+  uint32_t ip;
+  uint16_t port;
+  uint8_t unk0;
+
+  //! Writes the command to a provided sink buffer.
+  //! @param command Command.
+  //! @param buffer Sink buffer.
+  static void Write(
+    const LobbyCommandMakeRoomOK& command, SinkBuffer& buffer);
+
+  //! Reader a command from a provided source buffer.
+  //! @param command Command.
+  //! @param buffer Source buffer.
+  static void Read(
+    LobbyCommandMakeRoomOK& command, SourceBuffer& buffer);
+};
+
+//! Serverbound make room command.
+struct LobbyCommandMakeRoomCancel
+{
+  uint8_t unk0;
+
+  //! Writes the command to a provided sink buffer.
+  //! @param command Command.
+  //! @param buffer Sink buffer.
+  static void Write(
+    const LobbyCommandMakeRoomCancel& command, SinkBuffer& buffer);
+
+  //! Reader a command from a provided source buffer.
+  //! @param command Command.
+  //! @param buffer Source buffer.
+  static void Read(
+    LobbyCommandMakeRoomCancel& command, SourceBuffer& buffer);
+};
+
+
+//! Serverbound request quest list command.
+struct LobbyCommandRequestQuestList
+{
+  uint32_t unk0;
+
+  //! Writes the command to a provided sink buffer.
+  //! @param command Command.
+  //! @param buffer Sink buffer.
+  static void Write(
+    const LobbyCommandRequestQuestList& command, SinkBuffer& buffer);
+
+  //! Reader a command from a provided source buffer.
+  //! @param command Command.
+  //! @param buffer Source buffer.
+  static void Read(
+    LobbyCommandRequestQuestList& command, SourceBuffer& buffer);
+};
+
+//! Clientbound request quest list response.
+struct LobbyCommandRequestQuestListOK
+{
+  uint32_t unk0;
+  uint16_t questCount;
+  std::vector<Quest> quests;
+
+  //! Writes the command to a provided sink buffer.
+  //! @param command Command.
+  //! @param buffer Sink buffer.
+  static void Write(
+    const LobbyCommandRequestQuestListOK& command, SinkBuffer& buffer);
+
+  //! Reader a command from a provided source buffer.
+  //! @param command Command.
+  //! @param buffer Source buffer.
+  static void Read(
+    LobbyCommandRequestQuestListOK& command, SourceBuffer& buffer);
+};
+
+struct Quest {
+  uint16_t unk0;
+  uint8_t unk1;
+  uint32_t unk2;
+  uint8_t unk3;
+  uint8_t unk4;
+};
+
+
+//! Serverbound enter ranch command.
+struct LobbyCommandEnterRanch
+{
+  uint32_t unk0;
+  std::string unk1;
+  uint8_t unk2;
+
+  //! Writes the command to a provided sink buffer.
+  //! @param command Command.
+  //! @param buffer Sink buffer.
+  static void Write(
+    const LobbyCommandEnterRanch& command, SinkBuffer& buffer);
+
+  //! Reader a command from a provided source buffer.
+  //! @param command Command.
+  //! @param buffer Source buffer.
+  static void Read(
+    LobbyCommandEnterRanch& command, SourceBuffer& buffer);
+};
+
+//! Clientbound enter ranch response.
+struct LobbyCommandEnterRanchOK
+{
+  uint32_t unk0;
+  uint32_t unk1;
+  uint32_t ip;
+  uint16_t port;
+
+  //! Writes the command to a provided sink buffer.
+  //! @param command Command.
+  //! @param buffer Sink buffer.
+  static void Write(
+    const LobbyCommandEnterRanchOK& command, SinkBuffer& buffer);
+
+  //! Reader a command from a provided source buffer.
+  //! @param command Command.
+  //! @param buffer Source buffer.
+  static void Read(
+    LobbyCommandEnterRanchOK& command, SourceBuffer& buffer);
+};
+
+//! Serverbound enter ranch command.
+struct LobbyCommandEnterRanchCancel
+{
+  uint16_t unk0;
+
+  //! Writes the command to a provided sink buffer.
+  //! @param command Command.
+  //! @param buffer Sink buffer.
+  static void Write(
+    const LobbyCommandEnterRanchCancel& command, SinkBuffer& buffer);
+
+  //! Reader a command from a provided source buffer.
+  //! @param command Command.
+  //! @param buffer Source buffer.
+  static void Read(
+    LobbyCommandEnterRanchCancel& command, SourceBuffer& buffer);
+};
+
+
+//! Serverbound get messenger info command.
+struct LobbyCommandGetMessengerInfo
+{
+  //! Writes the command to a provided sink buffer.
+  //! @param command Command.
+  //! @param buffer Sink buffer.
+  static void Write(
+    const LobbyCommandGetMessengerInfo& command, SinkBuffer& buffer);
+
+  //! Reader a command from a provided source buffer.
+  //! @param command Command.
+  //! @param buffer Source buffer.
+  static void Read(
+    LobbyCommandGetMessengerInfo& command, SourceBuffer& buffer);
+};
+
+//! Clientbound get messenger info response.
+struct LobbyCommandGetMessengerInfoOK
+{
+  uint32_t unk0;
+  uint32_t ip;
+  uint16_t port;
+
+  //! Writes the command to a provided sink buffer.
+  //! @param command Command.
+  //! @param buffer Sink buffer.
+  static void Write(
+    const LobbyCommandGetMessengerInfoOK& command, SinkBuffer& buffer);
+
+  //! Reader a command from a provided source buffer.
+  //! @param command Command.
+  //! @param buffer Source buffer.
+  static void Read(
+    LobbyCommandGetMessengerInfoOK& command, SourceBuffer& buffer);
+};
+
+//! Serverbound get messenger info command.
+struct LobbyCommandGetMessengerInfoCancel
+{
+  //! Writes the command to a provided sink buffer.
+  //! @param command Command.
+  //! @param buffer Sink buffer.
+  static void Write(
+    const LobbyCommandGetMessengerInfoCancel& command, SinkBuffer& buffer);
+
+  //! Reader a command from a provided source buffer.
+  //! @param command Command.
+  //! @param buffer Source buffer.
+  static void Read(
+    LobbyCommandGetMessengerInfoCancel& command, SourceBuffer& buffer);
+};
+
+
+//! Serverbound room list command.
+struct LobbyCommandRoomList
+{
+  uint8_t unk0;
+  uint8_t unk1;
+  uint8_t unk2;
+
+  //! Writes the command to a provided sink buffer.
+  //! @param command Command.
+  //! @param buffer Sink buffer.
+  static void Write(
+    const LobbyCommandRoomList& command, SinkBuffer& buffer);
+
+  //! Reader a command from a provided source buffer.
+  //! @param command Command.
+  //! @param buffer Source buffer.
+  static void Read(
+    LobbyCommandRoomList& command, SourceBuffer& buffer);
+};
+
+//! Clientbound room list response.
+struct LobbyCommandRoomListOK
+{
+  uint8_t unk0;
+  uint8_t unk1;
+  uint8_t unk2;
+  uint8_t roomCount;
+  std::vector<Room> rooms;
+  struct {
+    uint32_t unk0;
+    std::string unk1;
+    uint16_t unk2;
+  } unk3;
+
+  //! Writes the command to a provided sink buffer.
+  //! @param command Command.
+  //! @param buffer Sink buffer.
+  static void Write(
+    const LobbyCommandRoomListOK& command, SinkBuffer& buffer);
+
+  //! Reader a command from a provided source buffer.
+  //! @param command Command.
+  //! @param buffer Source buffer.
+  static void Read(
+    LobbyCommandRoomListOK& command, SourceBuffer& buffer);
+};
+
+struct Room {
+  uint32_t id;
+  std::string name;
+  uint8_t playerCount;
+  uint8_t maxPlayers;
+  uint8_t isLocked;
+  uint8_t unk0;
+  uint8_t unk1;
+  uint16_t map;
+  uint8_t hasStarted;
+  uint16_t unk2;
+  uint8_t unk3;
+  uint8_t level; // 0: 3lv, 1: 12lv, 2 and beyond: nothing
+  uint32_t unk4;
+};
+
+
+//! Serverbound request special event list command.
+struct LobbyCommandRequestSpecialEventList
+{
+  uint32_t unk0;
+
+  //! Writes the command to a provided sink buffer.
+  //! @param command Command.
+  //! @param buffer Sink buffer.
+  static void Write(
+    const LobbyCommandRequestSpecialEventList& command, SinkBuffer& buffer);
+
+  //! Reader a command from a provided source buffer.
+  //! @param command Command.
+  //! @param buffer Source buffer.
+  static void Read(
+    LobbyCommandRequestSpecialEventList& command, SourceBuffer& buffer);
+};
+
+//! Clientbound request special event list response.
+struct LobbyCommandRequestSpecialEventListOK
+{
+  uint32_t unk0;
+
+  uint16_t unk1Count;
+  std::vector<RequetSpecialEvenListOKUnk1> unk1;
+
+  uint16_t unk2Count;
+  std::vector<RequetSpecialEvenListOKUnk2> unk2;
+
+  //! Writes the command to a provided sink buffer.
+  //! @param command Command.
+  //! @param buffer Sink buffer.
+  static void Write(
+    const LobbyCommandRequestSpecialEventListOK& command, SinkBuffer& buffer);
+
+  //! Reader a command from a provided source buffer.
+  //! @param command Command.
+  //! @param buffer Source buffer.
+  static void Read(
+    LobbyCommandRequestSpecialEventListOK& command, SourceBuffer& buffer);
+};
+
+struct RequetSpecialEvenListOKUnk1 {
+  uint16_t unk0;
+  uint32_t unk1;
+  uint8_t unk2;
+  uint32_t unk3;
+  uint8_t unk4;
+  uint8_t unk5;
+};
+
+struct RequetSpecialEvenListOKUnk2 {
+  uint16_t unk0;
+  uint32_t unk1;
+};
+
+
+//! Serverbound heartbeat command.
+struct LobbyCommandHeartbeat
+{
+  //! Writes the command to a provided sink buffer.
+  //! @param command Command.
+  //! @param buffer Sink buffer.
+  static void Write(
+    const LobbyCommandRequestSpecialEventList& command, SinkBuffer& buffer);
+
+  //! Reader a command from a provided source buffer.
+  //! @param command Command.
+  //! @param buffer Source buffer.
+  static void Read(
+    LobbyCommandRequestSpecialEventList& command, SourceBuffer& buffer);
+};
+
+
+// TODO: AcCmdCLRequestPersonalInfo, others
+
+
 } // namespace alica
 
 #endif //LOBBY_MESSAGES_HPP
