@@ -24,13 +24,13 @@ struct LobbyCommandLogin
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const LobbyCommandLogin& command, SinkBuffer& buffer);
+    const LobbyCommandLogin& command, BufferedSink& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    LobbyCommandLogin& command, SourceBuffer& buffer);
+    LobbyCommandLogin& command, BufferedSource& buffer);
 };
 
 enum class Gender : uint8_t
@@ -350,13 +350,13 @@ struct LobbyCommandLoginOK
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const LobbyCommandLoginOK& command, SinkBuffer& buffer);
+    const LobbyCommandLoginOK& command, BufferedSink& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    LobbyCommandLoginOK& command, SourceBuffer& buffer);
+    LobbyCommandLoginOK& command, BufferedSource& buffer);
 };
 
 //! Cancel reason for login.
@@ -379,13 +379,13 @@ struct LobbyCommandLoginCancel
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const LobbyCommandLoginCancel& command, SinkBuffer& buffer);
+    const LobbyCommandLoginCancel& command, BufferedSink& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    LobbyCommandLoginCancel& command, SourceBuffer& buffer);
+    LobbyCommandLoginCancel& command, BufferedSource& buffer);
 };
 
 
@@ -396,13 +396,13 @@ struct LobbyCommandShowInventory
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const LobbyCommandShowInventory& command, SinkBuffer& buffer);
+    const LobbyCommandShowInventory& command, BufferedSink& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    LobbyCommandShowInventory& command, SourceBuffer& buffer);
+    LobbyCommandShowInventory& command, BufferedSource& buffer);
 };
 
 //! Clientbound show inventory response.
@@ -418,13 +418,13 @@ struct LobbyCommandShowInventoryOK
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const LobbyCommandShowInventoryOK& command, SinkBuffer& buffer);
+    const LobbyCommandShowInventoryOK& command, BufferedSink& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    LobbyCommandShowInventoryOK& command, SourceBuffer& buffer);
+    LobbyCommandShowInventoryOK& command, BufferedSource& buffer);
 };
 
 //! Clientbound show inventory cancel response.
@@ -434,13 +434,13 @@ struct LobbyCommandShowInventoryCancel
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const LobbyCommandShowInventoryCancel& command, SinkBuffer& buffer);
+    const LobbyCommandShowInventoryCancel& command, BufferedSink& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    LobbyCommandShowInventoryCancel& command, SourceBuffer& buffer);
+    LobbyCommandShowInventoryCancel& command, BufferedSource& buffer);
 };
 
 
@@ -451,13 +451,13 @@ struct LobbyCommandRequestLeagueInfo
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const LobbyCommandRequestLeagueInfo& command, SinkBuffer& buffer);
+    const LobbyCommandRequestLeagueInfo& command, BufferedSink& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    LobbyCommandRequestLeagueInfo& command, SourceBuffer& buffer);
+    LobbyCommandRequestLeagueInfo& command, BufferedSource& buffer);
 };
 
 //! Clientbound request league info response.
@@ -482,13 +482,13 @@ struct LobbyCommandRequestLeagueInfoOK
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const LobbyCommandRequestLeagueInfoOK& command, SinkBuffer& buffer);
+    const LobbyCommandRequestLeagueInfoOK& command, BufferedSink& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    LobbyCommandRequestLeagueInfoOK& command, SourceBuffer& buffer);
+    LobbyCommandRequestLeagueInfoOK& command, BufferedSource& buffer);
 };
 
 //! Serverbound request league info command.
@@ -498,13 +498,13 @@ struct LobbyCommandRequestLeagueInfoCancel
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const LobbyCommandRequestLeagueInfoCancel& command, SinkBuffer& buffer);
+    const LobbyCommandRequestLeagueInfoCancel& command, BufferedSink& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    LobbyCommandRequestLeagueInfoCancel& command, SourceBuffer& buffer);
+    LobbyCommandRequestLeagueInfoCancel& command, BufferedSource& buffer);
 };
 
 
@@ -517,13 +517,22 @@ struct LobbyCommandAchievementCompleteList
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const LobbyCommandAchievementCompleteList& command, SinkBuffer& buffer);
+    const LobbyCommandAchievementCompleteList& command, BufferedSink& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    LobbyCommandAchievementCompleteList& command, SourceBuffer& buffer);
+    LobbyCommandAchievementCompleteList& command, BufferedSource& buffer);
+};
+
+struct CompletedAchievement
+{
+  uint16_t unk0;
+  uint8_t unk1;
+  uint32_t unk2;
+  uint8_t unk3;
+  uint8_t unk4;
 };
 
 //! Clientbound achievement complete list response.
@@ -537,23 +546,16 @@ struct LobbyCommandAchievementCompleteListOK
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const LobbyCommandAchievementCompleteListOK& command, SinkBuffer& buffer);
+    const LobbyCommandAchievementCompleteListOK& command, BufferedSink& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    LobbyCommandAchievementCompleteListOK& command, SourceBuffer& buffer);
+    LobbyCommandAchievementCompleteListOK& command, BufferedSource& buffer);
 };
 
-struct CompletedAchievement
-{
-  uint16_t unk0;
-  uint8_t unk1;
-  uint32_t unk2;
-  uint8_t unk3;
-  uint8_t unk4;
-};
+
 
 
 //! Serverbound enter channel command.
@@ -565,13 +567,13 @@ struct LobbyCommandEnterChannel
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const LobbyCommandEnterChannel& command, SinkBuffer& buffer);
+    const LobbyCommandEnterChannel& command, BufferedSink& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    LobbyCommandEnterChannel& command, SourceBuffer& buffer);
+    LobbyCommandEnterChannel& command, BufferedSource& buffer);
 };
 
 //! Clientbound enter channel response.
@@ -584,13 +586,13 @@ struct LobbyCommandEnterChannelOK
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const LobbyCommandEnterChannelOK& command, SinkBuffer& buffer);
+    const LobbyCommandEnterChannelOK& command, BufferedSink& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    LobbyCommandEnterChannelOK& command, SourceBuffer& buffer);
+    LobbyCommandEnterChannelOK& command, BufferedSource& buffer);
 };
 
 //! Serverbound enter channel command.
@@ -600,13 +602,13 @@ struct LobbyCommandEnterChannelCancel
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const LobbyCommandEnterChannelCancel& command, SinkBuffer& buffer);
+    const LobbyCommandEnterChannelCancel& command, BufferedSink& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    LobbyCommandEnterChannelCancel& command, SourceBuffer& buffer);
+    LobbyCommandEnterChannelCancel& command, BufferedSource& buffer);
 };
 
 
@@ -628,13 +630,13 @@ struct LobbyCommandMakeRoom
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const LobbyCommandMakeRoom& command, SinkBuffer& buffer);
+    const LobbyCommandMakeRoom& command, BufferedSink& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    LobbyCommandMakeRoom& command, SourceBuffer& buffer);
+    LobbyCommandMakeRoom& command, BufferedSource& buffer);
 };
 
 //! Clientbound make room response.
@@ -644,19 +646,19 @@ struct LobbyCommandMakeRoomOK
   uint32_t unk1;
   uint32_t ip;
   uint16_t port;
-  uint8_t unk0;
+  uint8_t unk2;
 
   //! Writes the command to a provided sink buffer.
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const LobbyCommandMakeRoomOK& command, SinkBuffer& buffer);
+    const LobbyCommandMakeRoomOK& command, BufferedSink& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    LobbyCommandMakeRoomOK& command, SourceBuffer& buffer);
+    LobbyCommandMakeRoomOK& command, BufferedSource& buffer);
 };
 
 //! Serverbound make room command.
@@ -668,13 +670,13 @@ struct LobbyCommandMakeRoomCancel
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const LobbyCommandMakeRoomCancel& command, SinkBuffer& buffer);
+    const LobbyCommandMakeRoomCancel& command, BufferedSink& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    LobbyCommandMakeRoomCancel& command, SourceBuffer& buffer);
+    LobbyCommandMakeRoomCancel& command, BufferedSource& buffer);
 };
 
 
@@ -687,13 +689,21 @@ struct LobbyCommandRequestQuestList
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const LobbyCommandRequestQuestList& command, SinkBuffer& buffer);
+    const LobbyCommandRequestQuestList& command, BufferedSink& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    LobbyCommandRequestQuestList& command, SourceBuffer& buffer);
+    LobbyCommandRequestQuestList& command, BufferedSource& buffer);
+};
+
+struct Quest {
+  uint16_t unk0;
+  uint8_t unk1;
+  uint32_t unk2;
+  uint8_t unk3;
+  uint8_t unk4;
 };
 
 //! Clientbound request quest list response.
@@ -707,23 +717,14 @@ struct LobbyCommandRequestQuestListOK
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const LobbyCommandRequestQuestListOK& command, SinkBuffer& buffer);
+    const LobbyCommandRequestQuestListOK& command, BufferedSink& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    LobbyCommandRequestQuestListOK& command, SourceBuffer& buffer);
+    LobbyCommandRequestQuestListOK& command, BufferedSource& buffer);
 };
-
-struct Quest {
-  uint16_t unk0;
-  uint8_t unk1;
-  uint32_t unk2;
-  uint8_t unk3;
-  uint8_t unk4;
-};
-
 
 //! Serverbound enter ranch command.
 struct LobbyCommandEnterRanch
@@ -736,13 +737,13 @@ struct LobbyCommandEnterRanch
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const LobbyCommandEnterRanch& command, SinkBuffer& buffer);
+    const LobbyCommandEnterRanch& command, BufferedSink& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    LobbyCommandEnterRanch& command, SourceBuffer& buffer);
+    LobbyCommandEnterRanch& command, BufferedSource& buffer);
 };
 
 //! Clientbound enter ranch response.
@@ -757,13 +758,13 @@ struct LobbyCommandEnterRanchOK
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const LobbyCommandEnterRanchOK& command, SinkBuffer& buffer);
+    const LobbyCommandEnterRanchOK& command, BufferedSink& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    LobbyCommandEnterRanchOK& command, SourceBuffer& buffer);
+    LobbyCommandEnterRanchOK& command, BufferedSource& buffer);
 };
 
 //! Serverbound enter ranch command.
@@ -775,13 +776,13 @@ struct LobbyCommandEnterRanchCancel
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const LobbyCommandEnterRanchCancel& command, SinkBuffer& buffer);
+    const LobbyCommandEnterRanchCancel& command, BufferedSink& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    LobbyCommandEnterRanchCancel& command, SourceBuffer& buffer);
+    LobbyCommandEnterRanchCancel& command, BufferedSource& buffer);
 };
 
 
@@ -792,13 +793,13 @@ struct LobbyCommandGetMessengerInfo
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const LobbyCommandGetMessengerInfo& command, SinkBuffer& buffer);
+    const LobbyCommandGetMessengerInfo& command, BufferedSink& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    LobbyCommandGetMessengerInfo& command, SourceBuffer& buffer);
+    LobbyCommandGetMessengerInfo& command, BufferedSource& buffer);
 };
 
 //! Clientbound get messenger info response.
@@ -812,13 +813,13 @@ struct LobbyCommandGetMessengerInfoOK
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const LobbyCommandGetMessengerInfoOK& command, SinkBuffer& buffer);
+    const LobbyCommandGetMessengerInfoOK& command, BufferedSink& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    LobbyCommandGetMessengerInfoOK& command, SourceBuffer& buffer);
+    LobbyCommandGetMessengerInfoOK& command, BufferedSource& buffer);
 };
 
 //! Serverbound get messenger info command.
@@ -828,13 +829,13 @@ struct LobbyCommandGetMessengerInfoCancel
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const LobbyCommandGetMessengerInfoCancel& command, SinkBuffer& buffer);
+    const LobbyCommandGetMessengerInfoCancel& command, BufferedSink& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    LobbyCommandGetMessengerInfoCancel& command, SourceBuffer& buffer);
+    LobbyCommandGetMessengerInfoCancel& command, BufferedSource& buffer);
 };
 
 
@@ -849,13 +850,29 @@ struct LobbyCommandRoomList
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const LobbyCommandRoomList& command, SinkBuffer& buffer);
+    const LobbyCommandRoomList& command, BufferedSink& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    LobbyCommandRoomList& command, SourceBuffer& buffer);
+    LobbyCommandRoomList& command, BufferedSource& buffer);
+};
+
+struct Room {
+  uint32_t id;
+  std::string name;
+  uint8_t playerCount;
+  uint8_t maxPlayers;
+  uint8_t isLocked;
+  uint8_t unk0;
+  uint8_t unk1;
+  uint16_t map;
+  uint8_t hasStarted;
+  uint16_t unk2;
+  uint8_t unk3;
+  uint8_t level; // 0: 3lv, 1: 12lv, 2 and beyond: nothing
+  uint32_t unk4;
 };
 
 //! Clientbound room list response.
@@ -876,31 +893,14 @@ struct LobbyCommandRoomListOK
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const LobbyCommandRoomListOK& command, SinkBuffer& buffer);
+    const LobbyCommandRoomListOK& command, BufferedSink& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    LobbyCommandRoomListOK& command, SourceBuffer& buffer);
+    LobbyCommandRoomListOK& command, BufferedSource& buffer);
 };
-
-struct Room {
-  uint32_t id;
-  std::string name;
-  uint8_t playerCount;
-  uint8_t maxPlayers;
-  uint8_t isLocked;
-  uint8_t unk0;
-  uint8_t unk1;
-  uint16_t map;
-  uint8_t hasStarted;
-  uint16_t unk2;
-  uint8_t unk3;
-  uint8_t level; // 0: 3lv, 1: 12lv, 2 and beyond: nothing
-  uint32_t unk4;
-};
-
 
 //! Serverbound request special event list command.
 struct LobbyCommandRequestSpecialEventList
@@ -911,13 +911,27 @@ struct LobbyCommandRequestSpecialEventList
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const LobbyCommandRequestSpecialEventList& command, SinkBuffer& buffer);
+    const LobbyCommandRequestSpecialEventList& command, BufferedSink& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    LobbyCommandRequestSpecialEventList& command, SourceBuffer& buffer);
+    LobbyCommandRequestSpecialEventList& command, BufferedSource& buffer);
+};
+
+struct RequetSpecialEvenListOKUnk1 {
+  uint16_t unk0;
+  uint32_t unk1;
+  uint8_t unk2;
+  uint32_t unk3;
+  uint8_t unk4;
+  uint8_t unk5;
+};
+
+struct RequetSpecialEvenListOKUnk2 {
+  uint16_t unk0;
+  uint32_t unk1;
 };
 
 //! Clientbound request special event list response.
@@ -935,29 +949,14 @@ struct LobbyCommandRequestSpecialEventListOK
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const LobbyCommandRequestSpecialEventListOK& command, SinkBuffer& buffer);
+    const LobbyCommandRequestSpecialEventListOK& command, BufferedSink& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    LobbyCommandRequestSpecialEventListOK& command, SourceBuffer& buffer);
+    LobbyCommandRequestSpecialEventListOK& command, BufferedSource& buffer);
 };
-
-struct RequetSpecialEvenListOKUnk1 {
-  uint16_t unk0;
-  uint32_t unk1;
-  uint8_t unk2;
-  uint32_t unk3;
-  uint8_t unk4;
-  uint8_t unk5;
-};
-
-struct RequetSpecialEvenListOKUnk2 {
-  uint16_t unk0;
-  uint32_t unk1;
-};
-
 
 //! Serverbound heartbeat command.
 struct LobbyCommandHeartbeat
@@ -966,18 +965,16 @@ struct LobbyCommandHeartbeat
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const LobbyCommandRequestSpecialEventList& command, SinkBuffer& buffer);
+    const LobbyCommandRequestSpecialEventList& command, BufferedSink& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    LobbyCommandRequestSpecialEventList& command, SourceBuffer& buffer);
+    LobbyCommandRequestSpecialEventList& command, BufferedSource& buffer);
 };
 
-
 // TODO: AcCmdCLRequestPersonalInfo, others
-
 
 } // namespace alica
 

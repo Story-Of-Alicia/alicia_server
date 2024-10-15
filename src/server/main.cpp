@@ -58,7 +58,7 @@ public:
       _lobbyServer.QueueCommand(
         clientId,
         alicia::CommandId::LobbyCommandLoginCancel,
-        [](alicia::SinkBuffer& buffer)
+        [](alicia::BufferedSink& buffer)
         {
           const alicia::LobbyCommandLoginCancel command{
             .reason = alicia::LoginCancelReason::InvalidUser};
@@ -78,7 +78,7 @@ public:
     _lobbyServer.QueueCommand(
       clientId,
       alicia::CommandId::LobbyCommandLoginOK,
-      [&user](alicia::SinkBuffer& sink)
+      [&user](alicia::BufferedSink& sink)
       {
         const alicia::LobbyCommandLoginOK command{
            .lobbyTime = 0,
@@ -110,7 +110,7 @@ std::unique_ptr<LoginDirector> g_loginDirector;
 int main()
 {
   alicia::Buffer<4096> buffer;
-
+  
   uint64_t val { 0xDEAD'BEEF'CAFE'BABE };
 
   buffer.Write(&val, sizeof val);

@@ -1,261 +1,197 @@
-//
-// Created by rgnter on 4/09/2024.
-//
-
-#include <iostream>
-#include <format>
-#include <vector>
-
 #ifndef UTIL_HPP
 #define UTIL_HPP
 
 #define DECLARE_WRITER_READER(x) \
 template <> \
-struct Writer<x> \
+struct StreamWriter<x> \
 { \
-std::size_t operator()( \
-  const x& value, SinkBuffer& buffer) const; \
+  void operator()( \
+    const x& value, BufferedSink& buffer) const; \
 }; \
 template<> \
-struct Reader<x> \
+struct StreamReader<x> \
 { \
-std::size_t operator()( \
-  x& value, SourceBuffer& buffer) const; \
+  void operator()( \
+    x& value, BufferedSource& buffer) const; \
 };
 
 #define DEFINE_WRITER_READER(x, writer, reader) \
-std::size_t Writer<x>::operator()( \
-  const x& value, SinkBuffer& buffer) const \
+void StreamWriter<x>::operator()( \
+  const x& value, BufferedSink& buffer) const \
 { \
   return writer(value, buffer); \
 } \
-std::size_t Reader<x>::operator()( \
-  x& value, SourceBuffer& buffer) const \
+void StreamReader<x>::operator()( \
+  x& value, BufferedSource& buffer) const \
 { \
   return reader(value, buffer); \
 }
 
 #define COMMAND_WRITER_READER(x) \
-  DECLARE_WRITER_READER(x) \
-  DEFINE_WRITER_READER(x, x::Write, x::Read)
+DECLARE_WRITER_READER(x) \
+DEFINE_WRITER_READER(x, x::Write, x::Read)
 
-#include <cassert>
-#include <istream>
-#include <ostream>
+#include <format>
+#include <span>
+
+#include <boost/asio/buffer.hpp>
 
 namespace alicia
 {
 
-//! Forward declaration of a writer.
-template <typename T>
-struct Writer;
-
-//! A simple constant-size buffer with simple I/O operations.
-//! ToDo: A test suite
-template<std::size_t Capacity>
 class Buffer
 {
 public:
+  //! Womp womp.
+  explicit Buffer(std::span<std::byte>& storage) noexcept;
+
   //! Writes to the buffer storage.
   //! Fails if the operation can't be completed wholly.
   //!
   //! @param data Data.
   //! @param size Size of data.
-  void Write(const void* data, std::size_t size)
-  {
-    if (_cursor + size > _capacity)
-    {
-      throw std::overflow_error(
-        std::format(
-          "Couldn't write {} bytes to the buffer. Not enough space.",
-          size));
-    }
-
-    // Write the bytes.
-    for (std::size_t byteIdx = 0; byteIdx < size; ++byteIdx)
-    {
-      _storage[_cursor++] = static_cast<const std::byte*>(data)[byteIdx];
-    }
-  };
+  void Write(const void* data, std::size_t size);
 
   //! Read from the buffer storage.
   //! Fails if the operation can't be completed wholly.
   //!
   //! @param data Data.
   //! @param size Size of data.
-  void Read(void* data, std::size_t size)
-  {
-    if (_cursor + size > _capacity)
-    {
-      throw std::overflow_error(
-        std::format(
-          "Couldn't read {} bytes from the buffer. Not enough space.",
-          size));
-    }
-
-    // Read the bytes.
-    for (std::size_t byteIdx = 0; byteIdx < size; ++byteIdx)
-    {
-      static_cast<std::byte*>(data)[byteIdx] = _storage[_cursor++];
-    }
-  }
+  void Read(void* data, std::size_t size);
 
   //! Seeks to the cursor specified.
   //! @param cursor Cursor position.
-  void Seek(std::size_t cursor)
-  {
-    if (cursor > _capacity)
-    {
-      throw std::overflow_error(
-        std::format(
-          "Couldn't seek to {}. Not enough space.",
-          cursor));
-    }
-
-    _cursor = cursor;
-  }
+  void Seek(std::size_t cursor);
 
   //! Gets the cursor of the storage.
   //! @returns Cursor position.
-  [[nodiscard]] std::size_t GetCursor() const
-  {
-    return _cursor;
-  };
+  [[nodiscard]] std::size_t GetCursor() const;
 
-public:
-  std::array<std::byte, Capacity> _storage{};
+private:
+  std::span<std::byte>& _storage;
   std::size_t _cursor{};
-  const std::size_t _capacity = Capacity;
 };
 
-//! Sink buffer.
-//! ToDo: A test suite
-class SinkBuffer
+//! Forward declaration of a stream writer.
+template <typename T>
+struct StreamWriter;
+
+//! Buffered stream sink.
+class BufferedSink
 {
 public:
   //! Default constructor
   //!
-  //! @param stream Sink stream.
-  explicit SinkBuffer(std::ostream& stream)
-    : _sink(stream) {}
+  //! @param buffer Underlying buffer.
+  explicit BufferedSink(Buffer& buffer) noexcept
+    : _sink(buffer) {}
 
   //! Deleted copy constructor.
-  SinkBuffer(const SinkBuffer&) = delete;
-  //! Deleted copy assignement.
-  void operator=(const SinkBuffer&) = delete;
+  BufferedSink(const BufferedSink&) = delete;
+  //! Deleted copy assignment.
+  void operator=(const BufferedSink&) = delete;
 
   //! Deleted move constructor.
-  SinkBuffer(SinkBuffer&&) = delete;
-  //! Deleted move assignement.
-  void operator=(SinkBuffer&&) = delete;
+  BufferedSink(BufferedSink&&) = delete;
+  //! Deleted move assignment.
+  void operator=(BufferedSink&&) = delete;
 
   //! Write a value to the sink stream.
   //!
   //! @param value Value to write.
   //! @tparam T Type of value.
   //! @return Reference to this.
-  template <typename T> SinkBuffer& Write(const T& value)
+  template <typename T> BufferedSink& Write(const T& value)
   {
-    _cursor += Writer<T>{}(value, *this);
+    StreamWriter<T>{}(value, *this);
     return *this;
   }
 
   //! Get reference to the underlying sink stream.
   //!
   //! @return Reference to the stream.
-  std::ostream& Get() { return _sink; }
+  [[nodiscard]] Buffer& Get() noexcept { return _sink; }
 
 protected:
   //! A reference to source stream;
-  std::ostream& _sink;
-  std::size_t _cursor{};
+  Buffer& _sink;
 };
 
-//! General binary writer.
+//! General binary stream writer.
 //! Writes a little-endian byte sequence to the provided sink buffer.
 //!
 //! @tparam T Type of value.
 template <typename T>
-struct Writer
+struct StreamWriter
 {
-  std::size_t operator()(const T& value, SinkBuffer& buffer)
+  void operator()(const T& value, BufferedSink& buffer)
   {
     const auto requiredByteCount = sizeof(value);
-    buffer.Get().write(reinterpret_cast<const char*>(&value), requiredByteCount);
 
-    // Please, please work.
-    assert(buffer.Get().good() && "Couldn't write bytes to the output stream.");
-
-    return requiredByteCount;
+    // Write the value to the buffer.
+    buffer.Get().Write(
+      reinterpret_cast<const char*>(&value),
+      requiredByteCount);
   }
 };
 
 //! Forward declaration of a reader.
-template <typename T> struct Reader;
+template <typename T>
+struct StreamReader;
 
-//! Source buffer.
-//! ToDo: A test suite
-class SourceBuffer
+//! Buffered stream source.
+class BufferedSource
 {
 public:
   //! Default constructor
   //!
-  //! @param stream Source stream.
-  explicit SourceBuffer(std::istream& stream)
+  //! @param stream Source buffer.
+  explicit BufferedSource(Buffer& stream)
     : _source(stream) {}
 
   //! Deleted copy constructor.
-  SourceBuffer(const SourceBuffer&) = delete;
+  BufferedSource(const BufferedSource&) = delete;
   //! Deleted copy assignement.
-  void operator=(const SourceBuffer&) = delete;
+  void operator=(const BufferedSource&) = delete;
 
   //! Deleted move constructor.
-  SourceBuffer(SourceBuffer&&) = delete;
+  BufferedSource(BufferedSource&&) = delete;
   //! Deleted move assignement.
-  void operator=(SourceBuffer&&) = delete;
+  void operator=(BufferedSource&&) = delete;
 
   //! Read a value from the source stream.
   //!
   //! @param value Value to read.
   //! @tparam T Type of value.
   //! @return Reference to this.
-  template <typename T> SourceBuffer& Read(T& value)
+  template <typename T> BufferedSource& Read(T& value)
   {
-    _cursor += Reader<T>{}(value, *this);
+    StreamReader<T>{}(value, *this);
     return *this;
   }
 
   //! Get reference to the underlying source stream.
   //!
   //! @return Reference to the stream.
-  std::istream& Get() { return _source; }
+  [[nodiscard]] Buffer& Get() noexcept { return _source; }
 
 protected:
   //! A reference to source stream;
-  std::istream& _source;
-  std::size_t _cursor{};
+  Buffer& _source;
 };
 
 //! General binary reader.
 //! Reads a little-endian byte sequence from the provided source buffer.
 //!
 //! @tparam T Type of value.
-template <typename T> struct Reader
+template <typename T> struct StreamReader
 {
-  std::size_t operator()(T& value, SourceBuffer& buffer)
+  void operator()(T& value, BufferedSource& buffer)
   {
-    assert(buffer.Get().good());
-
-    const auto requiredByteCount = sizeof(value);
-    const auto actuallyRead = buffer.Get().readsome(
-      reinterpret_cast<char*>(&value),
-      requiredByteCount);
-
-    // Please, please work.
-    assert(requiredByteCount == actuallyRead);
-    assert(buffer.Get().good() && "Couldn't read bytes from the output stream.");
-
-    return actuallyRead;
+    const auto byteCount = sizeof(value);
+    buffer.Get().Read(
+      reinterpret_cast<void*>(&value),
+      byteCount);
   }
 };
 

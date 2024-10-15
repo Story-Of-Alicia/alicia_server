@@ -15,9 +15,9 @@ namespace alicia
 {
 
 //! A command handler.
-using CommandHandler = std::function<void(ClientId, SourceBuffer&)>;
+using CommandHandler = std::function<void(ClientId, BufferedSource&)>;
 //! A command supplier.
-using CommandSupplier = std::function<void(SinkBuffer&)>;
+using CommandSupplier = std::function<void(BufferedSink&)>;
 
 //! A command client.
 class CommandClient
