@@ -6,7 +6,7 @@ namespace alicia
 namespace
 {
 
-void WriteCString(const std::string& value, BufferedSink& buffer)
+void WriteCString(const std::string& value, SinkStream& buffer)
 {
   for (char b : value)
   {
@@ -16,7 +16,7 @@ void WriteCString(const std::string& value, BufferedSink& buffer)
   buffer.Write(static_cast<char>(0x00));
 }
 
-void ReadCString(std::string& value, BufferedSource& buffer)
+void ReadCString(std::string& value, SourceStream& buffer)
 {
   value.reserve(512);
 
@@ -41,12 +41,17 @@ void ReadCString(std::string& value, BufferedSource& buffer)
 
 DEFINE_WRITER_READER(std::string, WriteCString, ReadCString)
 
-Buffer::Buffer(std::span<std::byte>& storage) noexcept
-  : _storage(storage)
+SourceStream::SourceStream(Storage buffer)
+  : StreamBase(buffer)
 {
 }
 
-void Buffer::Write(const void* data, std::size_t size)
+SinkStream::SinkStream(Storage buffer) noexcept
+    : StreamBase(buffer)
+{
+}
+
+void SinkStream::Write(const void* data, std::size_t size)
 {
   if (_cursor + size > _storage.size())
   {
@@ -61,7 +66,7 @@ void Buffer::Write(const void* data, std::size_t size)
   }
 }
 
-void Buffer::Read(void* data, std::size_t size)
+void SourceStream::Read(void* data, std::size_t size)
 {
   if (_cursor + size > _storage.size())
   {
@@ -75,17 +80,6 @@ void Buffer::Read(void* data, std::size_t size)
     static_cast<std::byte*>(data)[byteIdx] = _storage[_cursor++];
   }
 }
-
-void Buffer::Seek(std::size_t cursor)
-{
-  if (cursor > _storage.size())
-  {
-    throw std::overflow_error(std::format("Couldn't seek to {}. Not enough space.", cursor));
-  }
-
-  _cursor = cursor;
-}
-std::size_t Buffer::GetCursor() const { return _cursor; }
 
 } // namespace alicia
 

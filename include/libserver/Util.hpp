@@ -6,23 +6,23 @@ template <> \
 struct StreamWriter<x> \
 { \
   void operator()( \
-    const x& value, BufferedSink& buffer) const; \
+    const x& value, SinkStream& buffer) const; \
 }; \
 template<> \
 struct StreamReader<x> \
 { \
   void operator()( \
-    x& value, BufferedSource& buffer) const; \
+    x& value, SourceStream& buffer) const; \
 };
 
 #define DEFINE_WRITER_READER(x, writer, reader) \
 void StreamWriter<x>::operator()( \
-  const x& value, BufferedSink& buffer) const \
+  const x& value, SinkStream& buffer) const \
 { \
   return writer(value, buffer); \
 } \
 void StreamReader<x>::operator()( \
-  x& value, BufferedSource& buffer) const \
+  x& value, SourceStream& buffer) const \
 { \
   return reader(value, buffer); \
 }
@@ -34,41 +34,47 @@ DEFINE_WRITER_READER(x, x::Write, x::Read)
 #include <format>
 #include <span>
 
-#include <boost/asio/buffer.hpp>
-
 namespace alicia
 {
 
-class Buffer
+template<typename StorageType>
+class StreamBase
 {
 public:
-  //! Womp womp.
-  explicit Buffer(std::span<std::byte>& storage) noexcept;
+  //! Storage type.
+  using Storage = StorageType;
 
-  //! Writes to the buffer storage.
-  //! Fails if the operation can't be completed wholly.
-  //!
-  //! @param data Data.
-  //! @param size Size of data.
-  void Write(const void* data, std::size_t size);
+  //! Default constructor.
+  explicit StreamBase(Storage storage) noexcept
+    : _storage(storage) {};
 
-  //! Read from the buffer storage.
-  //! Fails if the operation can't be completed wholly.
-  //!
-  //! @param data Data.
-  //! @param size Size of data.
-  void Read(void* data, std::size_t size);
+  //! Virtual destructor.
+  virtual ~StreamBase() = default;
 
   //! Seeks to the cursor specified.
   //! @param cursor Cursor position.
-  void Seek(std::size_t cursor);
+  virtual void Seek(std::size_t cursor)
+  {
+    if (cursor > _storage.size())
+    {
+      throw std::overflow_error(
+        std::format(
+          "Couldn't seek to {}. Not enough space.",
+          cursor));
+    }
+
+    _cursor = cursor;
+  }
 
   //! Gets the cursor of the storage.
   //! @returns Cursor position.
-  [[nodiscard]] std::size_t GetCursor() const;
+ [[nodiscard]] virtual std::size_t GetCursor() const
+ {
+   return _cursor;
+ }
 
-private:
-  std::span<std::byte>& _storage;
+protected:
+  Storage _storage;
   std::size_t _cursor{};
 };
 
@@ -77,44 +83,42 @@ template <typename T>
 struct StreamWriter;
 
 //! Buffered stream sink.
-class BufferedSink
+class SinkStream final
+  : public StreamBase<std::span<std::byte>>
 {
 public:
   //! Default constructor
   //!
-  //! @param buffer Underlying buffer.
-  explicit BufferedSink(Buffer& buffer) noexcept
-    : _sink(buffer) {}
+  //! @param buffer Underlying storage buffer.
+  explicit SinkStream(Storage buffer) noexcept;
 
   //! Deleted copy constructor.
-  BufferedSink(const BufferedSink&) = delete;
+  SinkStream(const SinkStream&) = delete;
   //! Deleted copy assignment.
-  void operator=(const BufferedSink&) = delete;
+  void operator=(const SinkStream&) = delete;
 
   //! Deleted move constructor.
-  BufferedSink(BufferedSink&&) = delete;
+  SinkStream(SinkStream&&) = delete;
   //! Deleted move assignment.
-  void operator=(BufferedSink&&) = delete;
+  void operator=(SinkStream&&) = delete;
+
+  //! Writes to the buffer storage.
+  //! Fails if the operation can't be completed wholly.
+  //!
+  //! @param data Data.
+  //! @param size Size of data.
+  void Write(const void* data, std::size_t size);
 
   //! Write a value to the sink stream.
   //!
   //! @param value Value to write.
   //! @tparam T Type of value.
   //! @return Reference to this.
-  template <typename T> BufferedSink& Write(const T& value)
+  template <typename T> SinkStream& Write(const T& value)
   {
     StreamWriter<T>{}(value, *this);
     return *this;
   }
-
-  //! Get reference to the underlying sink stream.
-  //!
-  //! @return Reference to the stream.
-  [[nodiscard]] Buffer& Get() noexcept { return _sink; }
-
-protected:
-  //! A reference to source stream;
-  Buffer& _sink;
 };
 
 //! General binary stream writer.
@@ -124,13 +128,13 @@ protected:
 template <typename T>
 struct StreamWriter
 {
-  void operator()(const T& value, BufferedSink& buffer)
+  void operator()(const T& value, SinkStream& buffer)
   {
     const auto requiredByteCount = sizeof(value);
 
     // Write the value to the buffer.
-    buffer.Get().Write(
-      reinterpret_cast<const char*>(&value),
+    buffer.Write(
+      reinterpret_cast<const void*>(&value),
       requiredByteCount);
   }
 };
@@ -140,44 +144,42 @@ template <typename T>
 struct StreamReader;
 
 //! Buffered stream source.
-class BufferedSource
+class SourceStream final
+  : public StreamBase<std::span<const std::byte>>
 {
 public:
   //! Default constructor
   //!
   //! @param stream Source buffer.
-  explicit BufferedSource(Buffer& stream)
-    : _source(stream) {}
+  explicit SourceStream(Storage buffer);
 
   //! Deleted copy constructor.
-  BufferedSource(const BufferedSource&) = delete;
+  SourceStream(const SourceStream&) = delete;
   //! Deleted copy assignement.
-  void operator=(const BufferedSource&) = delete;
+  void operator=(const SourceStream&) = delete;
 
   //! Deleted move constructor.
-  BufferedSource(BufferedSource&&) = delete;
+  SourceStream(SourceStream&&) = delete;
   //! Deleted move assignement.
-  void operator=(BufferedSource&&) = delete;
+  void operator=(SourceStream&&) = delete;
+
+  //! Read from the buffer storage.
+  //! Fails if the operation can't be completed wholly.
+  //!
+  //! @param data Data.
+  //! @param size Size of data.
+  void Read(void* data, std::size_t size);
 
   //! Read a value from the source stream.
   //!
   //! @param value Value to read.
   //! @tparam T Type of value.
   //! @return Reference to this.
-  template <typename T> BufferedSource& Read(T& value)
+  template <typename T> SourceStream& Read(T& value)
   {
     StreamReader<T>{}(value, *this);
     return *this;
   }
-
-  //! Get reference to the underlying source stream.
-  //!
-  //! @return Reference to the stream.
-  [[nodiscard]] Buffer& Get() noexcept { return _source; }
-
-protected:
-  //! A reference to source stream;
-  Buffer& _source;
 };
 
 //! General binary reader.
@@ -186,10 +188,10 @@ protected:
 //! @tparam T Type of value.
 template <typename T> struct StreamReader
 {
-  void operator()(T& value, BufferedSource& buffer)
+  void operator()(T& value, SourceStream& buffer)
   {
     const auto byteCount = sizeof(value);
-    buffer.Get().Read(
+    buffer.Read(
       reinterpret_cast<void*>(&value),
       byteCount);
   }

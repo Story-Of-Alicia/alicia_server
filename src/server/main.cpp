@@ -58,7 +58,7 @@ public:
       _lobbyServer.QueueCommand(
         clientId,
         alicia::CommandId::LobbyCommandLoginCancel,
-        [](alicia::BufferedSink& buffer)
+        [](alicia::SinkStream& buffer)
         {
           const alicia::LobbyCommandLoginCancel command{
             .reason = alicia::LoginCancelReason::InvalidUser};
@@ -78,7 +78,7 @@ public:
     _lobbyServer.QueueCommand(
       clientId,
       alicia::CommandId::LobbyCommandLoginOK,
-      [&user](alicia::BufferedSink& sink)
+      [&user](alicia::SinkStream& sink)
       {
         const alicia::LobbyCommandLoginOK command{
            .lobbyTime = 0,
@@ -109,32 +109,29 @@ std::unique_ptr<LoginDirector> g_loginDirector;
 
 int main()
 {
-  alicia::Buffer<4096> buffer;
-  
-  uint64_t val { 0xDEAD'BEEF'CAFE'BABE };
-
-  buffer.Write(&val, sizeof val);
-  buffer.Seek(0);
-
-  uint32_t val0 {};
-  uint32_t val1 {};
-
-  buffer.Read(&val0, sizeof val0);
-  assert(buffer.GetCursor() == sizeof val0);
-  buffer.Read(&val1, sizeof val1);
-  assert(buffer.GetCursor() == sizeof val0 + sizeof val1);
-
-  assert(buffer.GetCursor() == sizeof val);
-  // Little endian!
-  assert(val1 == 0xDEAD'BEEF);
-  assert(val0 == 0xCAFE'BABE);
-
   boost::asio::streambuf buf;
-  std::iostream output(&buf);
+  auto mutableBuffer = buf.prepare(4092);
+  alicia::SinkStream sink(std::span(
+    static_cast<std::byte*>(mutableBuffer.data()),
+    mutableBuffer.size()));
 
-  uint32_t t = 1;
-  output.write(reinterpret_cast<const char*>(&t), 4);
-  assert(output.good());
+  sink.Write(0xCAFE);
+  sink.Write(0xBABE);
+
+  assert(sink.GetCursor() == 8);
+  buf.commit(sink.GetCursor());
+
+  auto constBuffer = buf.data();
+  alicia::SourceStream source(std::span(
+    static_cast<const std::byte*>(constBuffer.data()),
+    constBuffer.size()));
+
+  uint32_t cafe{};
+  uint32_t babe{};
+  source.Read(cafe)
+    .Read(babe);
+  assert(cafe == 0xCAFE && babe == 0xBABE);
+  assert(source.GetCursor() == 8);
 
   std::jthread lobbyThread([]()
   {

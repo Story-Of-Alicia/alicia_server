@@ -9,7 +9,7 @@ namespace
 //! Writes item data to the buffer.
 //! @param buf Sink buffer.
 //! @param item Item data to write.
-void WriteItem(BufferedSink& buf, const Item& item)
+void WriteItem(SinkStream& buf, const Item& item)
 {
   buf.Write(item.uid)
     .Write(item.tid)
@@ -21,7 +21,7 @@ void WriteItem(BufferedSink& buf, const Item& item)
 //! @param buf Sink buffer.
 //! @param character Character data to write.
 void WriteCharacter(
-  BufferedSink& buf,
+  SinkStream& buf,
   const Character& character)
 {
   const auto& [parts, appearance] = character;
@@ -46,7 +46,7 @@ void WriteCharacter(
 //! @param buf Sink buffer.
 //! @param horse Horse data to write.
 void WriteHorse(
-  BufferedSink& buf,
+  SinkStream& buf,
   const Horse& horse)
 {
   // Horse identifiers.
@@ -114,13 +114,13 @@ void WriteHorse(
 } // anon namespace
 
 void LobbyCommandLogin::Write(
-  const LobbyCommandLogin& command, BufferedSink& buffer)
+  const LobbyCommandLogin& command, SinkStream& buffer)
 {
   throw std::logic_error("Not implemented.");
 }
 
 void LobbyCommandLogin::Read(
-  LobbyCommandLogin& command, BufferedSource& buffer)
+  LobbyCommandLogin& command, SourceStream& buffer)
 {
   buffer.Read(command.constant0)
     .Read(command.constant1)
@@ -130,7 +130,7 @@ void LobbyCommandLogin::Read(
 }
 
 void LobbyCommandLoginOK::Write(
-  const LobbyCommandLoginOK& command, BufferedSink& buffer)
+  const LobbyCommandLoginOK& command, SinkStream& buffer)
 {
   buffer.Write(command.lobbyTime)
     .Write(command.val0);
@@ -299,19 +299,19 @@ void LobbyCommandLoginOK::Write(
 }
 
 void LobbyCommandLoginOK::Read(
-  LobbyCommandLoginOK& command, BufferedSource& buffer)
+  LobbyCommandLoginOK& command, SourceStream& buffer)
 {
   throw std::logic_error("Not implemented.");
 }
 
 void LobbyCommandLoginCancel::Write(
-  const LobbyCommandLoginCancel& command, BufferedSink& buffer)
+  const LobbyCommandLoginCancel& command, SinkStream& buffer)
 {
   buffer.Write(static_cast<uint8_t>(command.reason));
 }
 
 void LobbyCommandLoginCancel::Read(
-  LobbyCommandLoginCancel& command, BufferedSource& buffer)
+  LobbyCommandLoginCancel& command, SourceStream& buffer)
 {
   throw std::logic_error("Not implemented.");
 }

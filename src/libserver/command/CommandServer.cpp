@@ -33,12 +33,13 @@ CommandServer::CommandServer()
     client.SetReadHandler(
       [this, clientId, commandClient](asio::streambuf& readBuffer) -> bool
       {
-        auto readBufferSeq = readBuffer.data();
-        const std::span<std::byte> readBufferView(
-          readBufferSeq.begin(), readBufferSeq.end());
+        // View of the retrieved data.
+        const auto readBufferView = std::span(
+          static_cast<const std::byte*>(readBuffer.data().data()),
+          readBuffer.data().size());
 
-        BufferedSource sourceBuffer(commandBuffer);
-        BufferedSink sinkBuffer(commandBuffer);
+        SourceStream sourceBuffer(
+          readBufferView);
 
         // Read the message magic.
         uint32_t magicValue{};
