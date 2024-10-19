@@ -99,15 +99,15 @@ CommandServer::CommandServer()
         return true;
       });
 
-    // Set the write handler for the new client.
-    client.SetWriteHandler(
-      [this](asio::streambuf& writeBuffer, const WriteSupplier& supplier)
-      {
-        std::ostream stream(&writeBuffer);
-        supplier(stream);
-
-        return true;
-      });
+    // // Set the write handler for the new client.
+    // client.SetWriteHandler(
+    //   [this](asio::streambuf& writeBuffer, const WriteSupplier& supplier)
+    //   {
+    //     std::ostream stream(&writeBuffer);
+    //     supplier(stream);
+    //
+    //     return true;
+    //   });
 
   });
 }
@@ -138,35 +138,35 @@ void CommandServer::QueueCommand(
 {
   // ToDo: Actual queue.
   _server.GetClient(client).QueueWrite(
-    [command, supplier = std::move(supplier)](std::ostream& stream)
+    [command, supplier = std::move(supplier)](asio::streambuf& writeBuffer)
     {
-      // asio::streambuf commandBuffer(MaxCommandSize);
-      // std::ostream commandStream(&commandBuffer);
-      // SinkBuffer commandSink(commandStream);
-      //
-      // commandBuffer.
-      //
-      // // Write the message data.
-      // supplier(commandSink);
-      //
-      // SinkBuffer messageSink(stream);
-      //
-      // // Payload is the message data size
-      // // with the size of the message magic.
-      // const uint16_t payloadSize = messageSize;
-      //
-      // // Traverse back the stream before the message data,
-      // // and write the message magic.
-      // stream.seekp(
-      //   -payloadSize, std::ios_base::cur);
-      //
-      // // Write the message magic.
-      // const MessageMagic magic{
-      //   .id = static_cast<uint16_t>(command),
-      //   .length = payloadSize};
-      //
-      // magicValue = encode_message_magic(magic);
-      // messageSink.Write(magicValue);
+      const auto mutableBuffer = writeBuffer.prepare(MaxCommandSize);
+      const auto writeBufferView = std::span(
+        static_cast<std::byte*>(mutableBuffer.data()),
+        mutableBuffer.size());
+
+      SinkStream commandSink(writeBufferView);
+
+      const auto streamOrigin = commandSink.GetCursor();
+      commandSink.Seek(streamOrigin + 4);
+
+      // Write the message data.
+      supplier(commandSink);
+
+      // Payload is the message data size
+      // with the size of the message magic.
+      const uint16_t payloadSize = commandSink.GetCursor();
+
+      // Traverse back the stream before the message data,
+      // and write the message magic.
+      commandSink.Seek(streamOrigin);
+
+      // Write the message magic.
+      const MessageMagic magic{
+        .id = static_cast<uint16_t>(command),
+        .length = payloadSize};
+
+      commandSink.Write(encode_message_magic(magic));
     });
 }
 

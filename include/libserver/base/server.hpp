@@ -17,13 +17,11 @@ namespace asio = boost::asio;
 using ClientId = std::size_t;
 
 //! A write handler.
-using WriteSupplier = std::function<void(std::ostream&)>;
+using WriteSupplier = std::function<void(asio::streambuf&)>;
 
 //! A read handler.
 //! todo: comment about cyclic buffer
 using ReadHandler = std::function<bool(asio::streambuf&)>;
-//! A write handler.
-using WriteHandler = std::function<bool(asio::streambuf&, WriteSupplier&)>;
 //! A client handler.
 using ClientHandler = std::function<void(ClientId)>;
 
@@ -39,7 +37,7 @@ public:
   //! Sets the read handler of the client.
   void SetReadHandler(ReadHandler readHandler);
   //! Sets the write handler of the client.
-  void SetWriteHandler(WriteHandler writeHandler);
+  // void SetWriteHandler(WriteHandler writeHandler);
 
   void Begin();
 
@@ -61,8 +59,8 @@ private:
   asio::streambuf _writeBuffer{};
   //! A write mutex.
   std::mutex _writeMutex;
-  //! A write handler.
-  WriteHandler _writeHandler;
+  // //! A write handler.
+  // WriteHandler _writeHandler;
 
   //! A client socket.
   asio::ip::tcp::socket _socket;

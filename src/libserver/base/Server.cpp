@@ -20,10 +20,10 @@ void Client::SetReadHandler(ReadHandler readHandler)
   _readHandler = std::move(readHandler);
 }
 
-void Client::SetWriteHandler(WriteHandler writeHandler)
-{
-  _writeHandler = std::move(writeHandler);
-}
+// void Client::SetWriteHandler(WriteHandler writeHandler)
+// {
+//   _writeHandler = std::move(writeHandler);
+// }
 
 void Client::Begin()
 {
@@ -37,8 +37,7 @@ void Client::QueueWrite(WriteSupplier writeSupplier)
   std::scoped_lock writeLock(_writeMutex);
 
   // Call the supplier.
-  std::ostream outputStream(&_writeBuffer);
-  writeSupplier(outputStream);
+  writeSupplier(_writeBuffer);
 
   // Send the whole buffer.
   asio::async_write(
