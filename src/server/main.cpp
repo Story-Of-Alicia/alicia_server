@@ -44,8 +44,8 @@ public:
     alicia::ClientId clientId,
     const alicia::LobbyCommandLogin& login)
   {
-    assert(login.constant0 == 26482);
-    assert(login.constant1 == 29806);
+    assert(login.constant0 == 50);
+    assert(login.constant1 == 281);
 
     // ToDo: Treat input.
     const auto& userTokenItr = _userTokens.find(login.memberNo);

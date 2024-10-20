@@ -64,7 +64,6 @@ CommandServer::CommandServer()
           return false;
         }
 
-        // Message is
         // Consume the bytes of the message magic.
         readBuffer.consume(
           sizeof(MessageMagic));
@@ -167,6 +166,8 @@ void CommandServer::QueueCommand(
         .length = payloadSize};
 
       commandSink.Write(encode_message_magic(magic));
+      writeBuffer.commit(magic.length);
+
     });
 }
 

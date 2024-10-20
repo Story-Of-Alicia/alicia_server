@@ -1,5 +1,7 @@
 #include "libserver/command/lobby/messages.hpp"
 
+#include <windows.h>
+
 namespace alicia
 {
 
@@ -83,22 +85,39 @@ void WriteHorse(
     .Write(horse.grade)
     .Write(horse.growthPoints);
 
-  buf.Write(horse.vals.stamina)
-    .Write(horse.vals.stamina)
-    .Write(horse.vals.attractiveness)
-    .Write(horse.vals.hunger)
-    .Write(horse.vals.val0)
-    .Write(horse.vals.val0)
-    .Write(horse.vals.val1)
-    .Write(horse.vals.val2)
-    .Write(horse.vals.val3)
-    .Write(horse.vals.val4)
-    .Write(horse.vals.val5)
-    .Write(horse.vals.val6)
-    .Write(horse.vals.val7)
-    .Write(horse.vals.val8)
-    .Write(horse.vals.val9)
-    .Write(horse.vals.val10);
+  buf.Write(horse.vals0.stamina)
+    .Write(horse.vals0.attractiveness)
+    .Write(horse.vals0.hunger)
+    .Write(horse.vals0.val0)
+    .Write(horse.vals0.val1)
+    .Write(horse.vals0.val2)
+    .Write(horse.vals0.val3)
+    .Write(horse.vals0.val4)
+    .Write(horse.vals0.val5)
+    .Write(horse.vals0.val6)
+    .Write(horse.vals0.val7)
+    .Write(horse.vals0.val8)
+    .Write(horse.vals0.val9)
+    .Write(horse.vals0.val10);
+
+  const auto& vals0 = horse.vals1;
+  buf.Write(vals0.val0)
+    .Write(vals0.val1)
+    .Write(vals0.val2)
+    .Write(vals0.val3)
+    .Write(vals0.val4)
+    .Write(vals0.classProgression)
+    .Write(vals0.val5)
+    .Write(vals0.val6)
+    .Write(vals0.val7)
+    .Write(vals0.val8)
+    .Write(vals0.val9)
+    .Write(vals0.val10)
+    .Write(vals0.val11)
+    .Write(vals0.val12)
+    .Write(vals0.val13)
+    .Write(vals0.val14)
+    .Write(vals0.val15);
 
   // Horse mastery.
   const auto& mastery = horse.mastery;
@@ -132,13 +151,20 @@ void LobbyCommandLogin::Read(
 void LobbyCommandLoginOK::Write(
   const LobbyCommandLoginOK& command, SinkStream& buffer)
 {
-  buffer.Write(command.lobbyTime)
+  FILETIME ft{};
+  ZeroMemory(&ft, sizeof(ft));
+  GetSystemTimeAsFileTime(&ft);
+
+  buffer.Write(ft.dwLowDateTime)
+    .Write(ft.dwHighDateTime)
     .Write(command.val0);
 
   // Profile
   buffer.Write(command.selfUid)
     .Write(command.nickName)
-    .Write(static_cast<uint16_t>(command.profileGender));
+    .Write(command.motd)
+    .Write(static_cast<uint16_t>(command.profileGender))
+    .Write(command.status);
 
   // Character equipment
   buffer.Write(static_cast<uint8_t>(
@@ -174,7 +200,8 @@ void LobbyCommandLoginOK::Write(
   if (optionTypeMask & static_cast<uint32_t>(OptionType::Keyboard))
   {
     const auto& keyboard = command.keyboardOptions;
-    buffer.Write(keyboard.size);
+    buffer.Write(static_cast<uint8_t>(
+      keyboard.bindings.size()));
 
     for (const auto& binding : keyboard.bindings)
     {
@@ -305,13 +332,39 @@ void LobbyCommandLoginOK::Read(
 }
 
 void LobbyCommandLoginCancel::Write(
-  const LobbyCommandLoginCancel& command, SinkStream& buffer)
+  const LobbyCommandLoginCancel& command,
+  SinkStream& buffer)
 {
   buffer.Write(static_cast<uint8_t>(command.reason));
 }
 
 void LobbyCommandLoginCancel::Read(
-  LobbyCommandLoginCancel& command, SourceStream& buffer)
+  LobbyCommandLoginCancel& command,
+  SourceStream& buffer)
+{
+  throw std::logic_error("Not implemented.");
+}
+
+void LobbyCommandShowInventoryOK::Write(
+  const LobbyCommandShowInventoryOK& command,
+  SinkStream& buffer)
+{
+  buffer.Write(static_cast<uint8_t>(command.items.size()));
+  for (const auto& item : command.items)
+  {
+    WriteItem(buffer, item);
+  }
+
+  buffer.Write(static_cast<uint8_t>(command.horses.size()));
+  for (const auto& horse : command.horses)
+  {
+    WriteHorse(buffer, horse);
+  }
+}
+
+void LobbyCommandShowInventoryOK::Read(
+  LobbyCommandShowInventoryOK& command,
+  SourceStream& buffer)
 {
   throw std::logic_error("Not implemented.");
 }

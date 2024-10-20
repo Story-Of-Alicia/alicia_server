@@ -78,8 +78,7 @@ struct KeyboardOptions
     uint8_t key{};
   };
 
-  uint8_t size;
-  std::array<Option, 16> bindings{};
+  std::vector<Option> bindings{};
 };
 
 struct MacroOptions
@@ -109,7 +108,6 @@ struct Character
     uint16_t val1{};
   } appearance{};
 };
-
 
 struct Horse
 {
@@ -154,6 +152,7 @@ struct Horse
   {
     uint16_t stamina{};
     uint16_t attractiveness{};
+
     uint16_t hunger{};
     uint16_t val0{};
 
@@ -171,7 +170,7 @@ struct Horse
 
     uint16_t val9{};
     uint16_t val10{};
-  } vals{};
+  } vals0{};
 
   struct
   {
@@ -194,7 +193,7 @@ struct Horse
     uint16_t val13{};
     uint16_t val14{};
     uint16_t val15{};
-  } vals0;
+  } vals1{};
 
   struct Mastery
   {
@@ -203,7 +202,7 @@ struct Horse
     uint32_t sliding{};
     //! Divided by 10?
     uint32_t gliding{};
-  } mastery;
+  } mastery{};
 
   uint32_t val16{};
   uint32_t val17{};
@@ -218,10 +217,12 @@ struct LobbyCommandLoginOK
 
   uint32_t selfUid{};
   std::string nickName{};
+  std::string motd{};
+  std::string status{};
   Gender profileGender{Gender::Baby};
 
-  std::array<Item, 16> characterEquipment{};
-  std::array<Item, 250> horseEquipment{};
+  std::vector<Item> characterEquipment{};
+  std::vector<Item> horseEquipment{};
 
   uint16_t level{};
   int32_t carrots{};
@@ -234,7 +235,7 @@ struct LobbyCommandLoginOK
   KeyboardOptions keyboardOptions{};
   MacroOptions macroOptions{};
   uint32_t valueOptions{};
-  // GamepadOptions gamepadOptions{};
+  //GamepadOptions gamepadOptions{};
 
   AgeGroup ageGroup{};
   uint8_t val4{};
@@ -246,14 +247,14 @@ struct LobbyCommandLoginOK
     uint32_t val2{};
     uint32_t val3{};
   };
-  std::array<Unk1, 16> val5;
+  std::vector<Unk1> val5;
 
   // 256 characters max
   std::string val6{};
 
   uint32_t address{};
   uint16_t port{};
-  uint16_t scramblingConstant{};
+  uint32_t scramblingConstant{};
 
   Character character{};
   Horse horse{};
@@ -265,7 +266,7 @@ struct LobbyCommandLoginOK
       uint32_t val0{};
       uint32_t val1{};
     };
-    std::array<Unk2, 16> values;
+    std::vector<Unk2> values;
   } val7{};
 
   // std::bitset
@@ -295,7 +296,7 @@ struct LobbyCommandLoginOK
       uint8_t val1{};
     };
 
-    std::array<Unk, 12> values;
+    std::vector<Unk> values;
   } val12{};
 
   struct Struct4
@@ -307,7 +308,7 @@ struct LobbyCommandLoginOK
       uint8_t val2{};
     };
 
-    std::array<Unk, 128> values;
+    std::vector<Unk> values;
   } val13{};
 
   uint32_t val14{};
@@ -408,11 +409,8 @@ struct LobbyCommandShowInventory
 //! Clientbound show inventory response.
 struct LobbyCommandShowInventoryOK
 {
-  uint8_t itemCount;
-  std::array<Item, 252> items{};
-
-  uint8_t horseCount;
-  std::array<Horse, 12> horses{};
+  std::vector<Item> items{};
+  std::vector<Horse> horses{};
 
   //! Writes the command to a provided sink buffer.
   //! @param command Command.
