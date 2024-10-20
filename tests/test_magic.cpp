@@ -1,4 +1,7 @@
 #include "libserver/alicia.hpp"
+#include "libserver/command/CommandProtocol.hpp"
+
+#include <assert.h>
 
 namespace {
 
