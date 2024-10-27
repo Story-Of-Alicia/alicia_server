@@ -1,4 +1,9 @@
 {
+    "Throw not implemented": {
+        "prefix": ["throw"],
+        "scope": "cpp",
+        "body": "throw std::logic_error(\"Not implemented.\");"
+    },
     "Command structure": {
         "prefix": ["command"],
         "scope": "cpp",
