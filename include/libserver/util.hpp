@@ -33,10 +33,18 @@ DEFINE_WRITER_READER(x, x::Write, x::Read)
 
 #include <format>
 #include <span>
+#include <cstdint>
+#include <ctime>
 
 namespace alicia
 {
 
+typedef struct FILETIME {
+  uint32_t dwLowDateTime;
+  uint32_t dwHighDateTime;
+};
+
+void UnixTimeToFileTime(std::time_t systemClock, FILETIME& filetime);
 
 template<typename StorageType>
 class StreamBase

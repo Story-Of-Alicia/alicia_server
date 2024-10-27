@@ -1,11 +1,22 @@
 #include "libserver/util.hpp"
 
+#define Int32x32To64(a, b)  ((uint16_t)(((uint64_t)((long)(a))) * ((long)(b))))
 
 namespace alicia
 {
 
 namespace
 {
+
+// Sources:
+//  https://learn.microsoft.com/en-us/windows/win32/api/winnt/nf-winnt-int32x32to64
+//  https://gist.github.com/JamesMenetrey/d3f494262bcab48af1d617c3d39f34cf#file-winnt-h-L944
+void UnixTimeToFileTime(std::time_t unixTime, FILETIME& filetime)
+{
+  uint64_t convertedUnixTime = Int32x32To64(unixTime, 10000000) + 116444736000000000;
+  filetime.dwLowDateTime = (uint32_t)convertedUnixTime;
+  filetime.dwHighDateTime = convertedUnixTime >> 32;
+}
 
 void WriteCString(const std::string& value, SinkStream& buffer)
 {
