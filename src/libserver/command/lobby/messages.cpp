@@ -1,6 +1,5 @@
 #include "libserver/command/lobby/messages.hpp"
-
-#include <windows.h>
+#include <ctime>
 
 namespace alicia
 {
@@ -151,9 +150,9 @@ void LobbyCommandLogin::Read(
 void LobbyCommandLoginOK::Write(
   const LobbyCommandLoginOK& command, SinkStream& buffer)
 {
+  std::time_t now = std::time(0);
   FILETIME ft{};
-  ZeroMemory(&ft, sizeof(ft));
-  GetSystemTimeAsFileTime(&ft);
+  UnixTimeToFileTime(now, ft);
 
   buffer.Write(ft.dwLowDateTime)
     .Write(ft.dwHighDateTime)
@@ -345,6 +344,18 @@ void LobbyCommandLoginCancel::Read(
   throw std::logic_error("Not implemented.");
 }
 
+void LobbyCommandShowInventory::Write(
+  const LobbyCommandShowInventory& command,
+  SinkStream& buffer)
+{
+}
+
+void LobbyCommandShowInventory::Read(
+  LobbyCommandShowInventory& command,
+  SourceStream& buffer)
+{
+}
+
 void LobbyCommandShowInventoryOK::Write(
   const LobbyCommandShowInventoryOK& command,
   SinkStream& buffer)
@@ -367,6 +378,435 @@ void LobbyCommandShowInventoryOK::Read(
   SourceStream& buffer)
 {
   throw std::logic_error("Not implemented.");
+}
+
+void LobbyCommandShowInventoryCancel::Write(
+  const LobbyCommandShowInventoryCancel& command,
+  SinkStream& buffer)
+{
+}
+
+void LobbyCommandShowInventoryCancel::Read(
+  LobbyCommandShowInventoryCancel& command,
+  SourceStream& buffer)
+{
+}
+
+void LobbyCommandRequestLeagueInfo::Write(
+  const LobbyCommandRequestLeagueInfo& command,
+  SinkStream& buffer)
+{
+}
+
+void LobbyCommandRequestLeagueInfo::Read(
+  LobbyCommandRequestLeagueInfo& command,
+  SourceStream& buffer)
+{
+}
+
+void LobbyCommandRequestLeagueInfoOK::Write(
+  const LobbyCommandRequestLeagueInfoOK& command,
+  SinkStream& buffer)
+{
+  buffer.Write(command.unk0)
+    .Write(command.unk1)
+    .Write(command.unk2)
+    .Write(command.unk3)
+    .Write(command.unk4)
+    .Write(command.unk5)
+    .Write(command.unk6)
+    .Write(command.unk7)
+    .Write(command.unk8)
+    .Write(command.unk9)
+    .Write(command.unk10)
+    .Write(command.unk11)
+    .Write(command.unk12)
+    .Write(command.unk13);
+}
+
+void LobbyCommandRequestLeagueInfoOK::Read(
+  LobbyCommandRequestLeagueInfoOK& command,
+  SourceStream& buffer)
+{
+  throw std::logic_error("Not implemented.");
+}
+
+void LobbyCommandRequestLeagueInfoCancel::Write(
+  const LobbyCommandRequestLeagueInfoCancel& command,
+  SinkStream& buffer)
+{
+}
+
+void LobbyCommandRequestLeagueInfoCancel::Read(
+  LobbyCommandRequestLeagueInfoCancel& command,
+  SourceStream& buffer)
+{
+}
+
+void LobbyCommandAchievementCompleteList::Write(
+  const LobbyCommandAchievementCompleteList& command,
+  SinkStream& buffer)
+{
+  throw std::logic_error("Not implemented.");
+}
+
+void LobbyCommandAchievementCompleteList::Read(
+  LobbyCommandAchievementCompleteList& command,
+  SourceStream& buffer)
+{
+  buffer.Read(command.unk0);
+}
+
+void LobbyCommandAchievementCompleteListOK::Write(
+  const LobbyCommandAchievementCompleteListOK& command,
+  SinkStream& buffer)
+{
+  buffer.Write(command.unk0);
+  buffer.Write(static_cast<uint16_t>(command.achievements.size()));
+  for (const auto& achievement : command.achievements)
+  {
+    buffer.Write(achievement.unk0)
+      .Write(achievement.unk1)
+      .Write(achievement.unk2)
+      .Write(achievement.unk3)
+      .Write(achievement.unk4);
+  }
+}
+
+void LobbyCommandAchievementCompleteListOK::Read(
+  LobbyCommandAchievementCompleteListOK& command,
+  SourceStream& buffer)
+{
+  throw std::logic_error("Not implemented.");
+}
+
+void LobbyCommandEnterChannel::Write(
+  const LobbyCommandEnterChannel& command,
+  SinkStream& buffer)
+{
+  throw std::logic_error("Not implemented.");
+}
+
+void LobbyCommandEnterChannel::Read(
+  LobbyCommandEnterChannel& command,
+  SourceStream& buffer)
+{
+  buffer.Read(command.channel);
+}
+
+void LobbyCommandEnterChannelOK::Write(
+  const LobbyCommandEnterChannelOK& command,
+  SinkStream& buffer)
+{
+  buffer.Write(command.unk0)
+    .Write(command.unk1);
+}
+
+void LobbyCommandEnterChannelOK::Read(
+  LobbyCommandEnterChannelOK& command,
+  SourceStream& buffer)
+{
+  throw std::logic_error("Not implemented.");
+}
+
+void LobbyCommandEnterChannelCancel::Write(
+  const LobbyCommandEnterChannelCancel& command,
+  SinkStream& buffer)
+{
+}
+
+void LobbyCommandEnterChannelCancel::Read(
+  LobbyCommandEnterChannelCancel& command,
+  SourceStream& buffer)
+{
+}
+
+void LobbyCommandMakeRoom::Write(
+  const LobbyCommandMakeRoom& command,
+  SinkStream& buffer)
+{
+  throw std::logic_error("Not implemented.");
+}
+
+void LobbyCommandMakeRoom::Read(
+  LobbyCommandMakeRoom& command,
+  SourceStream& buffer)
+{
+  buffer.Read(command.name)
+    .Read(command.description)
+    .Read(command.unk0)
+    .Read(command.unk1)
+    .Read(command.unk2)
+    .Read(command.unk3)
+    .Read(command.unk4)
+    .Read(command.unk5)
+    .Read(command.unk6);
+}
+
+void LobbyCommandMakeRoomOK::Write(
+  const LobbyCommandMakeRoomOK& command,
+  SinkStream& buffer)
+{
+  buffer.Write(command.unk0)
+    .Write(command.unk1)
+    .Write(command.ip)
+    .Write(command.port)
+    .Write(command.unk2);
+}
+
+void LobbyCommandMakeRoomOK::Read(
+  LobbyCommandMakeRoomOK& command,
+  SourceStream& buffer)
+{
+  throw std::logic_error("Not implemented.");
+}
+
+void LobbyCommandMakeRoomCancel::Write(
+  const LobbyCommandMakeRoomCancel& command,
+  SinkStream& buffer)
+{
+  buffer.Write(command.unk0);
+}
+
+void LobbyCommandMakeRoomCancel::Read(
+  LobbyCommandMakeRoomCancel& command,
+  SourceStream& buffer)
+{
+  throw std::logic_error("Not implemented.");
+}
+
+void LobbyCommandRequestQuestList::Write(
+  const LobbyCommandRequestQuestList& command,
+  SinkStream& buffer)
+{
+  throw std::logic_error("Not implemented.");
+}
+
+void LobbyCommandRequestQuestList::Read(
+  LobbyCommandRequestQuestList& command,
+  SourceStream& buffer)
+{
+  buffer.Read(command.unk0);
+}
+
+void LobbyCommandRequestQuestListOK::Write(
+  const LobbyCommandRequestQuestListOK& command,
+  SinkStream& buffer)
+{
+  buffer.Write(command.unk0);
+  buffer.Write(static_cast<uint16_t>(command.quests.size()));
+  for (const auto& quest : command.quests)
+  {
+    buffer.Write(quest.unk0)
+      .Write(quest.unk1)
+      .Write(quest.unk2)
+      .Write(quest.unk3)
+      .Write(quest.unk4);
+  }
+}
+
+void LobbyCommandRequestQuestListOK::Read(
+  LobbyCommandRequestQuestListOK& command,
+  SourceStream& buffer)
+{
+  throw std::logic_error("Not implemented.");
+}
+
+void LobbyCommandEnterRanch::Write(
+  const LobbyCommandEnterRanch& command,
+  SinkStream& buffer)
+{
+  throw std::logic_error("Not implemented.");
+}
+
+void LobbyCommandEnterRanch::Read(
+  LobbyCommandEnterRanch& command,
+  SourceStream& buffer)
+{
+  buffer.Read(command.unk0)
+    .Read(command.unk1)
+    .Read(command.unk2);
+}
+
+void LobbyCommandEnterRanchOK::Write(
+  const LobbyCommandEnterRanchOK& command,
+  SinkStream& buffer)
+{
+  buffer.Write(command.unk0)
+    .Write(command.unk1)
+    .Write(command.ip)
+    .Write(command.port);
+}
+
+void LobbyCommandEnterRanchOK::Read(
+  LobbyCommandEnterRanchOK& command,
+  SourceStream& buffer)
+{
+  throw std::logic_error("Not implemented.");
+}
+
+void LobbyCommandEnterRanchCancel::Write(
+  const LobbyCommandEnterRanchCancel& command,
+  SinkStream& buffer)
+{
+  buffer.Write(command.unk0);
+}
+
+void LobbyCommandEnterRanchCancel::Read(
+  LobbyCommandEnterRanchCancel& command,
+  SourceStream& buffer)
+{
+  throw std::logic_error("Not implemented.");
+}
+
+void LobbyCommandGetMessengerInfo::Write(
+  const LobbyCommandGetMessengerInfo& command,
+  SinkStream& buffer)
+{
+}
+
+void LobbyCommandGetMessengerInfo::Read(
+  LobbyCommandGetMessengerInfo& command,
+  SourceStream& buffer)
+{
+}
+
+void LobbyCommandGetMessengerInfoOK::Write(
+  const LobbyCommandGetMessengerInfoOK& command,
+  SinkStream& buffer)
+{
+  buffer.Write(command.unk0)
+    .Write(command.ip)
+    .Write(command.port);
+}
+
+void LobbyCommandGetMessengerInfoOK::Read(
+  LobbyCommandGetMessengerInfoOK& command,
+  SourceStream& buffer)
+{
+  throw std::logic_error("Not implemented.");
+}
+
+void LobbyCommandGetMessengerInfoCancel::Write(
+  const LobbyCommandGetMessengerInfoCancel& command,
+  SinkStream& buffer)
+{
+}
+
+void LobbyCommandGetMessengerInfoCancel::Read(
+  LobbyCommandGetMessengerInfoCancel& command,
+  SourceStream& buffer)
+{
+}
+
+void LobbyCommandRoomList::Write(
+  const LobbyCommandRoomList& command,
+  SinkStream& buffer)
+{
+  throw std::logic_error("Not implemented.");
+}
+
+void LobbyCommandRoomList::Read(
+  LobbyCommandRoomList& command,
+  SourceStream& buffer)
+{
+  buffer.Read(command.unk0)
+    .Read(command.unk1)
+    .Read(command.unk2);
+}
+
+void LobbyCommandRoomListOK::Write(
+  const LobbyCommandRoomListOK& command,
+  SinkStream& buffer)
+{
+  buffer.Write(command.unk0)
+    .Write(command.unk1)
+    .Write(command.unk2)
+    .Write(static_cast<uint8_t>(command.rooms.size()));
+  for(const auto& room : command.rooms)
+  {
+    buffer.Write(room.id)
+      .Write(room.name)
+      .Write(room.playerCount)
+      .Write(room.maxPlayers)
+      .Write(room.isLocked)
+      .Write(room.unk0)
+      .Write(room.unk1)
+      .Write(room.map)
+      .Write(room.hasStarted)
+      .Write(room.unk2)
+      .Write(room.unk3)
+      .Write(room.level)
+      .Write(room.unk4);
+  }
+  buffer.Write(command.unk3.unk0)
+    .Write(command.unk3.unk1)
+    .Write(command.unk3.unk2);
+}
+
+void LobbyCommandRoomListOK::Read(
+  LobbyCommandRoomListOK& command,
+  SourceStream& buffer)
+{
+  throw std::logic_error("Not implemented.");
+}
+
+void LobbyCommandRequestSpecialEventList::Write(
+  const LobbyCommandRequestSpecialEventList& command,
+  SinkStream& buffer)
+{
+  throw std::logic_error("Not implemented.");
+}
+
+void LobbyCommandRequestSpecialEventList::Read(
+  LobbyCommandRequestSpecialEventList& command,
+  SourceStream& buffer)
+{
+  buffer.Read(command.unk0);
+}
+
+void LobbyCommandRequestSpecialEventListOK::Write(
+  const LobbyCommandRequestSpecialEventListOK& command,
+  SinkStream& buffer)
+{
+  buffer.Write(command.unk0);
+
+  buffer.Write(static_cast<uint16_t>(command.unk1.size()));
+  for (const auto& unk1Element : command.unk1)
+  {
+    buffer.Write(unk1Element.unk0)
+      .Write(unk1Element.unk1)
+      .Write(unk1Element.unk2)
+      .Write(unk1Element.unk3)
+      .Write(unk1Element.unk4)
+      .Write(unk1Element.unk5);
+  }
+
+  buffer.Write(static_cast<uint16_t>(command.unk2.size()));
+  for (const auto& unk2Element: command.unk2)
+  {
+    buffer.Write(unk2Element.unk0)
+      .Write(unk2Element.unk1);
+  }
+}
+
+void LobbyCommandRequestSpecialEventListOK::Read(
+  LobbyCommandRequestSpecialEventListOK& command,
+  SourceStream& buffer)
+{
+  throw std::logic_error("Not implemented.");
+}
+
+void LobbyCommandHeartbeat::Write(
+  const LobbyCommandHeartbeat& command,
+  SinkStream& buffer)
+{
+}
+
+void LobbyCommandHeartbeat::Read(
+  LobbyCommandHeartbeat& command,
+  SourceStream& buffer)
+{
 }
 
 } // namespace alicia::proto

@@ -537,7 +537,6 @@ struct CompletedAchievement
 struct LobbyCommandAchievementCompleteListOK
 {
   uint32_t unk0;
-  uint16_t achievementCount;
   std::vector<CompletedAchievement> achievements;
 
   //! Writes the command to a provided sink buffer.
@@ -708,7 +707,6 @@ struct Quest {
 struct LobbyCommandRequestQuestListOK
 {
   uint32_t unk0;
-  uint16_t questCount;
   std::vector<Quest> quests;
 
   //! Writes the command to a provided sink buffer.
@@ -879,7 +877,6 @@ struct LobbyCommandRoomListOK
   uint8_t unk0;
   uint8_t unk1;
   uint8_t unk2;
-  uint8_t roomCount;
   std::vector<Room> rooms;
   struct {
     uint32_t unk0;
@@ -936,11 +933,7 @@ struct RequetSpecialEvenListOKUnk2 {
 struct LobbyCommandRequestSpecialEventListOK
 {
   uint32_t unk0;
-
-  uint16_t unk1Count;
   std::vector<RequetSpecialEvenListOKUnk1> unk1;
-
-  uint16_t unk2Count;
   std::vector<RequetSpecialEvenListOKUnk2> unk2;
 
   //! Writes the command to a provided sink buffer.
@@ -963,13 +956,13 @@ struct LobbyCommandHeartbeat
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const LobbyCommandRequestSpecialEventList& command, SinkStream& buffer);
+    const LobbyCommandHeartbeat& command, SinkStream& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    LobbyCommandRequestSpecialEventList& command, SourceStream& buffer);
+    LobbyCommandHeartbeat& command, SourceStream& buffer);
 };
 
 // TODO: AcCmdCLRequestPersonalInfo, others
