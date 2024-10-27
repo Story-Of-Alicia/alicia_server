@@ -37,6 +37,7 @@ DEFINE_WRITER_READER(x, x::Write, x::Read)
 namespace alicia
 {
 
+
 template<typename StorageType>
 class StreamBase
 {
