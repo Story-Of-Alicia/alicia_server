@@ -5,8 +5,8 @@
 #ifndef COMMAND_PROTOCOL_HPP
 #define COMMAND_PROTOCOL_HPP
 
-#include "lobby/messages.hpp"
-#include "ranch/messages.hpp"
+#include "proto/LobbyMessageDefines.hpp"
+#include "proto/RanchMessageDefines.hpp"
 
 namespace alicia
 {

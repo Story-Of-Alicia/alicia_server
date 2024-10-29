@@ -2,11 +2,11 @@
 // Created by rgnter on 8/09/2024.
 //
 
-#ifndef RANCH_MESSAGES_HPP
-#define RANCH_MESSAGES_HPP
+#ifndef RANCH_MESSAGE_DEFINES_HPP
+#define RANCH_MESSAGE_DEFINES_HPP
 
+#include "DataDefines.hpp"
 #include "libserver/util.hpp"
-#include "libserver/command/lobby/messages.hpp"
 
 #include <array>
 #include <vector>
@@ -16,13 +16,13 @@
 namespace alicia
 {
 
-//! Serverbound get messenger info command.
+//!
 struct RanchCommandUseItem
 {
-  uint32_t unk0;
-  uint16_t unk1;
-  uint32_t unk2;
-  uint32_t unk3;
+  uint32_t unk0{};
+  uint16_t unk1{};
+  uint32_t unk2{};
+  uint32_t unk3{};
 
   //! Writes the command to a provided sink buffer.
   //! @param command Command.
@@ -37,15 +37,16 @@ struct RanchCommandUseItem
     RanchCommandUseItem& command, SourceStream& buffer);
 };
 
-//! Clientbound get messenger info response.
+//!
 struct RanchCommandUseItemOK
 {
-  uint32_t unk0;
-  uint16_t unk1;
+  uint32_t unk0{};
+  uint16_t unk1{};
 
   // Action points to different structures depending on type
-  uint32_t type;
-  void* action;
+  uint32_t type{};
+  // todo: std::variant instead of a pointer, or just template the struct
+  void* action = nullptr;
 
   //! Writes the command to a provided sink buffer.
   //! @param command Command.
@@ -67,25 +68,24 @@ struct UseItemType0Action
 
 struct UseItemType1And2And3Action
 {
-  uint8_t unk0;
-  uint8_t unk1;
+  uint8_t unk0{};
+  uint8_t unk1{};
 };
 
 struct UseItemType4Action
 {
-  uint8_t unk0;
+  uint8_t unk0{};
 };
-
 
 struct MountFamilyTreeItem
 {
-  uint8_t unk0;
-  std::string unk1;
-  uint8_t unk2;
-  uint16_t unk3;
+  uint8_t unk0{};
+  std::string unk1{};
+  uint8_t unk2{};
+  uint16_t unk3{};
 };
 
-//! Serverbound get messenger info command.
+//!
 struct RanchCommandMountFamilyTree
 {
   uint32_t unk0;
@@ -103,13 +103,14 @@ struct RanchCommandMountFamilyTree
     RanchCommandMountFamilyTree& command, SourceStream& buffer);
 };
 
-//! Clientbound get messenger info response.
+//!
 struct RanchCommandMountFamilyTreeOK
 {
-  uint32_t unk0;
+  uint32_t unk0{};
 
   // In the packet, the length is specified as a byte
-  std::array<MountFamilyTreeItem, 6> items;
+  // max size 6
+  std::vector<MountFamilyTreeItem> items;
 
   //! Writes the command to a provided sink buffer.
   //! @param command Command.
@@ -140,37 +141,6 @@ struct RanchCommandMountFamilyTreeCancel
     RanchCommandMountFamilyTreeCancel& command, SourceStream& buffer);
 };
 
-
-struct RanchHorse {
-  uint16_t ranchIndex;
-  Horse horse;
-};
-
-struct Player
-{
-  uint32_t id;
-  std::string name;
-  Gender gender;
-  uint8_t unk0;
-  uint8_t unk1;
-  std::string description;
-
-  Character character;
-  Horse horse;
-  std::array<Item, 16> characterEquipment{};
-  LobbyCommandLoginOK::Struct5 playerRelatedThing;
-
-  uint16_t ranchIndex;
-  uint8_t unk2;
-  uint8_t unk3;
-
-  LobbyCommandLoginOK::Struct6 anotherPlayerRelatedThing;
-  LobbyCommandLoginOK::Struct7 yetAnotherPlayerRelatedThing;
-
-  uint8_t unk4;
-  uint8_t unk5;
-};
-
 //! Serverbound get messenger info command.
 struct RanchCommandEnterRanch
 {
@@ -194,55 +164,58 @@ struct RanchCommandEnterRanch
 //! Clientbound get messenger info response.
 struct RanchCommandEnterRanchOK
 {
-  uint32_t ranchId;
-  std::string unk0;
-  std::string ranchName;
+  uint32_t ranchId{};
+  std::string unk0{};
+  std::string ranchName{};
 
   // Indexes across both lists cant be shared.
   // If the horse list takes indexes 0, 1 and 2
   // the player list must use indexes 3, 4 and 5.
-  std::vector<RanchHorse> horses;
-  std::vector<Player> players;
+  std::vector<RanchHorse> horses{};
+  std::vector<RanchPlayer> players{};
 
-  uint64_t unk1;
-  uint32_t unk2;
-  uint32_t unk3;
+  uint64_t unk1{};
+  uint32_t unk2{};
+  uint32_t unk3{};
 
   struct Unk4
   {
-    uint32_t unk0;
-    uint16_t unk1;
-    uint32_t unk2;
+    uint32_t unk0{};
+    uint16_t unk1{};
+    uint32_t unk2{};
   };
-  std::array<Unk4, 13> unk4; // List length specified by a byte
 
-  uint8_t unk5;
-  uint32_t unk6;
-  uint32_t unk7; // bitset
+  // max  length 13
+  std::vector<Unk4> unk4{};
 
-  uint32_t unk8;
-  uint32_t unk9;
+  uint8_t unk5{};
+  uint32_t unk6{};
+  uint32_t unk7{}; // bitset
+
+  uint32_t unk8{};
+  uint32_t unk9{};
 
   struct Unk10
   {
-    uint32_t horseTID;
-    uint32_t unk0;
-    uint32_t unk1;
-    uint8_t unk2;
-    uint32_t unk3;
-    uint32_t unk4;
-    uint32_t unk5;
-    uint32_t unk6;
-    uint32_t unk7;
+    uint32_t horseTID{};
+    uint32_t unk0{};
+    uint32_t unk1{};
+    uint8_t unk2{};
+    uint32_t unk3{};
+    uint32_t unk4{};
+    uint32_t unk5{};
+    uint32_t unk6{};
+    uint32_t unk7{};
   };
-  std::array<Unk10, 3> unk10;
+  // max length 3
+  std::vector<Unk10> unk10;
 
   struct Unk11 {
-    uint8_t unk0;
-    uint8_t unk1;
-  } unk11;
+    uint8_t unk0{};
+    uint8_t unk1{};
+  } unk11{};
 
-  uint32_t unk12;
+  uint32_t unk12{};
 
   //! Writes the command to a provided sink buffer.
   //! @param command Command.
@@ -276,7 +249,7 @@ struct RanchCommandEnterRanchCancel
 //! Serverbound get messenger info command.
 struct RanchCommandEnterRanchNotify
 {
-  Player character;
+  RanchPlayer player{};
 
   //! Writes the command to a provided sink buffer.
   //! @param command Command.
@@ -296,7 +269,7 @@ struct RanchCommandEnterRanchNotify
 struct RanchCommandRanchSnapshot
 {
   // Packet consists of short specifying length, and byte array with the contents
-  std::vector<uint8_t> snapshot;
+  std::vector<uint8_t> snapshot{};
 
   //! Writes the command to a provided sink buffer.
   //! @param command Command.
@@ -314,9 +287,9 @@ struct RanchCommandRanchSnapshot
 //! Clientbound get messenger info response.
 struct RanchCommandRanchSnapshotNotify
 {
-  uint16_t ranchIndex;
+  uint16_t ranchIndex{};
   // Packet consists of short specifying length, and byte array with the contents
-  std::vector<uint8_t> snapshot;
+  std::vector<uint8_t> snapshot{};
 
   //! Writes the command to a provided sink buffer.
   //! @param command Command.
@@ -336,7 +309,7 @@ struct RanchCommandRanchSnapshotNotify
 struct RanchCommandRanchCmdAction
 {
   // Packet consists of short specifying length, and byte array with the contents
-  std::vector<uint8_t> snapshot;
+  std::vector<uint8_t> snapshot{};
 
   //! Writes the command to a provided sink buffer.
   //! @param command Command.
@@ -354,9 +327,9 @@ struct RanchCommandRanchCmdAction
 //! Clientbound get messenger info response.
 struct RanchCommandRanchCmdActionNotify
 {
-  uint16_t unk0;
-  uint16_t unk1;
-  uint8_t unk2;
+  uint16_t unk0{};
+  uint16_t unk1{};
+  uint8_t unk2{};
   
   //! Writes the command to a provided sink buffer.
   //! @param command Command.
@@ -375,7 +348,7 @@ struct RanchCommandRanchCmdActionNotify
 //! Serverbound get messenger info command.
 struct RanchCommandUpdateBusyState
 {
-  uint8_t busyState;
+  uint8_t busyState{};
 
   //! Writes the command to a provided sink buffer.
   //! @param command Command.
@@ -393,8 +366,8 @@ struct RanchCommandUpdateBusyState
 //! Clientbound get messenger info response.
 struct RanchCommandUpdateBusyStateNotify
 {
-  uint32_t characterId;
-  uint8_t busyState;
+  uint32_t characterId{};
+  uint8_t busyState{};
 
   //! Writes the command to a provided sink buffer.
   //! @param command Command.
@@ -445,7 +418,7 @@ struct RanchCommandLeaveRanchOK
 //! Serverbound get messenger info command.
 struct RanchCommandLeaveRanchNotify
 {
-  uint32_t characterId; // Probably
+  uint32_t characterId{}; // Probably
 
   //! Writes the command to a provided sink buffer.
   //! @param command Command.
@@ -480,6 +453,6 @@ struct RanchCommandHeartbeat
 // TODO Race commands: RanchCommandEnterRoom, RanchCommandChangeRoomOptions, RanchCommandStartRace, RanchCommandLoadingComplete, etc.
 // TODO Breeding commands: RanchCommandBreedingWishlist, RanchCommandSearchStallion, RanchCommandEnterBreedingMarket, RanchCommandTryBreeding, etc.
 
-}
+} // namespace alicia
 
-#endif //RANCH_MESSAGES_HPP
+#endif //RANCH_MESSAGE_DEFINES_HPP

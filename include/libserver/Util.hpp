@@ -31,20 +31,25 @@ void StreamReader<x>::operator()( \
 DECLARE_WRITER_READER(x) \
 DEFINE_WRITER_READER(x, x::Write, x::Read)
 
+#include <cstdint>
+#include <chrono>
 #include <format>
 #include <span>
-#include <cstdint>
-#include <ctime>
 
 namespace alicia
 {
 
-typedef struct FILETIME {
-  uint32_t dwLowDateTime;
-  uint32_t dwHighDateTime;
+//! Windows file-time represents number of 100 nanosecond intervals since January 1, 1601 (UTC).
+struct WinFileTime {
+  uint32_t dwLowDateTime = 0;
+  uint32_t dwHighDateTime = 0;
 };
 
-void UnixTimeToFileTime(std::time_t systemClock, FILETIME& filetime);
+//! Converts a time point to the Windows file time.
+//! @param timePoint Point in time.
+//! @return Windows file time representing specified point in time.
+WinFileTime UnixTimeToFileTime(
+  const std::chrono::system_clock::time_point& timePoint);
 
 template<typename StorageType>
 class StreamBase

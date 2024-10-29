@@ -8,16 +8,6 @@ namespace alicia
 namespace
 {
 
-// Sources:
-//  https://learn.microsoft.com/en-us/windows/win32/api/winnt/nf-winnt-int32x32to64
-//  https://gist.github.com/JamesMenetrey/d3f494262bcab48af1d617c3d39f34cf#file-winnt-h-L944
-void UnixTimeToFileTime(std::time_t unixTime, FILETIME& filetime)
-{
-  uint64_t convertedUnixTime = Int32x32To64(unixTime, 10000000) + 116444736000000000;
-  filetime.dwLowDateTime = (uint32_t)convertedUnixTime;
-  filetime.dwHighDateTime = convertedUnixTime >> 32;
-}
-
 void WriteCString(const std::string& value, SinkStream& buffer)
 {
   for (char b : value)
@@ -50,6 +40,20 @@ void ReadCString(std::string& value, SourceStream& buffer)
 }
 
 } // namespace anon
+
+// Sources:
+//  https://learn.microsoft.com/en-us/windows/win32/api/winnt/nf-winnt-int32x32to64
+//  https://gist.github.com/JamesMenetrey/d3f494262bcab48af1d617c3d39f34cf#file-winnt-h-L944
+WinFileTime UnixTimeToFileTime(
+  const std::chrono::system_clock::time_point& timePoint)
+{
+  const uint64_t unixTime = timePoint.time_since_epoch().count();
+  const uint64_t convertedUnixTime = Int32x32To64(unixTime, 10000000) + 116444736000000000;
+  return WinFileTime {
+    .dwLowDateTime = static_cast<uint32_t>(convertedUnixTime),
+    .dwHighDateTime = convertedUnixTime >> 32
+  };
+}
 
 DEFINE_WRITER_READER(std::string, WriteCString, ReadCString)
 

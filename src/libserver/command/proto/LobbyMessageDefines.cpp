@@ -1,5 +1,6 @@
-#include "libserver/command/lobby/messages.hpp"
-#include <ctime>
+#include "libserver/command/proto/LobbyMessageDefines.hpp"
+
+#include <chrono>
 
 namespace alicia
 {
@@ -150,12 +151,12 @@ void LobbyCommandLogin::Read(
 void LobbyCommandLoginOK::Write(
   const LobbyCommandLoginOK& command, SinkStream& buffer)
 {
-  std::time_t now = std::time(0);
-  FILETIME ft{};
-  UnixTimeToFileTime(now, ft);
+  // Convert the current time to the Windows file time.
+  const WinFileTime fileTime = UnixTimeToFileTime(
+    std::chrono::system_clock::now());
 
-  buffer.Write(ft.dwLowDateTime)
-    .Write(ft.dwHighDateTime)
+  buffer.Write(fileTime.dwLowDateTime)
+    .Write(fileTime.dwHighDateTime)
     .Write(command.val0);
 
   // Profile

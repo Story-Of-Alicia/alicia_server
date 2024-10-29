@@ -1,6 +1,7 @@
-#ifndef LOBBY_MESSAGES_HPP
-#define LOBBY_MESSAGES_HPP
+#ifndef LOBBY_MESSAGE_DEFINES_HPP
+#define LOBBY_MESSAGE_DEFINES_HPP
 
+#include "DataDefines.hpp"
 #include "libserver/util.hpp"
 
 #include <array>
@@ -31,181 +32,6 @@ struct LobbyCommandLogin
   //! @param buffer Source buffer.
   static void Read(
     LobbyCommandLogin& command, SourceStream& buffer);
-};
-
-enum class Gender : uint8_t
-{
-  Baby = 0x0,
-  Boy = 0x1,
-  Girl = 0x2
-};
-
-enum class AgeGroup : uint8_t
-{
-  //! Age <12
-  Kid = 0x0C,
-  //! Age 13-15
-  Teenager = 0x0D,
-  //! Age 16-18
-  Highschooler = 0x10,
-  //! Age 19+
-  Adult = 0x13,
-};
-
-//! Item
-struct Item
-{
-  uint32_t uid{};
-  uint32_t tid{};
-  uint32_t val{};
-  uint32_t count{};
-};
-
-enum class OptionType : uint32_t
-{
-  Keyboard = 1 << 0,
-  Macros = 1 << 3,
-  Value = 1 << 4,
-  Gamepad = 1 << 5,
-};
-
-struct KeyboardOptions
-{
-  struct Option
-  {
-    uint16_t index{};
-    uint8_t type{};
-    uint8_t key{};
-  };
-
-  std::vector<Option> bindings{};
-};
-
-struct MacroOptions
-{
-  std::array<std::string, 8> macros;
-};
-
-struct Character
-{
-  //! Used to build character from the _ClientCharDefaultPartInfo table.
-  struct CharacterParts
-  {
-    uint8_t id{};
-    uint8_t mouthSerialId{};
-    uint8_t faceSerialId{};
-    uint8_t val0{};
-  } parts{};
-
-  //! Seems to not be based on any physical units...
-  struct CharacterAppearance
-  {
-    uint16_t val0{};
-    uint16_t headSize{};
-    uint16_t height{};
-    uint16_t thighVolume{};
-    uint16_t legVolume{};
-    uint16_t val1{};
-  } appearance{};
-};
-
-struct Horse
-{
-  uint32_t uid{};
-  uint32_t tid{};
-  std::string name{};
-
-  struct Parts
-  {
-    uint8_t skinId{};
-    uint8_t maneId{};
-    uint8_t tailId{};
-    uint8_t faceId{};
-  } parts{};
-
-  //! Figure
-  struct Appearance
-  {
-    uint8_t scale{};
-    uint8_t legLength{};
-    uint8_t legVolume{};
-    uint8_t bodyLength{};
-    uint8_t bodyVolume{};
-  } appearance;
-
-  struct Stats
-  {
-    uint32_t agility{};
-    uint32_t spirit{};
-    uint32_t speed{};
-    uint32_t strength{};
-    uint32_t ambition{};
-  } stats;
-
-  uint32_t rating{};
-  uint8_t clazz{};
-  uint8_t val0{};
-  uint8_t grade{};
-  uint16_t growthPoints{};
-
-  struct
-  {
-    uint16_t stamina{};
-    uint16_t attractiveness{};
-
-    uint16_t hunger{};
-    uint16_t val0{};
-
-    uint16_t val1{};
-    uint16_t val2{};
-
-    uint16_t val3{};
-    uint16_t val4{};
-
-    uint16_t val5{};
-    uint16_t val6{};
-
-    uint16_t val7{};
-    uint16_t val8{};
-
-    uint16_t val9{};
-    uint16_t val10{};
-  } vals0{};
-
-  struct
-  {
-    uint8_t val0{};
-    uint32_t val1{};
-    uint32_t val2{};
-    uint8_t val3{};
-    uint8_t val4{};
-    uint32_t classProgression{};
-    uint32_t val5{};
-
-    uint8_t val6{};
-    uint8_t val7{};
-    uint8_t val8{};
-    uint8_t val9{};
-    uint8_t val10{};
-    uint8_t val11{};
-    uint8_t val12{};
-
-    uint16_t val13{};
-    uint16_t val14{};
-    uint16_t val15{};
-  } vals1{};
-
-  struct Mastery
-  {
-    uint32_t magic{};
-    uint32_t jumping{};
-    uint32_t sliding{};
-    //! Divided by 10?
-    uint32_t gliding{};
-  } mastery{};
-
-  uint32_t val16{};
-  uint32_t val17{};
 };
 
 //! Clientbound login OK command.
@@ -313,39 +139,17 @@ struct LobbyCommandLoginOK
 
   uint32_t val14{};
 
-  struct Struct5
-  {
-    uint32_t val0{};
-    uint8_t val1{};
-    uint32_t val2{};
-    std::string val3{};
-    uint8_t val4{};
-    uint32_t val5{};
-    // ignored by the client?
-    uint8_t val6{};
-  } val15{};
+  Struct5 val15{};
 
   uint8_t val16{};
 
-  struct Struct6
-  {
-    uint32_t val0{};
-    uint32_t val1{};
-    uint32_t val2{};
-    uint32_t val3{};
-  } val17{};
+  Struct6 val17{};
 
   uint32_t val18{};
   uint32_t val19{};
   uint32_t val20{};
 
-  struct Struct7
-  {
-    uint32_t val0{};
-    uint32_t val1{};
-    std::string val2{};
-    uint32_t val3{};
-  } val21{};
+  Struct7 val21{};
 
   //! Writes the command to a provided sink buffer.
   //! @param command Command.
@@ -552,9 +356,6 @@ struct LobbyCommandAchievementCompleteListOK
     LobbyCommandAchievementCompleteListOK& command, SourceStream& buffer);
 };
 
-
-
-
 //! Serverbound enter channel command.
 struct LobbyCommandEnterChannel
 {
@@ -607,7 +408,6 @@ struct LobbyCommandEnterChannelCancel
   static void Read(
     LobbyCommandEnterChannelCancel& command, SourceStream& buffer);
 };
-
 
 //! Serverbound make room command.
 struct LobbyCommandMakeRoom
@@ -969,4 +769,4 @@ struct LobbyCommandHeartbeat
 
 } // namespace alica
 
-#endif //LOBBY_MESSAGES_HPP
+#endif //LOBBY_MESSAGE_DEFINES_HPP

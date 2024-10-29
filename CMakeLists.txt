@@ -17,8 +17,9 @@ add_library(alicia-libserver STATIC
         src/libserver/base/Server.cpp
         src/libserver/command/CommandProtocol.cpp
         src/libserver/command/CommandServer.cpp
-        src/libserver/command/lobby/messages.cpp
-        src/libserver/command/ranch/messages.cpp
+        src/libserver/command/proto/LobbyMessageDefines.cpp
+        src/libserver/command/proto/RanchMessageDefines.cpp
+        include/libserver/command/proto/DataDefines.hpp
 )
 target_include_directories(alicia-libserver
         PUBLIC include/)
