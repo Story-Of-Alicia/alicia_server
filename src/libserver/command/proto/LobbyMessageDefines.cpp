@@ -151,12 +151,8 @@ void LobbyCommandLogin::Read(
 void LobbyCommandLoginOK::Write(
   const LobbyCommandLoginOK& command, SinkStream& buffer)
 {
-  // Convert the current time to the Windows file time.
-  const WinFileTime fileTime = UnixTimeToFileTime(
-    std::chrono::system_clock::now());
-
-  buffer.Write(fileTime.dwLowDateTime)
-    .Write(fileTime.dwHighDateTime)
+  buffer.Write(command.lobbyTime.dwLowDateTime)
+    .Write(command.lobbyTime.dwHighDateTime)
     .Write(command.val0);
 
   // Profile

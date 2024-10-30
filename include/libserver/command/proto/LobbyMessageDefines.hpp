@@ -38,14 +38,14 @@ struct LobbyCommandLogin
 struct LobbyCommandLoginOK
 {
   // filetime
-  uint64_t lobbyTime{};
+  WinFileTime lobbyTime{};
   uint32_t val0{};
 
   uint32_t selfUid{};
   std::string nickName{};
   std::string motd{};
-  std::string status{};
   Gender profileGender{Gender::Baby};
+  std::string status{};
 
   std::vector<Item> characterEquipment{};
   std::vector<Item> horseEquipment{};
@@ -138,11 +138,8 @@ struct LobbyCommandLoginOK
   } val13{};
 
   uint32_t val14{};
-
   Struct5 val15{};
-
   uint8_t val16{};
-
   Struct6 val17{};
 
   uint32_t val18{};
