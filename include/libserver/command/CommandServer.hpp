@@ -38,7 +38,10 @@ public:
   //! Default constructor;
   CommandServer();
 
-  //! Host
+  //! Hosts the command server on the specified interface with the provided port.
+  //! Runs the processing loop and blocks until exception or stopped.
+  //! @param interface Interface address.
+  //! @param port Port.
   void Host(const std::string& interface, uint16_t port);
 
   //! Registers a command handler.

@@ -1,7 +1,27 @@
 #include "libserver/command/CommandProtocol.hpp"
 
+#include <unordered_map>
+
 namespace alicia
 {
+
+namespace
+{
+
+//! Commands IDs mapped to the command names.
+const std::unordered_map<CommandId, std::string_view> commands = {
+  // Login
+  {CommandId::LobbyLogin, "LobbyLogin"},
+  {CommandId::LobbyLoginOK, "LobbyLoginOK"},
+  {CommandId::LobbyLoginCancel, "LobbyLoginCancel"},
+
+  // Inventory
+  {CommandId::LobbyShowInventory, "ShowInventory"},
+  {CommandId::LobbyShowInventoryOK, "ShowInventoryOK"},
+  {CommandId::LobbyShowInventoryCancel, "ShowInventoryCancel"},
+};
+
+} // namespace anon
 
 MessageMagic decode_message_magic(uint32_t value)
 {
@@ -30,6 +50,12 @@ uint32_t encode_message_magic(MessageMagic magic)
   encoded = ((encoded & 0xF | 0xFF80) << 8 | length >> 4 & 0xFF | encoded & 0xF000) & 0xFFFF;
   encoded |= (encoded ^ id) << 16;
   return encoded;
+}
+
+std::string_view GetCommandName(CommandId command)
+{
+  const auto commandIter = commands.find(command);
+  return commandIter == commands.cend() ? "n/a" : commandIter->second;
 }
 
 } // namespace alicia

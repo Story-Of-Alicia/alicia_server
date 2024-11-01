@@ -1,0 +1,15 @@
+#ifndef VERSION_HPP
+#define VERSION_HPP
+
+#include <string_view>
+
+namespace alicia
+{
+
+constexpr unsigned int BuildVersionMajor = @AliciaServerBuildVersionMajor@;
+constexpr unsigned int BuildVersionMinor = @AliciaServerBuildVersionMinor@;
+constexpr std::string_view BuildVersion = "@AliciaServerBuildVersion@";
+
+}
+
+#endif // VERSION_HPP

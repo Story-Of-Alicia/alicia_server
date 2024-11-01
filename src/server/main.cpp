@@ -1,11 +1,13 @@
+#include "Version.hpp"
+
 #include <libserver/Util.hpp>
 #include <libserver/command/CommandServer.hpp>
 #include <libserver/base/server.hpp>
 
+#include <spdlog/spdlog.h>
+
 #include <memory>
 #include <thread>
-
-#include <Windows.h>
 
 namespace
 {
@@ -58,7 +60,7 @@ public:
     {
       _lobbyServer.QueueCommand(
         clientId,
-        alicia::CommandId::LobbyCommandLoginCancel,
+        alicia::CommandId::LobbyLoginCancel,
         [](alicia::SinkStream& buffer)
         {
           const alicia::LobbyCommandLoginCancel command{
@@ -78,16 +80,16 @@ public:
     // The token is valid, accept the login.
     _lobbyServer.QueueCommand(
       clientId,
-      alicia::CommandId::LobbyCommandLoginOK,
+      alicia::CommandId::LobbyLoginOK,
       [&user](alicia::SinkStream& sink)
       {
-        FILETIME time;
-        GetSystemTimeAsFileTime(&time);
+        // FILETIME time;
+        // GetSystemTimeAsFileTime(&time);
 
         const alicia::LobbyCommandLoginOK command{
-          .lobbyTime = {
-            .dwLowDateTime = static_cast<uint32_t>(time.dwLowDateTime),
-            .dwHighDateTime = static_cast<uint32_t>(time.dwHighDateTime)},
+          // .lobbyTime = {
+          //   .dwLowDateTime = static_cast<uint32_t>(time.dwLowDateTime),
+          //   .dwHighDateTime = static_cast<uint32_t>(time.dwHighDateTime)},
           .val0 = 0xCA794,
 
           .selfUid = user.id,
@@ -200,15 +202,15 @@ public:
           .ageGroup = alicia::AgeGroup::Adult,
           .val4 = 0,
 
-          .val5 = {
-            {0x18, 1, 2, 1},
-            {0x1F, 1, 2, 1},
-            {0x23, 1, 2, 1},
-            {0x29, 1, 2, 1},
-            {0x2A, 1, 2, 1},
-            {0x2B, 1, 2, 1},
-            {0x2E, 1, 2, 1}
-          },
+          // .val5 = {
+          //   {0x18, 1, 2, 1},
+          //   {0x1F, 1, 2, 1},
+          //   {0x23, 1, 2, 1},
+          //   {0x29, 1, 2, 1},
+          //   {0x2A, 1, 2, 1},
+          //   {0x2B, 1, 2, 1},
+          //   {0x2E, 1, 2, 1}
+          // },
 
           .val6 = "val6",
 
@@ -299,6 +301,9 @@ std::unique_ptr<LoginDirector> g_loginDirector;
 
 int main()
 {
+  spdlog::info("Running Alicia server v{}.", alicia::BuildVersion);
+  spdlog::set_level(spdlog::level::debug);
+
   boost::asio::streambuf buf;
   auto mutableBuffer = buf.prepare(4092);
   alicia::SinkStream sink(std::span(
@@ -330,7 +335,7 @@ int main()
 
     // Handlers
     lobbyServer.RegisterCommandHandler(
-      alicia::CommandId::LobbyCommandLogin,
+      alicia::CommandId::LobbyLogin,
       [](alicia::ClientId clientId, auto& buffer)
       {
         alicia::LobbyCommandLogin loginCommand;
@@ -341,15 +346,16 @@ int main()
       });
 
     // Host
+    spdlog::debug("Lobby server hosted on 127.0.0.1:{}", 10030);
     lobbyServer.Host("127.0.0.1", 10030);
-    printf("Lobby server running on loopback port %d\n", 10030);
   });
 
   std::jthread ranchThread([]()
   {
     alicia::CommandServer ranchServer;
+
+    spdlog::debug("Ranch server hosted on 127.0.0.1:{}", 10031);
     ranchServer.Host("127.0.0.1", 10031);
-    printf("Ranch server running on loopback port %d\n", 10031);
   });
 
   return 0;

@@ -81,7 +81,10 @@ CommandServer::CommandServer()
         const auto handlerIter = _handlers.find(commandId);
         if (handlerIter == _handlers.cend())
         {
-          printf(std::format("Unhandled command: {}\n", magic.id).c_str());
+          printf(std::format("Unhandled command '{}', ID: 0x{:x}, Length: {}\n",
+            GetCommandName(commandId),
+            magic.id,
+            magic.length).c_str());
           return false;
         }
 

@@ -1,9 +1,12 @@
 cmake_minimum_required(VERSION 3.20)
-project(alicia-server)
+project(alicia-server
+        VERSION 1.0.0)
 
 option(BUILD_TESTS "Build tests" ON)
 
 find_package(Boost REQUIRED)
+
+add_subdirectory(3rd-party)
 
 # Project properties interface library
 add_library(project-properties INTERFACE)
@@ -28,10 +31,30 @@ target_link_libraries(alicia-libserver
 
 # Alicia server executable
 add_executable(alicia-server)
+
+# Version variables
+set(AliciaServerBuildName alpha)
+set(AliciaServerBuildVersionMajor ${CMAKE_PROJECT_VERSION_MAJOR})
+set(AliciaServerBuildVersionMinor ${CMAKE_PROJECT_VERSION_MINOR})
+set(AliciaServerBuildVersion ${CMAKE_PROJECT_VERSION}-${AliciaServerBuildName})
+message(${AliciaServerBuildVersion})
+
+configure_file(
+        include/server/Version.hpp.in
+        generated/Version.hpp)
+
+
 target_sources(alicia-server
         PRIVATE src/server/main.cpp)
 target_link_libraries(alicia-server
-        PRIVATE project-properties alicia-libserver)
+        PRIVATE project-properties alicia-libserver spdlog::spdlog)
+target_include_directories(alicia-server PUBLIC
+        "${PROJECT_BINARY_DIR}/generated")
+if (${MSVC})
+        target_compile_options(alicia-server
+                PRIVATE /utf-8)
+endif ()
+
 
 if (BUILD_TESTS) 
         enable_testing()

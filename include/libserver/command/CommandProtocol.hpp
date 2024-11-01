@@ -63,20 +63,26 @@ template <typename Buffer> void xor_codec_cpp(Buffer &buffer)
   }
 }
 
-//!
+//! IDs of the commands in the protocol.
 enum class CommandId
   : uint16_t
 {
-  LobbyCommandLogin = 0x0007,
-  LobbyCommandLoginOK = 0x0008,
-  LobbyCommandLoginCancel = 0x0009,
+  LobbyLogin = 0x0007,
+  LobbyLoginOK = 0x0008,
+  LobbyLoginCancel = 0x0009,
 
   LobbyShowInventory = 0x007e,
   LobbyShowInventoryOK = 0x007f,
   LobbyShowInventoryCancel = 0x0080,
 
-  Count = 0x0FFF,
+  Count = 0xFFFF
 };
+
+//! Get the name of the command from its ID.
+//! @param command ID of the command to retrieve the name for.
+//! @returns If command is registered, name of the command.
+//!          Otherwise, returns "n/a".
+std::string_view GetCommandName(CommandId command);
 
 } // namespace alicia
 
