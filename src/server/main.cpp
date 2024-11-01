@@ -81,11 +81,15 @@ public:
       alicia::CommandId::LobbyCommandLoginOK,
       [&user](alicia::SinkStream& sink)
       {
-        const alicia::LobbyCommandLoginOK command{
-          .lobbyTime = alicia::UnixTimeToFileTime(
-            std::chrono::system_clock::now()),
+        FILETIME time;
+        GetSystemTimeAsFileTime(&time);
 
+        const alicia::LobbyCommandLoginOK command{
+          .lobbyTime = {
+            .dwLowDateTime = static_cast<uint32_t>(time.dwLowDateTime),
+            .dwHighDateTime = static_cast<uint32_t>(time.dwHighDateTime)},
           .val0 = 0xCA794,
+
           .selfUid = user.id,
           .nickName = user.nickName,
           .motd = "Welcome to SoA!",
@@ -101,6 +105,98 @@ public:
           .val2 = 0,
           .val3 = 0,
 
+          .optionType = static_cast<alicia::OptionType>(
+            static_cast<uint32_t>(alicia::OptionType::Keyboard) |
+            static_cast<uint32_t>(alicia::OptionType::Macros) |
+            static_cast<uint32_t>(alicia::OptionType::Value)),
+
+          .keyboardOptions = {
+            .bindings = {
+              {
+                .index = 1,
+                .type = 0x16,
+                .key = 'W',
+              },
+              {
+                .index = 2,
+                .type = 0x15,
+                .key = 'A',
+              },
+              {
+                .index = 3,
+                .type = 0x17,
+                .key = 'D',
+              },
+              {
+                .index = 4,
+                .type = 0x18,
+                .key = 'S',
+              },
+              {
+                .index = 5,
+                .type = 0x12,
+                // PAUSE
+                .key = 0x13
+              },
+              {
+                .index = 6,
+                .type = 0x82,
+                // F20
+                .key = 0x83
+              },
+              {
+                .index = 7,
+                .type = 0x20,
+                // HELP
+                .key = 0x2F
+              },
+              {
+                .index = 8,
+                .type = 0x46,
+                // unbound
+                .key = 0x00
+              },
+              {
+                .index = 9,
+                .type = 0x52,
+                // unbound
+                .key = 0x00
+              },
+              {
+                .index = 10,
+                .type = 0x19,
+                // unbound
+                .key = 0x00
+              },
+              {
+                .index = 11,
+                .type = 0xF,
+                // unbound
+                .key = 0x00
+              },
+              {
+                .index = 12,
+                .type = 0x43,
+                // unbound
+                .key = 0x00
+              },
+            }
+          },
+
+          .macroOptions = {
+            .macros = {
+              "/wink/wave",
+              "Thank you! /heart",
+              "/fire/fire/fire Fire! /fire/fire/fire",
+              "/sad/cry Sorry! /cry/sad", "/-tada Congralutations!!! /tada",
+              "/clap Good Gam1 /-clap",
+              "Be right back! Please wait for me! /wink",
+              "See you! /smile/wave"}},
+
+          .valueOptions = 0x64,
+
+          // gamepad
+
           .ageGroup = alicia::AgeGroup::Adult,
           .val4 = 0,
 
@@ -113,6 +209,8 @@ public:
             {0x2B, 1, 2, 1},
             {0x2E, 1, 2, 1}
           },
+
+          .val6 = "val6",
 
           .address = 2130706433, // 127.0.0.1
           .port = 10031, // 10031

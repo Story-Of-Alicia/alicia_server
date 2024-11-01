@@ -40,7 +40,6 @@ void WriteCharacter(
     .Write(appearance.height)
     .Write(appearance.thighVolume)
     .Write(appearance.legVolume)
-    .Write(appearance.val1)
     .Write(appearance.val1);
 }
 
@@ -85,39 +84,40 @@ void WriteHorse(
     .Write(horse.grade)
     .Write(horse.growthPoints);
 
-  buf.Write(horse.vals0.stamina)
-    .Write(horse.vals0.attractiveness)
-    .Write(horse.vals0.hunger)
-    .Write(horse.vals0.val0)
-    .Write(horse.vals0.val1)
-    .Write(horse.vals0.val2)
-    .Write(horse.vals0.val3)
-    .Write(horse.vals0.val4)
-    .Write(horse.vals0.val5)
-    .Write(horse.vals0.val6)
-    .Write(horse.vals0.val7)
-    .Write(horse.vals0.val8)
-    .Write(horse.vals0.val9)
-    .Write(horse.vals0.val10);
-
-  const auto& vals0 = horse.vals1;
-  buf.Write(vals0.val0)
+  const auto& vals0 = horse.vals0;
+  buf.Write(vals0.stamina)
+    .Write(vals0.attractiveness)
+    .Write(vals0.hunger)
+    .Write(vals0.val0)
     .Write(vals0.val1)
     .Write(vals0.val2)
     .Write(vals0.val3)
     .Write(vals0.val4)
-    .Write(vals0.classProgression)
     .Write(vals0.val5)
     .Write(vals0.val6)
     .Write(vals0.val7)
     .Write(vals0.val8)
     .Write(vals0.val9)
-    .Write(vals0.val10)
-    .Write(vals0.val11)
-    .Write(vals0.val12)
-    .Write(vals0.val13)
-    .Write(vals0.val14)
-    .Write(vals0.val15);
+    .Write(vals0.val10);
+
+  const auto& vals1 = horse.vals1;
+  buf.Write(vals1.val0)
+    .Write(vals1.val1)
+    .Write(vals1.val2)
+    .Write(vals1.val3)
+    .Write(vals1.val4)
+    .Write(vals1.classProgression)
+    .Write(vals1.val5)
+    .Write(vals1.val6)
+    .Write(vals1.val7)
+    .Write(vals1.val8)
+    .Write(vals1.val9)
+    .Write(vals1.val10)
+    .Write(vals1.val11)
+    .Write(vals1.val12)
+    .Write(vals1.val13)
+    .Write(vals1.val14)
+    .Write(vals1.val15);
 
   // Horse mastery.
   const auto& mastery = horse.mastery;
@@ -159,7 +159,7 @@ void LobbyCommandLoginOK::Write(
   buffer.Write(command.selfUid)
     .Write(command.nickName)
     .Write(command.motd)
-    .Write(static_cast<uint16_t>(command.profileGender))
+    .Write(static_cast<uint8_t>(command.profileGender))
     .Write(command.status);
 
   // Character equipment
@@ -250,10 +250,10 @@ void LobbyCommandLoginOK::Write(
   WriteHorse(buffer, command.horse);
 
   // Struct1
-  const auto& struct1 = command.val7;
+  const auto& struct0 = command.val7;
   buffer.Write(
-    static_cast<uint8_t>(struct1.values.size()));
-  for (const auto& value : struct1.values)
+    static_cast<uint8_t>(struct0.values.size()));
+  for (const auto& value : struct0.values)
   {
     buffer.Write(value.val0)
       .Write(value.val1);
@@ -262,6 +262,13 @@ void LobbyCommandLoginOK::Write(
   buffer.Write(command.val8);
 
   // Struct2
+  const auto& struct1 = command.val9;
+  buffer.Write(struct1.val0)
+    .Write(struct1.val1)
+    .Write(struct1.val2);
+
+  buffer.Write(command.val10);
+
   const auto& struct2 = command.val11;
   buffer.Write(struct2.val0)
     .Write(struct2.val1)
@@ -306,8 +313,7 @@ void LobbyCommandLoginOK::Write(
   const auto& struct6 = command.val17;
   buffer.Write(struct6.val0)
     .Write(struct6.val1)
-    .Write(struct6.val2)
-    .Write(struct6.val3);
+    .Write(struct6.val2);
 
   buffer.Write(command.val18)
     .Write(command.val19)

@@ -44,7 +44,7 @@ struct LobbyCommandLoginOK
   uint32_t selfUid{};
   std::string nickName{};
   std::string motd{};
-  Gender profileGender{Gender::Baby};
+  Gender profileGender{Gender::Unspecified};
   std::string status{};
 
   std::vector<Item> characterEquipment{};

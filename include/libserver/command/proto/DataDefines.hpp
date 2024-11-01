@@ -12,7 +12,7 @@ namespace alicia
 //!
 enum class Gender : uint8_t
 {
-  Baby = 0x0,
+  Unspecified = 0x0,
   Boy = 0x1,
   Girl = 0x2
 };
@@ -111,7 +111,7 @@ struct Horse
     uint8_t legVolume{};
     uint8_t bodyLength{};
     uint8_t bodyVolume{};
-  } appearance;
+  } appearance{};
 
   struct Stats
   {
@@ -120,7 +120,7 @@ struct Horse
     uint32_t speed{};
     uint32_t strength{};
     uint32_t ambition{};
-  } stats;
+  } stats{};
 
   uint32_t rating{};
   uint8_t clazz{};
@@ -157,6 +157,7 @@ struct Horse
     uint8_t val0{};
     uint32_t val1{};
     uint32_t val2{};
+
     uint8_t val3{};
     uint8_t val4{};
     uint32_t classProgression{};
@@ -166,6 +167,7 @@ struct Horse
     uint8_t val7{};
     uint8_t val8{};
     uint8_t val9{};
+
     uint8_t val10{};
     uint8_t val11{};
     uint8_t val12{};
@@ -207,7 +209,6 @@ struct Struct6
   uint32_t val0{};
   uint32_t val1{};
   uint32_t val2{};
-  uint32_t val3{};
 };
 
 //!
