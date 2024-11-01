@@ -1,12 +1,12 @@
 #include "libserver/alicia.hpp"
 #include "libserver/command/CommandProtocol.hpp"
 
-#include <assert.h>
+#include <cassert>
 
 namespace {
 
   //! Perform test of magic encoding/decoding.
-  void test_magic()
+  void TestMagic()
   {
     const alicia::MessageMagic magic {
       .id = 7,
@@ -26,6 +26,6 @@ namespace {
 } // namespace anon
 
 int main() {
-  test_magic();
+  TestMagic();
 }
 

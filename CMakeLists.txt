@@ -37,12 +37,11 @@ set(AliciaServerBuildName alpha)
 set(AliciaServerBuildVersionMajor ${CMAKE_PROJECT_VERSION_MAJOR})
 set(AliciaServerBuildVersionMinor ${CMAKE_PROJECT_VERSION_MINOR})
 set(AliciaServerBuildVersion ${CMAKE_PROJECT_VERSION}-${AliciaServerBuildName})
-message(${AliciaServerBuildVersion})
 
+# Generated version header.
 configure_file(
         include/server/Version.hpp.in
         generated/Version.hpp)
-
 
 target_sources(alicia-server
         PRIVATE src/server/main.cpp)
@@ -50,11 +49,11 @@ target_link_libraries(alicia-server
         PRIVATE project-properties alicia-libserver spdlog::spdlog)
 target_include_directories(alicia-server PUBLIC
         "${PROJECT_BINARY_DIR}/generated")
+
 if (${MSVC})
         target_compile_options(alicia-server
                 PRIVATE /utf-8)
 endif ()
-
 
 if (BUILD_TESTS) 
         enable_testing()

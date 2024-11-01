@@ -1,8 +1,12 @@
+#include "spdlog/sinks/basic_file_sink.h"
+#include "spdlog/sinks/daily_file_sink.h"
+#include "spdlog/sinks/rotating_file_sink.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
 #include "Version.hpp"
 
-#include <libserver/Util.hpp>
-#include <libserver/command/CommandServer.hpp>
 #include <libserver/base/server.hpp>
+#include <libserver/command/CommandServer.hpp>
+#include <libserver/Util.hpp>
 
 #include <spdlog/spdlog.h>
 
@@ -297,36 +301,30 @@ private:
 
 std::unique_ptr<LoginDirector> g_loginDirector;
 
-}
+} // anon namespace
 
 int main()
 {
+  // Daily file sink.
+  const auto fileSink = std::make_shared<spdlog::sinks::daily_file_sink_mt>(
+    "logs/log.log",
+    0, 0);
+  // Console sink.
+  const auto consoleSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+
+  // Initialize the application logger with file sink and console sink.
+  auto applicationLogger = std::make_shared<spdlog::logger>(
+    "abc",
+    spdlog::sinks_init_list{
+      fileSink,
+      consoleSink});
+  applicationLogger->set_level(spdlog::level::debug);
+  applicationLogger->set_pattern("%H:%M:%S:%e [%^%l%$] [Thread %t] %v");
+
+  // Set is as the default logger for the application.
+  spdlog::set_default_logger(applicationLogger);
+
   spdlog::info("Running Alicia server v{}.", alicia::BuildVersion);
-  spdlog::set_level(spdlog::level::debug);
-
-  boost::asio::streambuf buf;
-  auto mutableBuffer = buf.prepare(4092);
-  alicia::SinkStream sink(std::span(
-    static_cast<std::byte*>(mutableBuffer.data()),
-    mutableBuffer.size()));
-
-  sink.Write(0xCAFE);
-  sink.Write(0xBABE);
-
-  assert(sink.GetCursor() == 8);
-  buf.commit(sink.GetCursor());
-
-  auto constBuffer = buf.data();
-  alicia::SourceStream source(std::span(
-    static_cast<const std::byte*>(constBuffer.data()),
-    constBuffer.size()));
-
-  uint32_t cafe{};
-  uint32_t babe{};
-  source.Read(cafe)
-    .Read(babe);
-  assert(cafe == 0xCAFE && babe == 0xBABE);
-  assert(source.GetCursor() == 8);
 
   std::jthread lobbyThread([]()
   {
