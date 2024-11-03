@@ -59,5 +59,22 @@
             "    $1Cancel& command, SourceStream& buffer);",
             "};"
         ]
+    },
+    "Command serialization functions": {
+        "prefix": "implementation",
+        "scope": "cpp",
+        "body": [
+          "void $1::Write(",
+          "  const $1& command, SinkStream& buffer)",
+          "{",
+          "  $2",
+          "}",
+          "",
+          "void $1::Read(",
+          "  $1& command, SourceStream& buffer)",
+          "{",
+          "  $3",
+          "}"
+        ]
     }
 }
