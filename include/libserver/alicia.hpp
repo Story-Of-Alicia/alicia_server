@@ -138,6 +138,10 @@ namespace alicia
     uint32_t client_id = 0;
   };
 
+  void SetMale(bool isMale);
+  void SetUserName(std::string name);
+  void AddItem(uint32_t uid, uint32_t tid);
+
 } // namespace alicia
 
 #endif //ALICIA_HPP

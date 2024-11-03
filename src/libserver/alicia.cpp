@@ -27,6 +27,14 @@ uint16_t MUTE_COMMAND_IDS[] = {
 
 namespace
 {
+  struct Item {
+    uint32_t uid{0};
+    uint32_t tid{0};
+  };
+
+  bool g_isMale = false;
+  std::string g_name;
+  std::vector<Item> g_items;
 
 } // namespace anon
 
@@ -177,46 +185,72 @@ void alicia::Client::read_loop(Server& server)
     switch(message_magic.id)
     {
       #ifdef AcCmdCLLogin
-      case AcCmdCLLogin:
+      case AcCmdCLLogin: {
+        FILETIME time{};
+        ZeroMemory(&time, sizeof(time));
+        GetSystemTimeAsFileTime(&time);
+
+        DummyCommand response(AcCmdCLLoginOK);
+
+        std::vector<uint8_t> part0 {
+          // Lobby filetime lsb
+          time.dwLowDateTime >> 0 & 0xFF,
+          time.dwLowDateTime >> 8 & 0xFF,
+          time.dwLowDateTime >> 16 & 0xFF,
+          time.dwLowDateTime >> 24 & 0xFF,
+          // Lobby filetime msb
+          time.dwHighDateTime >> 0 & 0xFF,
+          time.dwHighDateTime >> 8 & 0xFF,
+          time.dwHighDateTime >> 16 & 0xFF,
+          time.dwHighDateTime >> 24 & 0xFF,
+
+          0x94, 0xA7, 0x0C, 0x00,
+
+          0xE8, 0xE2, 0x06, 0x00, // Self UID
+        };
+
+        std::vector<uint8_t> name;
+        for (char value : g_name) {
+          name.push_back(value);
+        }
+        name.push_back(0x0);
+
+        std::vector<uint8_t> part1
         {
-          FILETIME time{};
-          ZeroMemory(&time, sizeof(time));
-          GetSystemTimeAsFileTime(&time);
-
-          DummyCommand response(AcCmdCLLoginOK);
-          response.data = {
-            // Lobby filetime lsb
-            time.dwLowDateTime >> 0 & 0xFF,
-            time.dwLowDateTime >> 8 & 0xFF,
-            time.dwLowDateTime >> 16 & 0xFF,
-            time.dwLowDateTime >> 24 & 0xFF,
-            // Lobby filetime msb
-            time.dwHighDateTime >> 0 & 0xFF,
-            time.dwHighDateTime >> 8 & 0xFF,
-            time.dwHighDateTime >> 16 & 0xFF,
-            time.dwHighDateTime >> 24 & 0xFF,
-
-            0x94, 0xA7, 0x0C, 0x00,
-
-            0xE8, 0xE2, 0x06, 0x00, // Self UID
-            'r', 'g', 'n', 't', 0x00, // Nick name ("rgnt\0")
-            'W', 'e', 'l', 'c', 'o', 'm', 'e', ' ', 't', 'o', ' ', 'S', 't', 'o', 'r', 'y', ' ', 'o', 'f', ' ', 'A', 'l', 'i', 'c', 'i', 'a', '!', 0x00, // motd, 100 chars long
-            0x01, // profile gender:
+          'W', 'e', 'l', 'c', 'o', 'm', 'e', ' ', 't', 'o', ' ', 'S', 't', 'o', 'r', 'y', ' ', 'o', 'f', ' ', 'A', 'l', 'i', 'c', 'i', 'a', '!', 0x00, // motd, 100 chars long
+            static_cast<uint8_t>(g_isMale ? 0x1 : 0x2), // profile gender:
                   // 0x00 - baby
                   // 0x01 - boy
                   // 0x02 - girl
             'T', 'h', 'i', 's', ' ', 'p', 'e', 'r', 's', 'o', 'n', ' ', 'i', 's', ' ', 'm', 'e', 'n', 't', 'a', 'l', 'l', 'y', ' ', 'u', 'n', 's', 't', 'a', 'b', 'l', 'e', 0x00, // info, 100 chars long
+        };
 
-            0x01, // Character items (equipment), max 16 elements
-                0x01, 0x00, 0x00, 0x00, // Item UID
-                0x38, 0x75, 0x00, 0x00, // Item TID
-                0x00, 0x00, 0x00, 0x00,
-                0x01, 0x00, 0x00, 0x00, // Count
-                  // 4 byte - type
-                  // 4 byte - TID
-                  // 4 byte - ???
-                  // 4 byte - ???
+        std::vector<uint8_t> items;
+        items.push_back(static_cast<uint8_t>(g_items.size()));
+        for (auto& item : g_items)
+        {
+          items.push_back(item.uid & 0xFF);
+          items.push_back(item.uid >> 8 & 0xFF);
+          items.push_back(item.uid >> 16 & 0xFF);
+          items.push_back(item.uid >> 24 & 0xFF);
 
+          items.push_back(item.tid & 0xFF);
+          items.push_back(item.tid >> 8 & 0xFF);
+          items.push_back(item.tid >> 16 & 0xFF);
+          items.push_back(item.tid >> 24 & 0xFF);
+
+          items.push_back(0x00);
+          items.push_back(0x00);
+          items.push_back(0x00);
+          items.push_back(0x00);
+
+          items.push_back(0x01);
+          items.push_back(0x00);
+          items.push_back(0x00);
+          items.push_back(0x00);
+        }
+
+        std::vector<uint8_t> part2 = {
             0x01, // Horse items (equipment), max 250 elements
               0x28, 0x4E, 0x00, 0x02, // Item UID
               0x28, 0x4E, 0x00, 0x00, // Item TID - forest armor
@@ -349,7 +383,14 @@ void alicia::Client::read_loop(Server& server)
 
             // Unk15: Another small structure
             // CharDefaultPartInfo (_ClientCharDefaultPartInfo)
-            0x0A, // .Id -0x0A (10) is male and 0x14 (female)
+          };
+
+        std::vector<uint8_t> model
+          {
+           g_isMale ? static_cast<uint8_t>(0xA) : static_cast<uint8_t>(0x14)
+          };
+
+        std::vector<uint8_t> part3 = {
             0x01, // .MouthPartSerial
             0x02, // .FacePartSerial
             0x01, // ??
@@ -416,114 +457,128 @@ void alicia::Client::read_loop(Server& server)
 
             // More horse fields
             0x00,
-            0x00, 0x00, 0x00, 0x00, 
+            0x00, 0x00, 0x00, 0x00,
             0xE4, 0x67, 0xA1, 0xB8,
             0x02,
-            0x00, 
+            0x00,
             0xFF, 0x00, 0x00, 0x00, // int32 - Class progression
             0x00, 0x00, 0x00, 0x00,
             0x00,
             0x00,
             0xFF,
-            0x00, 
-            0x04, 
+            0x00,
+            0x04,
             0x00,
             0x00,
             0x00, 0x00,
             0x00, 0x00,
-            0x01, 0x00, 
+            0x01, 0x00,
 
             // Horse field: Horse Mastery Array of four 4 int values
             0xFE, 0x01, 0x00, 0x00, // speed booster/magic use
             0x21, 0x04, 0x00, 0x00, // jumps
             0xF8, 0x05, 0x00, 0x00, // sliding
             0xA4, 0xCF, 0x00, 0x00, // gliding, value here is divided by 10 by client
-            
-            0xE4, 0x67, 0xA1, 0xB8, 
-            0x00, 0x00, 0x00, 0x00, 
-            
+
+            0xE4, 0x67, 0xA1, 0xB8,
+            0x00, 0x00, 0x00, 0x00,
+
             // Unk16: List
-            0x0A, 
+            0x0A,
               0x06, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 
-              
-              0x0F, 0x00, 0x00, 0x00, 
-              0x04, 0x00, 0x00, 0x00, 
-              
-              0x1B, 0x00, 0x00, 0x00, 
+              0x00, 0x00, 0x00, 0x00,
+
+              0x0F, 0x00, 0x00, 0x00,
+              0x04, 0x00, 0x00, 0x00,
+
+              0x1B, 0x00, 0x00, 0x00,
               0x02, 0x00, 0x00, 0x00,
-              
+
               0x1E, 0x00, 0x00, 0x00,
               0x00, 0x00, 0x00, 0x00,
-              
+
               0x1F, 0x00, 0x00, 0x00,
               0x00, 0x00, 0x00, 0x00,
-              
+
               0x25, 0x00, 0x00, 0x00,
               0x30, 0x75, 0x00, 0x00,
-              
+
               0x35, 0x00, 0x00, 0x00,
               0x04, 0x00, 0x00, 0x00,
-              
+
               0x42, 0x00, 0x00, 0x00,
               0x02, 0x00, 0x00, 0x00,
-              
+
               0x43, 0x00, 0x00, 0x00,
               0x04, 0x00, 0x00, 0x00,
-              
+
               0x45, 0x00, 0x00, 0x00,
               0x00, 0x00, 0x00, 0x00,
 
             // Unk17: Bitset that im not too sure how it gets interpreted
-            0x06, 0x0E, 0x00, 0x00, 
-            
+            0x06, 0x0E, 0x00, 0x00,
+
             // Unk18: List of 3 shorts?
-            0x00, 0x00, 
-            0x00, 0x00, 
-            0x00, 0x00, 
-            
+            0x00, 0x00,
+            0x00, 0x00,
+            0x00, 0x00,
+
             0x00, 0x00, 0x00, 0x00, // Unk19
 
             // Unk20
             0x04,
             0x2B, 0x00, 0x00, 0x00,
             0x04, 0x00,
-            
+
             // Unk21: List of byte byte
             0x00, // List size
-            
+
             // Unk22: List of short byte byte
             0x00, // List size
 
             0xDB, 0x87, 0x1B, 0xCA,  // Unk23
-            
+
             // Unk24: Buffer::ReadPlayerRelatedThing, shared with the structures in EnterRanch
-            0x00, 0x00, 0x00, 0x00, 
-            0x01, 
-            0x00, 0x00, 0x00, 0x00, 
+            0x00, 0x00, 0x00, 0x00,
+            0x01,
+            0x00, 0x00, 0x00, 0x00,
             0x00, // string
-            0x00, 
-            0x00, 0x00, 0x00, 0x00,            
+            0x00,
+            0x00, 0x00, 0x00, 0x00,
             0x00, // Goes ignored?
 
             0x04, // Unk25
-            
+
             // Unk26: Buffer::ReadAnotherPlayerRelatedSomething, also shared
             0x96, 0xA3, 0x79, 0x05, // Horse UID?
-            0x12, 0x00, 0x00, 0x00,             
-            0xE4, 0x67, 0x6E, 0x01, 
+            0x12, 0x00, 0x00, 0x00,
+            0xE4, 0x67, 0x6E, 0x01,
 
             0x3A, 0x00, 0x00, 0x00, // Unk27
             0x8E, 0x03, 0x00, 0x00, // Unk28
             0xC6, 0x01, 0x00, 0x00, // Unk29
 
             // Buffer::ReadYetAnotherPlayerRelatedSomething, also shared
-            0x00, 0x00, 0x00, 0x00, 
-            0x00, 0x00, 0x00, 0x00, 
+            0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00,
             0x00, // string
             0x00, 0x00, 0x00, 0x00
           };
-          this->send_command(response);
+
+        const auto copy = [&](const std::vector<uint8_t>& val) {
+          for (uint8_t value : val) {
+            response.data.push_back(value);
+          }
+        };
+
+        copy(part0);
+        copy(name);
+        copy(part1);
+        copy(items);
+        copy(part2);
+        copy(model);
+        copy(part3);
+        this->send_command(response);
         }
         break;
       #endif
@@ -2346,10 +2401,24 @@ void alicia::Server::host(short port)
 void alicia::Server::accept_loop()
 {
   _acceptor.async_accept([&](boost::system::error_code error, asio::ip::tcp::socket client_socket) {
-    printf("+++ CONN %s:%d\n\n", client_socket.remote_endpoint().address().to_string().c_str(), client_socket.remote_endpoint().port());
+    printf(
+        "+++ CONN %s:%d\n\n",
+        client_socket.remote_endpoint().address().to_string().c_str(),
+        client_socket.remote_endpoint().port());
     const auto [itr, _] = clients.emplace(client_id++, std::move(client_socket));
     itr->second.read_loop(*this);
 
     accept_loop();
   });
+}
+void alicia::SetMale(bool isMale)
+{
+  g_isMale = isMale;
+}
+void alicia::SetUserName(std::string name) { g_name = std::move(name); }
+void alicia::AddItem(uint32_t uid, uint32_t tid)
+{
+  g_items.push_back(Item{
+    .uid = uid,
+    .tid = tid});
 }
