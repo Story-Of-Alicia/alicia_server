@@ -168,6 +168,7 @@ struct RanchCommandEnterRanchOK
   std::string unk0{};
   std::string ranchName{};
 
+  // Both lists' lengths are specified as bytes in the packet
   // Indexes across both lists cant be shared.
   // If the horse list takes indexes 0, 1 and 2
   // the player list must use indexes 3, 4 and 5.
@@ -185,7 +186,7 @@ struct RanchCommandEnterRanchOK
     uint32_t unk2{};
   };
 
-  // max  length 13
+  // List size as a byte. Max length 13
   std::vector<Unk4> unk4{};
 
   uint8_t unk5{};
@@ -207,6 +208,7 @@ struct RanchCommandEnterRanchOK
     uint32_t unk6{};
     uint32_t unk7{};
   };
+  
   // max length 3
   std::vector<Unk10> unk10;
 
@@ -255,13 +257,13 @@ struct RanchCommandEnterRanchNotify
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
-    const RanchCommandEnterRanchCancel& command, SinkStream& buffer);
+    const RanchCommandEnterRanchNotify& command, SinkStream& buffer);
 
   //! Reader a command from a provided source buffer.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
-    RanchCommandEnterRanchCancel& command, SourceStream& buffer);
+    RanchCommandEnterRanchNotify& command, SourceStream& buffer);
 };
 
 
