@@ -129,12 +129,15 @@ void alicia::DummyCommand::Log()
 
 void alicia::Client::read_loop(Server& server)
 {
+  _disconnected = false;
+
   _socket.async_read_some(_buffer.prepare(4096), [&](boost::system::error_code error, std::size_t size) {
     if(error) {
       printf(
           "Error occurred on read loop with client on port %d. What: %s\n",
           _socket.remote_endpoint().port(),
           error.message().c_str());
+      _disconnected = true;
       return;
     }
 
@@ -391,9 +394,9 @@ void alicia::Client::read_loop(Server& server)
           };
 
         std::vector<uint8_t> part3 = {
-            0x01, // .MouthPartSerial
-            0x02, // .FacePartSerial
-            0x01, // ??
+            0x00, // .MouthPartSerial
+            0x00, // .FacePartSerial
+            0x00, // ??
 
             0xFF, 0xFF,
             0x04, 0x00, // Character.HeadSize
@@ -1602,10 +1605,9 @@ void alicia::Client::read_loop(Server& server)
           response.data.push_back(unk1[i]);
         
         for (auto& [id, client]: server.clients) {
-          if(&client != this)
-          {
-            client.send_command(response);
-          }
+          if (client._disconnected)
+            continue;
+          client.send_command(response);
         }
       }
       break;

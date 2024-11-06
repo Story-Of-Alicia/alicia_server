@@ -112,6 +112,7 @@ namespace alicia
     
     void rotate_xor_key();
   private:
+    bool _disconnected = true;
     asio::ip::tcp::socket _socket;
     asio::streambuf _buffer;
     uint32_t xor_key;
