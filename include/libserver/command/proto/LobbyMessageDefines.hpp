@@ -75,9 +75,9 @@ struct LobbyCommandLoginOK
 
   uint16_t level{};
   int32_t carrots{};
-  int32_t val1{};
-  int32_t val2{};
-  int8_t val3{};
+  uint32_t val1{};
+  uint32_t val2{};
+  uint8_t val3{};
 
   //! Option type mask.
   OptionType optionType{};
@@ -96,7 +96,7 @@ struct LobbyCommandLoginOK
     uint32_t val2{};
     uint32_t val3{};
   };
-  std::vector<Unk1> val5;
+  std::vector<Unk1> val5; // max 17
 
   // 256 characters max
   std::string val6{};

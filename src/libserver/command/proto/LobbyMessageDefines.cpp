@@ -189,8 +189,7 @@ void LobbyCommandLoginOK::Write(
   // Option type mask
   const auto optionTypeMask = static_cast<uint32_t>(
     command.optionType);
-  buffer.Write(
-    optionTypeMask);
+  buffer.Write(optionTypeMask);
 
   // Write the keyboard options if specified in the option type mask.
   if (optionTypeMask & static_cast<uint32_t>(OptionType::Keyboard))
@@ -230,6 +229,7 @@ void LobbyCommandLoginOK::Write(
     .Write(command.val4);
 
   //
+  buffer.Write(static_cast<uint8_t>(command.val5.size()));
   for (const auto& val : command.val5)
   {
     buffer.Write(val.val0)

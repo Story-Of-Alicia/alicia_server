@@ -124,7 +124,7 @@ struct Horse
 
   uint32_t rating{};
   uint8_t clazz{};
-  uint8_t val0{};
+  uint8_t val0{}; // classProgress
   uint8_t grade{};
   uint16_t growthPoints{};
 

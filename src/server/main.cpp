@@ -87,13 +87,13 @@ public:
       alicia::CommandId::LobbyLoginOK,
       [&user](alicia::SinkStream& sink)
       {
-        // FILETIME time;
-        // GetSystemTimeAsFileTime(&time);
+        const alicia::WinFileTime time = alicia::UnixTimeToFileTime(
+          std::chrono::system_clock::now());
 
         const alicia::LobbyCommandLoginOK command{
-          // .lobbyTime = {
-          //   .dwLowDateTime = static_cast<uint32_t>(time.dwLowDateTime),
-          //   .dwHighDateTime = static_cast<uint32_t>(time.dwHighDateTime)},
+          .lobbyTime = {
+            .dwLowDateTime = static_cast<uint32_t>(time.dwLowDateTime),
+            .dwHighDateTime = static_cast<uint32_t>(time.dwHighDateTime)},
           .val0 = 0xCA794,
 
           .selfUid = user.id,
@@ -107,9 +107,9 @@ public:
 
           .level = user.level,
           .carrots = user.carrots,
-          .val1 = 1,
-          .val2 = 0,
-          .val3 = 0,
+          .val1 = 0x6130,
+          .val2 = 0xFF,
+          .val3 = 0xFF,
 
           .optionType = static_cast<alicia::OptionType>(
             static_cast<uint32_t>(alicia::OptionType::Keyboard) |
@@ -195,7 +195,7 @@ public:
               "Thank you! /heart",
               "/fire/fire/fire Fire! /fire/fire/fire",
               "/sad/cry Sorry! /cry/sad", "/-tada Congralutations!!! /tada",
-              "/clap Good Gam1 /-clap",
+              "/clap Good Game /-clap",
               "Be right back! Please wait for me! /wink",
               "See you! /smile/wave"}},
 
@@ -206,15 +206,15 @@ public:
           .ageGroup = alicia::AgeGroup::Adult,
           .val4 = 0,
 
-          // .val5 = {
-          //   {0x18, 1, 2, 1},
-          //   {0x1F, 1, 2, 1},
-          //   {0x23, 1, 2, 1},
-          //   {0x29, 1, 2, 1},
-          //   {0x2A, 1, 2, 1},
-          //   {0x2B, 1, 2, 1},
-          //   {0x2E, 1, 2, 1}
-          // },
+          .val5 = {
+            {0x18, 1, 2, 1},
+            {0x1F, 1, 2, 1},
+            {0x23, 1, 2, 1},
+            {0x29, 1, 2, 1},
+            {0x2A, 1, 2, 1},
+            {0x2B, 1, 2, 1},
+            {0x2E, 1, 2, 1}
+          },
 
           .val6 = "val6",
 
