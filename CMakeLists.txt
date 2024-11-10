@@ -43,8 +43,9 @@ configure_file(
         include/server/Version.hpp.in
         generated/Version.hpp)
 
-target_sources(alicia-server
-        PRIVATE src/server/main.cpp)
+target_sources(alicia-server PRIVATE
+        src/server/main.cpp
+        src/server/LobbyDirector.cpp)
 target_link_libraries(alicia-server
         PRIVATE project-properties alicia-libserver spdlog::spdlog)
 target_include_directories(alicia-server PUBLIC
