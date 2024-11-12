@@ -8,7 +8,7 @@ find_package(Boost REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBPQXX REQUIRED libpqxx)
 
-add_subdirectory(3rd-party)
+add_subdirectory(3rd-party/spdlog)
 
 # Project properties interface library
 add_library(project-properties INTERFACE)
