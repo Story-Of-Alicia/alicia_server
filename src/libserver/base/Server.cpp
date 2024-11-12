@@ -6,7 +6,7 @@ namespace alicia
 namespace
 {
 
-constexpr std::size_t MaxBufferSize = 4096;
+constexpr size_t MaxBufferSize = 4092;
 
 } // anon namespace
 
@@ -20,41 +20,44 @@ void Client::SetReadHandler(ReadHandler readHandler)
   _readHandler = std::move(readHandler);
 }
 
-// void Client::SetWriteHandler(WriteHandler writeHandler)
-// {
-//   _writeHandler = std::move(writeHandler);
-// }
-
 void Client::Begin()
 {
-  read_loop();
+  _shouldProcess = true;
+  ReadLoop();
+}
+
+void Client::End()
+{
+  _shouldProcess = false;
 }
 
 void Client::QueueWrite(WriteSupplier writeSupplier)
 {
-  // ToDo: Consider frame-based write loop instead of real-time writes.
-
-  std::scoped_lock writeLock(_writeMutex);
-
-  // Call the supplier.
-  writeSupplier(_writeBuffer);
+  if (!_shouldProcess)
+  {
+    return;
+  }
 
   // Send the whole buffer.
   asio::async_write(
     _socket,
     _writeBuffer.data(),
-    [&](
-      boost::system::error_code error,
-      std::size_t size)
+    [&, writeSupplier = std::move(writeSupplier)](
+      boost::system::error_code error, std::size_t size)
     {
       if (error)
       {
-        printf("Failed to write");
+        printf("Failed to write\n");
+        _socket.close();
         return;
       }
 
+      // ToDo: Consider frame-based write loop instead of real-time writes.
+      std::scoped_lock writeLock(_writeMutex);
+
+      // Call the supplier.
+      writeSupplier(_writeBuffer);
       // Consume the sent bytes.
-      // Remove them from the input sequence.
       _writeBuffer.consume(size);
     });
 
@@ -62,24 +65,26 @@ void Client::QueueWrite(WriteSupplier writeSupplier)
   // ToDo: Write & send batching.
 }
 
-void Client::read_loop() noexcept
+void Client::ReadLoop() noexcept
 {
-  // ToDo: Consider frame-based read loop instead of real-time reads.
+  if (!_shouldProcess)
+  {
+    return;
+  }
 
+  // Chain the asynchronous functions.
   _socket.async_read_some(
     _readBuffer.prepare(MaxBufferSize),
     [&](boost::system::error_code error, std::size_t size)
     {
       if (error)
       {
-        printf("Failed to read");
-        // An error occurred in client read loop,
-        // connection reset?
+        printf("Failed to read\n");
+        _socket.close();
         return;
       }
 
-      // Commit the received bytes,
-      // so they can be read.
+      // Commit the received bytes, so they can be read by the handler.
       _readBuffer.commit(size);
 
       // ToDo: Read & handle timing.
@@ -93,7 +98,7 @@ void Client::read_loop() noexcept
       }
 
       // Continue the read loop.
-      read_loop();
+      ReadLoop();
     });
 }
 
@@ -113,14 +118,18 @@ void Server::Host(const std::string_view& interface, uint16_t port)
   _acceptor.bind(server_endpoint);
   _acceptor.listen();
 
-  accept_loop();
+  AcceptLoop();
 
   _io_ctx.run();
 }
 
-void Server::SetClientHandler(ClientHandler handler)
+void Server::SetOnConnectHandler(OnConnectHandler handler)
 {
-  _clientHandler = std::move(handler);
+  _onConnectHandler = std::move(handler);
+}
+void Server::SetOnDisconnectHandler(OnDisconnectHandler handler)
+{
+  _onDisconnectHandler = std::move(handler);
 }
 
 Client& Server::GetClient(ClientId clientId)
@@ -134,7 +143,7 @@ Client& Server::GetClient(ClientId clientId)
   return clientItr->second;
 }
 
-void Server::accept_loop() noexcept
+void Server::AcceptLoop() noexcept
 {
   _acceptor.async_accept(
     [&](
@@ -143,7 +152,7 @@ void Server::accept_loop() noexcept
     {
       if (error)
       {
-        printf("Failed to accept connection");
+        printf("Failed to accept");
         return;
       }
 
@@ -155,13 +164,13 @@ void Server::accept_loop() noexcept
         clientId, std::move(client_socket));
 
       // Id is sequential so emplacement should never fail.
-      assert(emplaced == true);
+      assert(emplaced);
 
-      _clientHandler(clientId);
+      _onConnectHandler(clientId);
       itr->second.Begin();
 
       // Continue the accept loop.
-      accept_loop();
+      AcceptLoop();
     });
 }
 

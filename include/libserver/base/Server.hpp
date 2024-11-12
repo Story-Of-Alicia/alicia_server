@@ -22,8 +22,11 @@ using WriteSupplier = std::function<void(asio::streambuf&)>;
 //! A read handler.
 //! todo: comment about cyclic buffer
 using ReadHandler = std::function<bool(asio::streambuf&)>;
+
 //! A client handler.
-using ClientHandler = std::function<void(ClientId)>;
+using OnConnectHandler = std::function<void(ClientId)>;
+//! A client handler.
+using OnDisconnectHandler = std::function<void(ClientId)>;
 
 //! Client with event driven reads and writes
 //! to the underlying socket connection.
@@ -32,21 +35,23 @@ class Client
 public:
   //! Default constructor.
   //! @param socket Underlying socket.
-  Client(asio::ip::tcp::socket&& socket) noexcept;
+  explicit Client(asio::ip::tcp::socket&& socket) noexcept;
 
   //! Sets the read handler of the client.
   void SetReadHandler(ReadHandler readHandler);
-  //! Sets the write handler of the client.
-  // void SetWriteHandler(WriteHandler writeHandler);
 
   void Begin();
+  void End();
 
   //! Queues a write.
   void QueueWrite(WriteSupplier writeSupplier);
 
 private:
-  //! Begins the event-driven read loop.
-  void read_loop() noexcept;
+  //! Read loop.
+  void ReadLoop() noexcept;
+
+  //! Indicates whether the client should process I/O.
+  std::atomic<bool> _shouldProcess = false;
 
   //! A read buffer.
   asio::streambuf _readBuffer{};
@@ -81,17 +86,21 @@ public:
     const std::string_view& interface,
     uint16_t port);
 
-  //! Set the client handler.
-  void SetClientHandler(ClientHandler handler);
+  //! Set the connect handler.
+  void SetOnConnectHandler(OnConnectHandler handler);
+  //! Set the disconnect handler.
+  void SetOnDisconnectHandler(OnDisconnectHandler handler);
 
   //! Get client.
   Client& GetClient(ClientId clientId);
 
 private:
-  void accept_loop() noexcept;
+  void AcceptLoop() noexcept;
 
-  //! A client handler.
-  ClientHandler _clientHandler;
+  //! A client connection handler.
+  OnConnectHandler _onConnectHandler;
+  //! A client disconnection handler.
+  OnDisconnectHandler _onDisconnectHandler;
 
   asio::io_context _io_ctx;
   asio::ip::tcp::acceptor _acceptor;
@@ -102,6 +111,6 @@ private:
   std::unordered_map<ClientId, Client> _clients;
 };
 
-}
+} // namespace alicia
 
 #endif //SERVER_HPP

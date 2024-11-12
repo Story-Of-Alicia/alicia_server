@@ -45,7 +45,7 @@ configure_file(
 
 target_sources(alicia-server PRIVATE
         src/server/main.cpp
-        src/server/LobbyDirector.cpp)
+        src/server/lobby/LobbyDirector.cpp)
 target_link_libraries(alicia-server
         PRIVATE project-properties alicia-libserver spdlog::spdlog)
 target_include_directories(alicia-server PUBLIC

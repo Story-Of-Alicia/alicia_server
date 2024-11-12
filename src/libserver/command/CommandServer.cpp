@@ -24,7 +24,7 @@ uint32_t CommandClient::GetRollingCode()
 
 CommandServer::CommandServer()
 {
-  _server.SetClientHandler([&](ClientId clientId)
+  _server.SetOnConnectHandler([&](ClientId clientId)
   {
     auto& client = _server.GetClient(clientId);
     auto& commandClient = _clients[clientId];
@@ -81,11 +81,11 @@ CommandServer::CommandServer()
         const auto handlerIter = _handlers.find(commandId);
         if (handlerIter == _handlers.cend())
         {
-          printf(std::format("Unhandled command '{}', ID: 0x{:x}, Length: {}\n",
-            GetCommandName(commandId),
-            magic.id,
-            magic.length).c_str());
-          return false;
+          throw std::runtime_error(
+            std::format("Unhandled command '{}', ID: 0x{:x}, Length: {}\n",
+              GetCommandName(commandId),
+              magic.id,
+              magic.length));
         }
 
         const auto& handler = handlerIter->second;
