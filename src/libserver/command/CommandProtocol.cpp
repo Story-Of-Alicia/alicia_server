@@ -19,6 +19,11 @@ const std::unordered_map<CommandId, std::string_view> commands = {
   {CommandId::LobbyShowInventory, "ShowInventory"},
   {CommandId::LobbyShowInventoryOK, "ShowInventoryOK"},
   {CommandId::LobbyShowInventoryCancel, "ShowInventoryCancel"},
+
+  // LeagueInfo
+  {CommandId::RequestLeagueInfo, "RequestLeagueInfo"},
+  {CommandId::RequestLeagueInfoOK, "RequestLeagueInfoOK"},
+  {CommandId::RequestLeagueInfoCancel, "RequestLeagueInfoCancel"},
 };
 
 } // namespace anon

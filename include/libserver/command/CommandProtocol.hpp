@@ -71,9 +71,15 @@ enum class CommandId
   LobbyLoginOK = 0x0008,
   LobbyLoginCancel = 0x0009,
 
+  LobbyHeartbeat = 0x12,
+
   LobbyShowInventory = 0x007e,
   LobbyShowInventoryOK = 0x007f,
   LobbyShowInventoryCancel = 0x0080,
+
+  RequestLeagueInfo = 0x0376,
+  RequestLeagueInfoOK = 0x0377,
+  RequestLeagueInfoCancel = 0x0378,
 
   Count = 0xFFFF
 };

@@ -4,6 +4,8 @@
 
 #include "LobbyDirector.hpp"
 
+#include "spdlog/spdlog.h"
+
 namespace  alicia
 {
 
@@ -27,6 +29,8 @@ void LoginDirector::HandleUserLogin(
 {
   assert(login.constant0 == 50);
   assert(login.constant1 == 281);
+
+  spdlog::debug("Handling login for user {} with token {}", login.loginId, login.authKey);
 
   // ToDo: Treat input.
   const auto& userTokenItr = _userTokens.find(login.memberNo);
@@ -58,9 +62,10 @@ void LoginDirector::HandleUserLogin(
     alicia::CommandId::LobbyLoginOK,
     [&user](alicia::SinkStream& sink)
     {
-      const alicia::WinFileTime time = alicia::UnixTimeToFileTime(std::chrono::system_clock::now());
+      const WinFileTime time = UnixTimeToFileTime(
+        std::chrono::system_clock::now());
 
-      const alicia::LobbyCommandLoginOK command{
+      const LobbyCommandLoginOK command{
         .lobbyTime =
           {.dwLowDateTime = static_cast<uint32_t>(time.dwLowDateTime),
            .dwHighDateTime = static_cast<uint32_t>(time.dwHighDateTime)},
@@ -229,6 +234,20 @@ void LoginDirector::HandleUserLogin(
         .val17 = {.val0 = 0x1, .val1 = 0x12}};
 
       alicia::LobbyCommandLoginOK::Write(command, sink);
+    });
+}
+
+void LoginDirector::HandleShowInventory(
+  ClientId clientId,
+  const LobbyCommandShowInventory& showInventory)
+{
+  _lobbyServer.QueueCommand(
+    clientId,
+    CommandId::LobbyShowInventoryOK,
+    [&](auto& sink)
+    {
+      LobbyCommandShowInventoryOK response{};
+      LobbyCommandShowInventoryOK::Write(response, sink);
     });
 }
 

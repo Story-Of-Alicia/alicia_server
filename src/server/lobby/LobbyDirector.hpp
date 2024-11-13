@@ -32,6 +32,7 @@ public:
   explicit LoginDirector(CommandServer& lobbyServer) noexcept;
 
   void HandleUserLogin(ClientId clientId, const LobbyCommandLogin& login);
+  void HandleShowInventory(ClientId clientId, const LobbyCommandShowInventory& showInventory);
 
   User& GetUser(UserId user)
   {

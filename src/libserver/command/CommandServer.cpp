@@ -81,11 +81,12 @@ CommandServer::CommandServer()
         const auto handlerIter = _handlers.find(commandId);
         if (handlerIter == _handlers.cend())
         {
-          throw std::runtime_error(
+          printf(
             std::format("Unhandled command '{}', ID: 0x{:x}, Length: {}\n",
               GetCommandName(commandId),
               magic.id,
-              magic.length));
+              magic.length).c_str());
+          return true;
         }
 
         const auto& handler = handlerIter->second;
@@ -170,7 +171,6 @@ void CommandServer::QueueCommand(
 
       commandSink.Write(encode_message_magic(magic));
       writeBuffer.commit(magic.length);
-
     });
 }
 

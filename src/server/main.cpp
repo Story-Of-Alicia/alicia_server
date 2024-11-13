@@ -49,6 +49,7 @@ int main()
     g_loginDirector = std::make_unique<alicia::LoginDirector>(lobbyServer);
 
     // Handlers
+    // Login handler
     lobbyServer.RegisterCommandHandler(
       alicia::CommandId::LobbyLogin,
       [](alicia::ClientId clientId, auto& buffer)
@@ -59,6 +60,26 @@ int main()
 
         g_loginDirector->HandleUserLogin(clientId, loginCommand);
       });
+
+    // Heartbeat handler
+    lobbyServer.RegisterCommandHandler(
+      alicia::CommandId::LobbyHeartbeat,
+      [](alicia::ClientId clientId, auto& buffer)
+      {
+        spdlog::debug("Heartbeat from Client ID: {}", clientId);
+      });
+
+    lobbyServer.RegisterCommandHandler(
+      alicia::CommandId::LobbyShowInventory,
+      [](alicia::ClientId clientId, auto& buffer)
+      {
+        alicia::LobbyCommandShowInventory showInventoryCommand;
+        alicia::LobbyCommandShowInventory::Read(
+          showInventoryCommand, buffer);
+
+        g_loginDirector->HandleShowInventory(clientId, showInventoryCommand);
+      });
+
 
     // Host
     spdlog::debug("Lobby server hosted on 127.0.0.1:{}", 10030);
