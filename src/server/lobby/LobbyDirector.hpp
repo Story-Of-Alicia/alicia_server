@@ -53,9 +53,14 @@ public:
     const LobbyCommandAchievementCompleteList& achievementCompleteList);
 
   //!
+  void HandleRequestLeagueInfo(
+    ClientId clientId,
+    const LobbyCommandRequestLeagueInfo& requestLeagueInfo);
+
+  //!
   void HandleRequestQuestList(
-     ClientId clientId,
-     const LobbyCommandRequestQuestList& requestQuestList);
+    ClientId clientId, const
+    LobbyCommandRequestQuestList& requestQuestList);
 
 private:
   CommandServer& _lobbyServer;

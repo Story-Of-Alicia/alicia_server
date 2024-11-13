@@ -49,6 +49,7 @@ int main()
     g_loginDirector = std::make_unique<alicia::LoginDirector>(lobbyServer);
 
     // Handlers
+
     // Login handler
     lobbyServer.RegisterCommandHandler(
       alicia::CommandId::LobbyLogin,
@@ -66,7 +67,10 @@ int main()
       alicia::CommandId::LobbyHeartbeat,
       [](alicia::ClientId clientId, auto& buffer)
       {
-        spdlog::debug("Heartbeat from Client ID: {}", clientId);
+        alicia::LobbyCommandHeartbeat heartbeat;
+        alicia::LobbyCommandHeartbeat::Read(heartbeat, buffer);
+
+        g_loginDirector->HandleHeartbeat(clientId, heartbeat);
       });
 
     // ShowInventory handler
@@ -83,7 +87,7 @@ int main()
 
     // AchievementCompleteList handler
     lobbyServer.RegisterCommandHandler(
-      alicia::CommandId::AchievementCompleteList,
+      alicia::CommandId::LobbyAchievementCompleteList,
       [](alicia::ClientId clientId, auto& buffer)
       {
         alicia::LobbyCommandAchievementCompleteList achievementCompleteList;
@@ -93,9 +97,21 @@ int main()
         g_loginDirector->HandleAchievementCompleteList(clientId, achievementCompleteList);
       });
 
+    // RequestLeagueInfo
+    lobbyServer.RegisterCommandHandler(
+      alicia::CommandId::LobbyRequestLeagueInfo,
+      [](alicia::ClientId clientId, auto& buffer)
+      {
+        alicia::LobbyCommandRequestLeagueInfo requestLeagueInfo;
+        alicia::LobbyCommandRequestLeagueInfo::Read(
+          requestLeagueInfo, buffer);
+
+        g_loginDirector->HandleRequestLeagueInfo(clientId, requestLeagueInfo);
+      });
+
     // RequestQuestList handler
     lobbyServer.RegisterCommandHandler(
-      alicia::CommandId::RequestQuestList,
+      alicia::CommandId::LobbyRequestQuestList,
       [](alicia::ClientId clientId, auto& buffer)
       {
         alicia::LobbyCommandRequestQuestList requestDailyQuestList;

@@ -77,22 +77,22 @@ enum class CommandId
   LobbyShowInventoryOK = 0x007f,
   LobbyShowInventoryCancel = 0x0080,
 
-  AchievementCompleteList = 0x00e5,
-  AchievementCompleteListOK = 0x00e6,
-  AchievementCompleteListCancel = 0x00e7,
+  LobbyAchievementCompleteList = 0x00e5,
+  LobbyAchievementCompleteListOK = 0x00e6,
+  LobbyAchievementCompleteListCancel = 0x00e7,
 
-  RequestDailyQuestList = 0x0356,
-  RequestDailyQuestListOK = 0x0357,
+  LobbyRequestDailyQuestList = 0x0356,
+  LobbyRequestDailyQuestListOK = 0x0357,
   // ToDo: Not sure about the cancel response being available.
-  RequestDailyQuestListCancel = 0x0358,
+  LobbyRequestDailyQuestListCancel = 0x0358,
 
-  RequestQuestList = 0x03f8,
-  RequestQuestListOK = 0x03f9,
-  RequestQuestListCancel = 0x03fa,
+  LobbyRequestLeagueInfo = 0x0376,
+  LobbyRequestLeagueInfoOK = 0x0377,
+  LobbyRequestLeagueInfoCancel = 0x0378,
 
-  RequestLeagueInfo = 0x0376,
-  RequestLeagueInfoOK = 0x0377,
-  RequestLeagueInfoCancel = 0x0378,
+  LobbyRequestQuestList = 0x03f8,
+  LobbyRequestQuestListOK = 0x03f9,
+  LobbyRequestQuestListCancel = 0x03fa,
 
   Count = 0xFFFF
 };

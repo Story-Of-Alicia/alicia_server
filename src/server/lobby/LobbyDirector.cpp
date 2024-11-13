@@ -218,7 +218,7 @@ void LoginDirector::HandleAchievementCompleteList(
   auto& [userId, user] = *_users.find(userItr->second);
   _lobbyServer.QueueCommand(
     clientId,
-    CommandId::AchievementCompleteListOK,
+    CommandId::LobbyAchievementCompleteListOK,
     [&](auto& sink)
     {
       LobbyCommandAchievementCompleteListOK response{};
@@ -226,6 +226,26 @@ void LoginDirector::HandleAchievementCompleteList(
     });
 }
 
+void LoginDirector::HandleRequestLeagueInfo(
+  ClientId clientId,
+  const LobbyCommandRequestLeagueInfo& requestLeagueInfo)
+{
+  auto userItr = _clients.find(clientId);
+  if (userItr == _clients.cend())
+  {
+    return;
+  }
+
+  auto& [userId, user] = *_users.find(userItr->second);
+  _lobbyServer.QueueCommand(
+    clientId,
+    CommandId::LobbyRequestLeagueInfoOK,
+    [&](auto& sink)
+    {
+      LobbyCommandRequestLeagueInfoOK response{};
+      LobbyCommandRequestLeagueInfoOK::Write(response, sink);
+    });
+}
 
 void LoginDirector::HandleRequestQuestList(
   ClientId clientId,
@@ -240,13 +260,12 @@ void LoginDirector::HandleRequestQuestList(
   auto& [userId, user] = *_users.find(userItr->second);
   _lobbyServer.QueueCommand(
     clientId,
-    CommandId::RequestQuestListOK,
+    CommandId::LobbyRequestQuestListOK,
     [&](auto& sink)
     {
       LobbyCommandRequestQuestListOK response{};
       LobbyCommandRequestQuestListOK::Write(response, sink);
     });
 }
-
 
 } // namespace alicia
