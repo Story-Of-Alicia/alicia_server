@@ -69,6 +69,7 @@ int main()
         spdlog::debug("Heartbeat from Client ID: {}", clientId);
       });
 
+    // ShowInventory handler
     lobbyServer.RegisterCommandHandler(
       alicia::CommandId::LobbyShowInventory,
       [](alicia::ClientId clientId, auto& buffer)
@@ -80,6 +81,29 @@ int main()
         g_loginDirector->HandleShowInventory(clientId, showInventoryCommand);
       });
 
+    // AchievementCompleteList handler
+    lobbyServer.RegisterCommandHandler(
+      alicia::CommandId::AchievementCompleteList,
+      [](alicia::ClientId clientId, auto& buffer)
+      {
+        alicia::LobbyCommandAchievementCompleteList achievementCompleteList;
+        alicia::LobbyCommandAchievementCompleteList::Read(
+          achievementCompleteList, buffer);
+
+        g_loginDirector->HandleAchievementCompleteList(clientId, achievementCompleteList);
+      });
+
+    // RequestQuestList handler
+    lobbyServer.RegisterCommandHandler(
+      alicia::CommandId::RequestQuestList,
+      [](alicia::ClientId clientId, auto& buffer)
+      {
+        alicia::LobbyCommandRequestQuestList requestDailyQuestList;
+        alicia::LobbyCommandRequestQuestList::Read(
+          requestDailyQuestList, buffer);
+
+        g_loginDirector->HandleRequestQuestList(clientId, requestDailyQuestList);
+      });
 
     // Host
     spdlog::debug("Lobby server hosted on 127.0.0.1:{}", 10030);

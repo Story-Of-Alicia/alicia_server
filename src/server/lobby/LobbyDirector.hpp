@@ -18,12 +18,13 @@ constexpr UserId InvalidUserId = std::numeric_limits<UserId>::max();
 //! User.
 struct User
 {
-  UserId id{};
   std::string nickName;
-  Gender gender{Gender::Unspecified};
+  Gender gender = Gender::Unspecified;
 
   uint16_t level{};
   int32_t carrots{};
+
+  std::chrono::system_clock::time_point lastHeartbeat;
 };
 
 class LoginDirector
@@ -31,18 +32,37 @@ class LoginDirector
 public:
   explicit LoginDirector(CommandServer& lobbyServer) noexcept;
 
-  void HandleUserLogin(ClientId clientId, const LobbyCommandLogin& login);
-  void HandleShowInventory(ClientId clientId, const LobbyCommandShowInventory& showInventory);
+  //!
+  void HandleUserLogin(
+    ClientId clientId,
+    const LobbyCommandLogin& login);
 
-  User& GetUser(UserId user)
-  {
-    return _users[user];
-  }
+  //!
+  void HandleHeartbeat(
+    ClientId clientId,
+    const LobbyCommandHeartbeat& heartbeat);
+
+  //!
+  void HandleShowInventory(
+    ClientId clientId,
+    const LobbyCommandShowInventory& showInventory);
+
+  //!
+  void HandleAchievementCompleteList(
+    ClientId clientId,
+    const LobbyCommandAchievementCompleteList& achievementCompleteList);
+
+  //!
+  void HandleRequestQuestList(
+     ClientId clientId,
+     const LobbyCommandRequestQuestList& requestQuestList);
 
 private:
   CommandServer& _lobbyServer;
 
   std::unordered_map<UserId, std::string> _userTokens;
+  std::unordered_map<UserId, ClientId> _clients;
+
   std::unordered_map<UserId, User> _users;
 };
 

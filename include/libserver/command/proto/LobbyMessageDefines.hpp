@@ -333,7 +333,7 @@ struct LobbyCommandRequestLeagueInfoCancel
 //! Serverbound achievement complete list command.
 struct LobbyCommandAchievementCompleteList
 {
-  uint32_t unk0;
+  uint32_t unk0{};
 
   //! Writes the command to a provided sink buffer.
   //! @param command Command.
@@ -350,17 +350,17 @@ struct LobbyCommandAchievementCompleteList
 
 struct CompletedAchievement
 {
-  uint16_t unk0;
-  uint8_t unk1;
-  uint32_t unk2;
-  uint8_t unk3;
-  uint8_t unk4;
+  uint16_t unk0{};
+  uint8_t unk1{};
+  uint32_t unk2{};
+  uint8_t unk3{};
+  uint8_t unk4{};
 };
 
 //! Clientbound achievement complete list response.
 struct LobbyCommandAchievementCompleteListOK
 {
-  uint32_t unk0;
+  uint32_t unk0{};
   std::vector<CompletedAchievement> achievements;
 
   //! Writes the command to a provided sink buffer.
@@ -496,11 +496,10 @@ struct LobbyCommandMakeRoomCancel
     LobbyCommandMakeRoomCancel& command, SourceStream& buffer);
 };
 
-
 //! Serverbound request quest list command.
 struct LobbyCommandRequestQuestList
 {
-  uint32_t unk0;
+  uint32_t unk0{};
 
   //! Writes the command to a provided sink buffer.
   //! @param command Command.
@@ -515,18 +514,19 @@ struct LobbyCommandRequestQuestList
     LobbyCommandRequestQuestList& command, SourceStream& buffer);
 };
 
-struct Quest {
-  uint16_t unk0;
-  uint8_t unk1;
-  uint32_t unk2;
-  uint8_t unk3;
-  uint8_t unk4;
+struct Quest
+{
+  uint16_t unk0{};
+  uint8_t unk1{};
+  uint32_t unk2{};
+  uint8_t unk3{};
+  uint8_t unk4{};
 };
 
 //! Clientbound request quest list response.
 struct LobbyCommandRequestQuestListOK
 {
-  uint32_t unk0;
+  uint32_t unk0{};
   std::vector<Quest> quests;
 
   //! Writes the command to a provided sink buffer.

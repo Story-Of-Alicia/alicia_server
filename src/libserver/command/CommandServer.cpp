@@ -101,17 +101,6 @@ CommandServer::CommandServer()
 
         return true;
       });
-
-    // // Set the write handler for the new client.
-    // client.SetWriteHandler(
-    //   [this](asio::streambuf& writeBuffer, const WriteSupplier& supplier)
-    //   {
-    //     std::ostream stream(&writeBuffer);
-    //     supplier(stream);
-    //
-    //     return true;
-    //   });
-
   });
 }
 

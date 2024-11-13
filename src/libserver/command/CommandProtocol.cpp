@@ -15,15 +15,33 @@ const std::unordered_map<CommandId, std::string_view> commands = {
   {CommandId::LobbyLoginOK, "LobbyLoginOK"},
   {CommandId::LobbyLoginCancel, "LobbyLoginCancel"},
 
-  // Inventory
-  {CommandId::LobbyShowInventory, "ShowInventory"},
-  {CommandId::LobbyShowInventoryOK, "ShowInventoryOK"},
-  {CommandId::LobbyShowInventoryCancel, "ShowInventoryCancel"},
+  // Heartbeat
+  {CommandId::LobbyHeartbeat, "LobbyHeartbeat"},
 
-  // LeagueInfo
-  {CommandId::RequestLeagueInfo, "RequestLeagueInfo"},
-  {CommandId::RequestLeagueInfoOK, "RequestLeagueInfoOK"},
-  {CommandId::RequestLeagueInfoCancel, "RequestLeagueInfoCancel"},
+  // Inventory
+  {CommandId::LobbyShowInventory, "LobbyShowInventory"},
+  {CommandId::LobbyShowInventoryOK, "LobbyShowInventoryOK"},
+  {CommandId::LobbyShowInventoryCancel, "LobbyShowInventoryCancel"},
+
+  // Inventory
+  {CommandId::AchievementCompleteList, "AchievementCompleteList"},
+  {CommandId::AchievementCompleteListOK, "AchievementCompleteListOK"},
+  {CommandId::AchievementCompleteListCancel, "AchievementCompleteListCancel"},
+
+  // RequestDailyQuestList
+  {CommandId::RequestDailyQuestList, "RequestDailyQuestList"},
+  {CommandId::RequestDailyQuestListOK, "RequestDailyQuestListOK"},
+  {CommandId::RequestDailyQuestListCancel, "RequestDailyQuestListCancel"},
+
+  // RequestQuestList
+  {CommandId::RequestQuestList, "RequestQuestList"},
+  {CommandId::RequestQuestListOK, "RequestQuestListOK"},
+  {CommandId::RequestQuestListCancel, "RequestQuestListCancel"},
+
+  // RequestLeagueInfo
+  {CommandId::RequestLeagueInfo, "LobbyRequestLeagueInfo"},
+  {CommandId::RequestLeagueInfoOK, "LobbyRequestLeagueInfoOK"},
+  {CommandId::RequestLeagueInfoCancel, "LobbyRequestLeagueInfoCancel"},
 };
 
 } // namespace anon

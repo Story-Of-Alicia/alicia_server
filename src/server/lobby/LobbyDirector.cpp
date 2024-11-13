@@ -15,7 +15,6 @@ LoginDirector::LoginDirector(CommandServer& lobbyServer) noexcept
   // TODO: Dummy data
   _userTokens[1] = "test";
   _users[1] = {
-    .id = 1,
     .nickName = "rgnt",
     .gender = alicia::Gender::Boy,
     .level = 60,
@@ -23,47 +22,57 @@ LoginDirector::LoginDirector(CommandServer& lobbyServer) noexcept
   };
 }
 
-void LoginDirector::HandleUserLogin(
-  alicia::ClientId clientId,
-  const alicia::LobbyCommandLogin& login)
+void LoginDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& login)
 {
   assert(login.constant0 == 50);
   assert(login.constant1 == 281);
 
-  spdlog::debug("Handling login for user {} with token {}", login.loginId, login.authKey);
-
   // ToDo: Treat input.
   const auto& userTokenItr = _userTokens.find(login.memberNo);
 
-  // If the user does not have an active token,
-  // or the token is invalid - cancel the login.
+  // Cancel the login if the user token doesn't exist.
   if (userTokenItr == _userTokens.cend() || login.authKey != userTokenItr->second)
   {
     _lobbyServer.QueueCommand(
       clientId,
-      alicia::CommandId::LobbyLoginCancel,
-      [](alicia::SinkStream& buffer)
+      CommandId::LobbyLoginCancel,
+      [](SinkStream& buffer)
       {
-        const alicia::LobbyCommandLoginCancel command{
-          .reason = alicia::LoginCancelReason::InvalidUser};
+        const LobbyCommandLoginCancel command{.reason = LoginCancelReason::InvalidLoginId};
 
-        alicia::LobbyCommandLoginCancel::Write(command, buffer);
+        LobbyCommandLoginCancel::Write(command, buffer);
       });
 
     return;
   }
 
-  // TODO: Get the user from data source if needed.
-  const auto& user = _users[login.memberNo];
+  // Cancel the login if the user doesn't exist.
+  const auto& userItr = _users.find(login.memberNo);
+  if (userItr == _users.cend())
+  {
+    _lobbyServer.QueueCommand(
+      clientId,
+      CommandId::LobbyLoginCancel,
+      [](SinkStream& buffer)
+      {
+        const LobbyCommandLoginCancel command{.reason = LoginCancelReason::InvalidUser};
 
-  // The token is valid, accept the login.
+        LobbyCommandLoginCancel::Write(command, buffer);
+      });
+
+    return;
+  }
+
+  const auto& [userId, user] = *userItr;
+  // Login succeeded, assign the active user to client.
+  _clients[clientId] = userId;
+
   _lobbyServer.QueueCommand(
     clientId,
-    alicia::CommandId::LobbyLoginOK,
-    [&user](alicia::SinkStream& sink)
+    CommandId::LobbyLoginOK,
+    [&user, userId](SinkStream& sink)
     {
-      const WinFileTime time = UnixTimeToFileTime(
-        std::chrono::system_clock::now());
+      const WinFileTime time = UnixTimeToFileTime(std::chrono::system_clock::now());
 
       const LobbyCommandLoginOK command{
         .lobbyTime =
@@ -71,7 +80,7 @@ void LoginDirector::HandleUserLogin(
            .dwHighDateTime = static_cast<uint32_t>(time.dwHighDateTime)},
         .val0 = 0xCA794,
 
-        .selfUid = user.id,
+        .selfUid = userId,
         .nickName = user.nickName,
         .motd = "Welcome to SoA!",
         .profileGender = user.gender,
@@ -86,84 +95,7 @@ void LoginDirector::HandleUserLogin(
         .val2 = 0xFF,
         .val3 = 0xFF,
 
-        .optionType = static_cast<alicia::OptionType>(
-          static_cast<uint32_t>(alicia::OptionType::Keyboard) |
-          static_cast<uint32_t>(alicia::OptionType::Macros) |
-          static_cast<uint32_t>(alicia::OptionType::Value)),
-
-        .keyboardOptions =
-          {.bindings =
-             {
-               {
-                 .index = 1,
-                 .type = 0x16,
-                 .key = 'W',
-               },
-               {
-                 .index = 2,
-                 .type = 0x15,
-                 .key = 'A',
-               },
-               {
-                 .index = 3,
-                 .type = 0x17,
-                 .key = 'D',
-               },
-               {
-                 .index = 4,
-                 .type = 0x18,
-                 .key = 'S',
-               },
-               {.index = 5,
-                .type = 0x12,
-                // PAUSE
-                .key = 0x13},
-               {.index = 6,
-                .type = 0x82,
-                // F20
-                .key = 0x83},
-               {.index = 7,
-                .type = 0x20,
-                // HELP
-                .key = 0x2F},
-               {.index = 8,
-                .type = 0x46,
-                // unbound
-                .key = 0x00},
-               {.index = 9,
-                .type = 0x52,
-                // unbound
-                .key = 0x00},
-               {.index = 10,
-                .type = 0x19,
-                // unbound
-                .key = 0x00},
-               {.index = 11,
-                .type = 0xF,
-                // unbound
-                .key = 0x00},
-               {.index = 12,
-                .type = 0x43,
-                // unbound
-                .key = 0x00},
-             }},
-
-        .macroOptions =
-          {.macros =
-             {"/wink/wave",
-              "Thank you! /heart",
-              "/fire/fire/fire Fire! /fire/fire/fire",
-              "/sad/cry Sorry! /cry/sad",
-              "/-tada Congralutations!!! /tada",
-              "/clap Good Game /-clap",
-              "Be right back! Please wait for me! /wink",
-              "See you! /smile/wave"}},
-
-        .valueOptions = 0x64,
-
-        // gamepad
-
-        .ageGroup = alicia::AgeGroup::Adult,
+        .ageGroup = AgeGroup::Adult,
         .val4 = 0,
 
         .val5 =
@@ -233,14 +165,36 @@ void LoginDirector::HandleUserLogin(
         .val8 = 0xE06,
         .val17 = {.val0 = 0x1, .val1 = 0x12}};
 
-      alicia::LobbyCommandLoginOK::Write(command, sink);
+      LobbyCommandLoginOK::Write(command, sink);
     });
+}
+
+void LoginDirector::HandleHeartbeat(
+  ClientId clientId,
+  const LobbyCommandHeartbeat& heartbeat)
+{
+  auto userItr = _clients.find(clientId);
+  if (userItr == _clients.cend())
+  {
+    return;
+  }
+
+  auto& [userId, user] = *_users.find(userItr->second);
+  user.lastHeartbeat = std::chrono::system_clock::now();
 }
 
 void LoginDirector::HandleShowInventory(
   ClientId clientId,
   const LobbyCommandShowInventory& showInventory)
 {
+  auto userItr = _clients.find(clientId);
+  if (userItr == _clients.cend())
+  {
+    return;
+  }
+
+  auto& [userId, user] = *_users.find(userItr->second);
+
   _lobbyServer.QueueCommand(
     clientId,
     CommandId::LobbyShowInventoryOK,
@@ -250,5 +204,49 @@ void LoginDirector::HandleShowInventory(
       LobbyCommandShowInventoryOK::Write(response, sink);
     });
 }
+
+void LoginDirector::HandleAchievementCompleteList(
+  ClientId clientId,
+  const LobbyCommandAchievementCompleteList& achievementCompleteList)
+{
+  auto userItr = _clients.find(clientId);
+  if (userItr == _clients.cend())
+  {
+    return;
+  }
+
+  auto& [userId, user] = *_users.find(userItr->second);
+  _lobbyServer.QueueCommand(
+    clientId,
+    CommandId::AchievementCompleteListOK,
+    [&](auto& sink)
+    {
+      LobbyCommandAchievementCompleteListOK response{};
+      LobbyCommandAchievementCompleteListOK::Write(response, sink);
+    });
+}
+
+
+void LoginDirector::HandleRequestQuestList(
+  ClientId clientId,
+  const LobbyCommandRequestQuestList& requestQuestList)
+{
+  auto userItr = _clients.find(clientId);
+  if (userItr == _clients.cend())
+  {
+    return;
+  }
+
+  auto& [userId, user] = *_users.find(userItr->second);
+  _lobbyServer.QueueCommand(
+    clientId,
+    CommandId::RequestQuestListOK,
+    [&](auto& sink)
+    {
+      LobbyCommandRequestQuestListOK response{};
+      LobbyCommandRequestQuestListOK::Write(response, sink);
+    });
+}
+
 
 } // namespace alicia
