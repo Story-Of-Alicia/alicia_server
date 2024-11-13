@@ -179,6 +179,9 @@ void alicia::Client::read_loop(Server& server)
       #ifdef AcCmdCLLogin
       case AcCmdCLLogin:
         {
+          // Apparently the client resets the xor key after (successful?) login
+          this->reset_xor_key();
+
           FILETIME time{};
           ZeroMemory(&time, sizeof(time));
           GetSystemTimeAsFileTime(&time);
@@ -2301,6 +2304,11 @@ void alicia::Client::read_loop(Server& server)
   });
 }
 
+void alicia::Client::reset_xor_key()
+{
+  this->xor_key = 0;
+}
+
 void alicia::Client::rotate_xor_key()
 {
   this->xor_key = this->xor_key * xor_multiplier + xor_control;
@@ -2348,6 +2356,7 @@ void alicia::Server::accept_loop()
   _acceptor.async_accept([&](boost::system::error_code error, asio::ip::tcp::socket client_socket) {
     printf("+++ CONN %s:%d\n\n", client_socket.remote_endpoint().address().to_string().c_str(), client_socket.remote_endpoint().port());
     const auto [itr, _] = clients.emplace(client_id++, std::move(client_socket));
+    itr->second.rotate_xor_key(); // Set initial xor key state
     itr->second.read_loop(*this);
 
     accept_loop();

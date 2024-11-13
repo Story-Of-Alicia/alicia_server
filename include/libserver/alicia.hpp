@@ -110,6 +110,7 @@ namespace alicia
 
     void send_command(alicia::ICommand& command);
     
+    void reset_xor_key();
     void rotate_xor_key();
   private:
     asio::ip::tcp::socket _socket;
