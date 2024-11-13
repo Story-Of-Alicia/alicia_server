@@ -43,6 +43,14 @@ constexpr std::array xor_control{
   static_cast<uint8_t>(0xA2),
 };
 
+//! XOR rolling key algorithm constant
+constexpr std::array xor_multiplier{
+  static_cast<uint8_t>(0xDB),
+  static_cast<uint8_t>(0xF7),
+  static_cast<uint8_t>(0xF7),
+  static_cast<uint8_t>(0xDF),
+};
+
 //! Message magic with which all messages are prefixed.
 struct MessageMagic
 {
@@ -64,19 +72,6 @@ MessageMagic decode_message_magic(uint32_t value);
 //! @param magic Message magic.
 //! @return Encoded message magic value.
 uint32_t encode_message_magic(MessageMagic magic);
-
-//! Appy XORcodec to a buffer.
-//!
-//! @param buffer Buffer.
-//! @returns XORcoded buffer.
-template <typename Buffer> void xor_codec_cpp(Buffer &buffer)
-{
-  for (std::size_t idx = 0; idx < buffer.size(); idx++)
-  {
-    const auto shift = idx % 4;
-    buffer[idx] ^= xor_control[shift];
-  }
-}
 
 //! IDs of the commands in the protocol.
 enum class CommandId

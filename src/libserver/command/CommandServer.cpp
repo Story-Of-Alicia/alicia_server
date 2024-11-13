@@ -30,12 +30,37 @@ constexpr std::size_t MaxCommandSize = 2048;
 
 } // anon namespace
 
-void CommandClient::RollCode(uint32_t factor)
+//! Appy XORcodec to a buffer.
+void xor_codec_cpp(std::array<std::byte, 4>& key, std::byte *data, size_t size)
 {
-  _rollingCode *= factor;
+  for (std::size_t idx = 0; idx < size; idx++)
+  {
+    const auto shift = idx % 4;
+    data[idx] ^= key[shift];
+  }
 }
 
-uint32_t CommandClient::GetRollingCode()
+CommandClient::CommandClient()
+{
+  // Initial roll for the XOR scrambler
+  this->ResetCode();
+  this->RollCode();
+}
+
+void CommandClient::ResetCode()
+{
+  this->_rollingCode = {};
+}
+
+void CommandClient::RollCode()
+{
+  uint32_t* rollingCode = (uint32_t*)_rollingCode.data();
+  uint32_t* xorMultiplier = (uint32_t*)xor_multiplier.data();
+  uint32_t* xorControl = (uint32_t*)xor_control.data();
+  (*rollingCode) = (*rollingCode) * (*xorMultiplier) + (*xorControl);
+}
+
+std::array<std::byte, 4>& CommandClient::GetRollingCode()
 {
   return _rollingCode;
 }
@@ -49,17 +74,15 @@ CommandServer::CommandServer()
 
     // Set the read handler for the new client.
     client.SetReadHandler(
-      [this, clientId, commandClient](asio::streambuf& readBuffer) -> bool
+      [this, clientId, &commandClient](asio::streambuf& readBuffer) -> bool
       {
         // View of the retrieved data.
         const auto readBufferView = std::span(
           static_cast<const std::byte*>(readBuffer.data().data()),
           readBuffer.data().size());
 
-        SourceStream sourceBuffer(
-          readBufferView);
-
         // Read the message magic.
+        SourceStream sourceBuffer(readBufferView);
         uint32_t magicValue{};
         sourceBuffer.Read(magicValue);
 
@@ -75,6 +98,9 @@ CommandServer::CommandServer()
 
         const auto commandDataSize = magic.length - sizeof(MessageMagic);
 
+        // Consume the bytes of the message magic.
+        readBuffer.consume(sizeof(MessageMagic));
+
         // If the message data are not buffered,
         // wait for more data to arrive.
         if (commandDataSize > readBuffer.in_avail())
@@ -82,20 +108,23 @@ CommandServer::CommandServer()
           return false;
         }
 
-        // Consume the bytes of the message magic.
-        readBuffer.consume(
-          sizeof(MessageMagic));
+        // Read the message data.
+        auto commandData = std::vector<std::byte>(commandDataSize);
+        sourceBuffer.Read(commandData.data(), commandDataSize);
 
         // Rolling XOR scrambler
-        //
-        // commandClient.RollCode(0);
-        // const auto code = commandClient.GetRollingCode();
-        // // Read from source buffer, write processed to sink buffer.
-        // streamBuf.commit(scramble_data(code, sourceBuffer, sinkBuffer))
+        if (commandDataSize > 0)
+        {
+          auto code = commandClient.GetRollingCode();
+          xor_codec_cpp(code, commandData.data(), commandDataSize);
+          commandClient.RollCode();
+        }
 
-        const auto commandId = static_cast<CommandId>(magic.id);
+        std::span<std::byte> commandDataSpan = std::span<std::byte>(commandData);
+        SourceStream unscrambledBuffer(commandDataSpan);
 
         // Find the handler of the command.
+        const auto commandId = static_cast<CommandId>(magic.id);
         const auto handlerIter = _handlers.find(commandId);
         if (handlerIter == _handlers.cend())
         {
@@ -112,7 +141,7 @@ CommandServer::CommandServer()
         assert(handler);
 
         // Call the handler.
-        handler(clientId, sourceBuffer);
+        handler(clientId, unscrambledBuffer);
 
         // Consume the bytes of the command data.
         readBuffer.consume(commandDataSize);
@@ -139,6 +168,11 @@ void CommandServer::RegisterCommandHandler(
   }
 
   _handlers[command] = std::move(handler);
+}
+
+void CommandServer::ResetCode(ClientId client)
+{
+  _clients[client].ResetCode();
 }
 
 void CommandServer::QueueCommand(

@@ -67,6 +67,11 @@ void LoginDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
   // Login succeeded, assign the active user to client.
   _clients[clientId] = userId;
 
+  // Reset XOR scrambler
+  // TODO: Verify whether it gets reset to 0 or if it gets
+  // set to some value we're sending in the OK response.
+  _lobbyServer.ResetCode(clientId);
+
   _lobbyServer.QueueCommand(
     clientId,
     CommandId::LobbyLoginOK,

@@ -38,12 +38,15 @@ using CommandSupplier = std::function<void(SinkStream&)>;
 class CommandClient
 {
 public:
-  void RollCode(uint32_t factor);
-  uint32_t GetRollingCode();
+  CommandClient();
+
+  void ResetCode();
+  void RollCode();
+  std::array<std::byte, 4>& GetRollingCode();
 
 private:
   std::queue<CommandSupplier> _commandQueue;
-  uint32_t _rollingCode = 0x0;
+  std::array<std::byte, 4> _rollingCode;
 };
 
 //! A command server.
@@ -65,6 +68,8 @@ public:
   void RegisterCommandHandler(
     CommandId command,
     CommandHandler handler);
+
+  void ResetCode(ClientId client);
 
   //!
   void QueueCommand(
