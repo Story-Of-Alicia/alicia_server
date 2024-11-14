@@ -8,6 +8,6 @@
 #include <array>
 #include <cstdint>
 
-#include "util.hpp"
+#include "Util.hpp"
 
 #endif // ALICIA_HPP

@@ -6,7 +6,7 @@
 #define COMMAND_SERVER_HPP
 
 #include "CommandProtocol.hpp"
-#include "libserver/base/server.hpp"
+#include "libserver/base/Server.hpp"
 
 #include <unordered_map>
 #include <queue>

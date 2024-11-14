@@ -1,6 +1,6 @@
 
 #include "libserver/command/CommandServer.hpp"
-#include "libserver/util.hpp"
+#include "libserver/Util.hpp"
 
 namespace alicia
 {

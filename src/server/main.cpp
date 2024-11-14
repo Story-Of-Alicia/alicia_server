@@ -2,7 +2,7 @@
 
 #include "lobby/LobbyDirector.hpp"
 
-#include <libserver/base/server.hpp>
+#include <libserver/base/Server.hpp>
 #include <libserver/command/CommandServer.hpp>
 
 #include <spdlog/spdlog.h>

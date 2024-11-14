@@ -6,7 +6,7 @@
 #define RANCH_MESSAGE_DEFINES_HPP
 
 #include "DataDefines.hpp"
-#include "libserver/util.hpp"
+#include "libserver/Util.hpp"
 
 #include <array>
 #include <vector>
