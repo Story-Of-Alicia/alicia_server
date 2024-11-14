@@ -17,18 +17,12 @@
 * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 **/
 
-#ifndef VERSION_HPP
-#define VERSION_HPP
+#ifndef ALICIA_HPP
+#define ALICIA_HPP
 
-#include <string_view>
+#include <array>
+#include <cstdint>
 
-namespace alicia
-{
+#include "Util.hpp"
 
-constexpr unsigned int BuildVersionMajor = @AliciaServerBuildVersionMajor@;
-constexpr unsigned int BuildVersionMinor = @AliciaServerBuildVersionMinor@;
-constexpr std::string_view BuildVersion = "@AliciaServerBuildVersion@";
-
-}
-
-#endif // VERSION_HPP
+#endif // ALICIA_HPP
