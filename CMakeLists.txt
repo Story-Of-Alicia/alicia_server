@@ -5,10 +5,9 @@ project(alicia-server
 option(BUILD_TESTS "Build tests" ON)
 
 find_package(Boost REQUIRED)
-find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBPQXX REQUIRED libpqxx)
 
-add_subdirectory(3rd-party/spdlog)
+add_subdirectory(3rd-party)
 
 # Project properties interface library
 add_library(project-properties INTERFACE)
@@ -49,7 +48,7 @@ target_sources(alicia-server PRIVATE
         src/server/main.cpp
         src/server/LobbyDirector.cpp)
 target_link_libraries(alicia-server
-        PRIVATE project-properties alicia-libserver spdlog::spdlog)
+        PRIVATE project-properties alicia-libserver spdlog::spdlog pqxx)
 target_include_directories(alicia-server PUBLIC
         "${PROJECT_BINARY_DIR}/generated")
 
