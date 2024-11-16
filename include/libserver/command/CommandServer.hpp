@@ -42,11 +42,11 @@ public:
 
   void ResetCode();
   void RollCode();
-  std::array<std::byte, 4>& GetRollingCode();
+  [[nodiscard]] const XorCode& GetRollingCode() const;
 
 private:
   std::queue<CommandSupplier> _commandQueue;
-  std::array<std::byte, 4> _rollingCode;
+  XorCode _rollingCode{};
 };
 
 //! A command server.

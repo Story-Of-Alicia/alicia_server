@@ -50,9 +50,10 @@ void StreamReader<x>::operator()( \
 DECLARE_WRITER_READER(x) \
 DEFINE_WRITER_READER(x, x::Write, x::Read)
 
-#include <cstdint>
 #include <chrono>
+#include <cstdint>
 #include <format>
+#include <functional>
 #include <span>
 
 namespace alicia
@@ -231,6 +232,26 @@ template <typename T> struct StreamReader
 };
 
 DECLARE_WRITER_READER(std::string)
+
+//!
+struct deferred
+{
+  //! Function.
+  using Fnc = std::function<void(void)>;
+
+  //!
+  explicit deferred(Fnc func) noexcept
+    : _func(std::move(func)) {};
+
+  //!
+  ~deferred()
+  {
+    _func();
+  }
+
+private:
+  Fnc _func;
+};
 
 } // namespace alicia::proto
 

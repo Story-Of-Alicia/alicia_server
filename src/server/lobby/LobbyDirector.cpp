@@ -14,11 +14,13 @@ LoginDirector::LoginDirector(CommandServer& lobbyServer) noexcept
 {
   // TODO: Dummy data
   _userTokens[1] = "test";
-  _users[1] = {
+  _users[1] = User {
     .nickName = "rgnt",
-    .gender = alicia::Gender::Boy,
+    .gender = Gender::Boy,
     .level = 60,
     .carrots = 5000,
+    .characterEquipment = {
+      Item{.uid = 100, .tid = 30035, .val = 0, .count = 1}}
   };
 }
 
@@ -91,7 +93,7 @@ void LoginDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
         .profileGender = user.gender,
         .status = "Mentally unstable",
 
-        .characterEquipment = {},
+        //.characterEquipment = user.characterEquipment,
         .horseEquipment = {},
 
         .level = user.level,
@@ -119,14 +121,20 @@ void LoginDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
         .scramblingConstant = 0,
 
         .character =
-          {.parts = {.id = 0xA, .mouthSerialId = 0x01, .faceSerialId = 0x2, .val0 = 0x01},
-           .appearance =
-             {.val0 = 0xFFFF,
-              .headSize = 0x01,
-              .height = 0x01,
-              .thighVolume = 0x01,
-              .legVolume = 0x01,
-              .val1 = 0xFF}},
+          {
+          .parts = {
+            .charId = 10,
+            .mouthSerialId = 0,
+            .faceSerialId = 0,
+            .val0 = 255},
+           .appearance = {
+              .val0 = 0xFFFF,
+              .headSize = 1,
+              .height = 2,
+              .thighVolume = 2,
+              .legVolume = 2,
+              .val1 = 0xFF}
+          },
         .horse =
           {.uid = 0x01,
            .tid = 0x4E21,

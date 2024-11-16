@@ -24,6 +24,8 @@ struct User
   uint16_t level{};
   int32_t carrots{};
 
+  std::vector<Item> characterEquipment;
+
   std::chrono::system_clock::time_point lastHeartbeat;
 };
 

@@ -48,7 +48,7 @@ void WriteCharacter(
   const auto& [parts, appearance] = character;
 
   // Write the character parts.
-  buf.Write(parts.id)
+  buf.Write(parts.charId)
     .Write(parts.mouthSerialId)
     .Write(parts.faceSerialId)
     .Write(parts.val0);

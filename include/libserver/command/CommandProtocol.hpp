@@ -34,21 +34,24 @@ constexpr uint16_t BufferSize = 4096;
 //! A constant buffer jumbo for message magic.
 constexpr uint16_t BufferJumbo = 16384;
 
+//! XOR code.
+using XorCode = std::array<std::byte, 4>;
+
 //! A constant 4-byte XOR control value,
 //! with which message bytes are XORed.
-constexpr std::array xor_control{
-  static_cast<uint8_t>(0xCB),
-  static_cast<uint8_t>(0x91),
-  static_cast<uint8_t>(0x01),
-  static_cast<uint8_t>(0xA2),
+constexpr XorCode XorControl{
+  static_cast<std::byte>(0xCB),
+  static_cast<std::byte>(0x91),
+  static_cast<std::byte>(0x01),
+  static_cast<std::byte>(0xA2),
 };
 
 //! XOR rolling key algorithm constant
-constexpr std::array xor_multiplier{
-  static_cast<uint8_t>(0xDB),
-  static_cast<uint8_t>(0xF7),
-  static_cast<uint8_t>(0xF7),
-  static_cast<uint8_t>(0xDF),
+constexpr XorCode XorMultiplier{
+  static_cast<std::byte>(0xDB),
+  static_cast<std::byte>(0xF7),
+  static_cast<std::byte>(0xF7),
+  static_cast<std::byte>(0xDF),
 };
 
 //! Message magic with which all messages are prefixed.

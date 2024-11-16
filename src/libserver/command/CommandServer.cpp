@@ -30,20 +30,28 @@ constexpr std::size_t MaxCommandSize = 2048;
 
 } // anon namespace
 
-//! Appy XORcodec to a buffer.
-void xor_codec_cpp(std::array<std::byte, 4>& key, std::byte *data, size_t size)
+void XorAlgorithm(
+  const std::array<std::byte, 4>& key,
+  SourceStream& source,
+  SinkStream& sink,
+  size_t size)
 {
   for (std::size_t idx = 0; idx < size; idx++)
   {
     const auto shift = idx % 4;
-    data[idx] ^= key[shift];
+
+    // Read a byte.
+    std::byte v;
+    source.Read(v);
+
+    // Xor it with the key.
+    sink.Write(v ^ key[shift]);
   }
 }
 
 CommandClient::CommandClient()
 {
   // Initial roll for the XOR scrambler
-  this->ResetCode();
   this->RollCode();
 }
 
@@ -54,13 +62,17 @@ void CommandClient::ResetCode()
 
 void CommandClient::RollCode()
 {
-  uint32_t* rollingCode = (uint32_t*)_rollingCode.data();
-  uint32_t* xorMultiplier = (uint32_t*)xor_multiplier.data();
-  uint32_t* xorControl = (uint32_t*)xor_control.data();
-  (*rollingCode) = (*rollingCode) * (*xorMultiplier) + (*xorControl);
+  auto rollingCode = *reinterpret_cast<uint32_t*>(
+    _rollingCode.data());
+  const auto xorMultiplier = *reinterpret_cast<const uint32_t*>(
+    XorMultiplier.data());
+  const auto xorControl = *reinterpret_cast<const uint32_t*>(
+    XorControl.data());
+
+  rollingCode = rollingCode * xorMultiplier + xorControl;
 }
 
-std::array<std::byte, 4>& CommandClient::GetRollingCode()
+const XorCode& CommandClient::GetRollingCode() const
 {
   return _rollingCode;
 }
@@ -76,15 +88,30 @@ CommandServer::CommandServer()
     client.SetReadHandler(
       [this, clientId, &commandClient](asio::streambuf& readBuffer) -> bool
       {
-        // View of the retrieved data.
-        const auto readBufferView = std::span(
+        SourceStream commandStream({
           static_cast<const std::byte*>(readBuffer.data().data()),
-          readBuffer.data().size());
+          readBuffer.data().size()
+        });
+
+        // Flag indicates whether to consume the bytes
+        // when the read handler exits.
+        bool consumeBytesOnExit = true;
+
+        // Defer the consumption of the bytes from the read buffer,
+        // until the end of the function.
+        const deferred deferredConsume([&]()
+        {
+          if (!consumeBytesOnExit)
+            return;
+
+          // Consume the amount of bytes that were
+          // read from the command stream.
+          readBuffer.consume(commandStream.GetCursor() + 1);
+        });
 
         // Read the message magic.
-        SourceStream sourceBuffer(readBufferView);
         uint32_t magicValue{};
-        sourceBuffer.Read(magicValue);
+        commandStream.Read(magicValue);
 
         const MessageMagic magic = decode_message_magic(
           magicValue);
@@ -93,35 +120,9 @@ CommandServer::CommandServer()
         if (magic.id > static_cast<uint16_t>(CommandId::Count)
           || magic.length > MaxCommandSize)
         {
-          throw std::runtime_error("Invalid message magic.");
+          printf(std::format("Unhandled message\n").c_str());
+          return true;
         }
-
-        const auto commandDataSize = magic.length - sizeof(MessageMagic);
-
-        // Consume the bytes of the message magic.
-        readBuffer.consume(sizeof(MessageMagic));
-
-        // If the message data are not buffered,
-        // wait for more data to arrive.
-        if (commandDataSize > readBuffer.in_avail())
-        {
-          return false;
-        }
-
-        // Read the message data.
-        auto commandData = std::vector<std::byte>(commandDataSize);
-        sourceBuffer.Read(commandData.data(), commandDataSize);
-
-        // Rolling XOR scrambler
-        if (commandDataSize > 0)
-        {
-          auto code = commandClient.GetRollingCode();
-          xor_codec_cpp(code, commandData.data(), commandDataSize);
-          commandClient.RollCode();
-        }
-
-        std::span<std::byte> commandDataSpan = std::span<std::byte>(commandData);
-        SourceStream unscrambledBuffer(commandDataSpan);
 
         // Find the handler of the command.
         const auto commandId = static_cast<CommandId>(magic.id);
@@ -140,11 +141,50 @@ CommandServer::CommandServer()
         // Handler validity is checked when registering.
         assert(handler);
 
-        // Call the handler.
-        handler(clientId, unscrambledBuffer);
+        // Size of the data portion of the command.
+        const size_t commandDataSize = static_cast<size_t>(magic.length) - commandStream.GetCursor();
 
-        // Consume the bytes of the command data.
-        readBuffer.consume(commandDataSize);
+        // Buffer for the command data.
+        std::vector<std::byte> commandDataBuffer;
+        commandDataBuffer.resize(commandDataSize);
+
+        // Read the command data.
+        commandStream.Read(commandDataBuffer.data(), commandDataBuffer.size());
+
+        // Source stream of the command data.
+        SourceStream commandDataStream(
+          {commandDataBuffer.begin(), commandDataBuffer.end()});
+
+        // Validate and process the command data.
+        if (commandDataSize > 0)
+        {
+          // If all the required command data are not buffered,
+          // wait for them to arrive.
+          if (commandDataSize > readBuffer.in_avail())
+          {
+           // Indicate that the bytes read until now
+           // shouldn't be consumed, as we expect more data to arrive.
+           consumeBytesOnExit = false;
+           return false;
+          }
+
+          // Sink stream of the command data.
+          // Points to the same buffer.
+          SinkStream commandDataDecodedStream(
+            {commandDataBuffer.begin(), commandDataBuffer.end()});
+
+          const auto& code = commandClient.GetRollingCode();
+          XorAlgorithm(
+            code,
+            commandDataStream,
+            commandDataDecodedStream,
+            commandDataBuffer.size());
+
+          commandClient.RollCode();
+        }
+
+        // Call the handler.
+        handler(clientId, commandStream);
 
         return true;
       });

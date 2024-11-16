@@ -90,9 +90,12 @@ struct Character
   //! Used to build character from the _ClientCharDefaultPartInfo table.
   struct CharacterParts
   {
-    uint8_t id{};
+    uint8_t charId{};
+    //! FaceId
     uint8_t mouthSerialId{};
+    //! EyeId
     uint8_t faceSerialId{};
+
     uint8_t val0{};
   } parts{};
 
@@ -100,10 +103,15 @@ struct Character
   struct CharacterAppearance
   {
     uint16_t val0{};
+    //! FigFace
     uint16_t headSize{};
+    //! FigTall
     uint16_t height{};
+    //! FigVolume
     uint16_t thighVolume{};
+    //! FigShape
     uint16_t legVolume{};
+
     uint16_t val1{};
   } appearance{};
 };
