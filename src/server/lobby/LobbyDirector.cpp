@@ -309,4 +309,45 @@ void LoginDirector::HandleRequestQuestList(
     });
 }
 
+void LoginDirector::HandleRequestSpecialEventList(
+  ClientId clientId,
+  const LobbyCommandRequestSpecialEventList& requestSpecialEventList)
+{
+  _lobbyServer.QueueCommand(
+    clientId, 
+    CommandId::LobbyRequestSpecialEventListOK, 
+    [&](auto& sink)
+    {
+      LobbyCommandRequestSpecialEventListOK response{
+        .unk0 = requestSpecialEventList.unk0
+      };
+      LobbyCommandRequestSpecialEventListOK::Write(response, sink);
+    });
+}
+
+void LoginDirector::HandleEnterRanch(
+  ClientId clientId, 
+  const LobbyCommandEnterRanch& enterRanch)
+{
+  auto& [userId, _] = *_clients.find(clientId);
+  _lobbyServer.QueueCommand(
+    clientId, 
+    CommandId::LobbyEnterRanchOK, 
+     [&](auto& sink)
+     {
+      // TODO: Move somewhere configurable
+      struct in_addr addr;
+      inet_pton(AF_INET, "127.0.0.1", &addr);
+      uint16_t port = 10031;
+
+      LobbyCommandEnterRanchOK response{
+        .unk0 = userId,
+        .unk1 = 0x44332211, // TODO: Generate and store in the ranch server instance
+        .ip = (uint32_t) addr.s_addr,
+        .port = port
+      };
+      LobbyCommandEnterRanchOK::Write(response, sink);
+     });
+}
+
 } // namespace alicia
