@@ -31,8 +31,6 @@
 namespace alicia
 {
 
-namespace {
-
 //! Writes item data to the buffer.
 //! @param buf Sink buffer.
 //! @param item Item data to write.
@@ -51,8 +49,6 @@ void WriteCharacter(
 void WriteHorse(
   SinkStream& buf,
   const Horse& horse);
-
-}
 
 //! Serverbound login command.
 struct LobbyCommandLogin
