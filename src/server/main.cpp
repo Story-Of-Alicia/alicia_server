@@ -1,6 +1,7 @@
 #include "Version.hpp"
 
 #include "lobby/LobbyDirector.hpp"
+#include "ranch/RanchDirector.hpp"
 
 #include <libserver/base/Server.hpp>
 #include <libserver/command/CommandServer.hpp>
@@ -16,6 +17,7 @@ namespace
 {
 
 std::unique_ptr<alicia::LoginDirector> g_loginDirector;
+std::unique_ptr<alicia::RanchDirector> g_ranchDirector;
 
 } // anon namespace
 
@@ -121,6 +123,27 @@ int main()
         g_loginDirector->HandleRequestQuestList(clientId, requestDailyQuestList);
       });
 
+    lobbyServer.RegisterCommandHandler(
+      alicia::CommandId::LobbyRequestSpecialEventList,
+      [](alicia::ClientId clientId, auto& buffer)
+      {
+        alicia::LobbyCommandRequestSpecialEventList requestSpecialEventList;
+        alicia::LobbyCommandRequestSpecialEventList::Read(
+          requestSpecialEventList, buffer);
+
+        g_loginDirector->HandleRequestSpecialEventList(clientId, requestSpecialEventList);
+      });
+    
+    lobbyServer.RegisterCommandHandler(
+      alicia::CommandId::LobbyEnterRanch,
+      [](alicia::ClientId clientId, auto& buffer)
+      {
+        alicia::LobbyCommandEnterRanch enterRanch;
+        alicia::LobbyCommandEnterRanch::Read(enterRanch, buffer);
+
+        g_loginDirector->HandleEnterRanch(clientId, enterRanch);
+      });
+
     // Host
     spdlog::debug("Lobby server hosted on 127.0.0.1:{}", 10030);
     lobbyServer.Host("127.0.0.1", 10030);
@@ -130,6 +153,17 @@ int main()
   std::jthread ranchThread([]()
   {
     alicia::CommandServer ranchServer;
+    g_ranchDirector = std::make_unique<alicia::RanchDirector>(ranchServer);
+
+    ranchServer.RegisterCommandHandler(
+      alicia::CommandId::RanchEnterRanch,
+      [](alicia::ClientId clientId, auto& buffer)
+      {
+        alicia::RanchCommandEnterRanch enterRanch;
+        alicia::RanchCommandEnterRanch::Read(enterRanch, buffer);
+
+        g_ranchDirector->HandleEnterRanch(clientId, enterRanch);
+      });
 
     spdlog::debug("Ranch server hosted on 127.0.0.1:{}", 10031);
     ranchServer.Host("127.0.0.1", 10031);
