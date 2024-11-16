@@ -40,7 +40,7 @@ using WriteSupplier = std::function<void(asio::streambuf&)>;
 
 //! A read handler.
 //! todo: comment about cyclic buffer
-using ReadHandler = std::function<bool(asio::streambuf&)>;
+using ReadHandler = std::function<void(asio::streambuf&)>;
 
 //! A client handler.
 using OnConnectHandler = std::function<void(ClientId)>;
