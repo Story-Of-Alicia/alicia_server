@@ -20,7 +20,33 @@ LoginDirector::LoginDirector(CommandServer& lobbyServer) noexcept
     .level = 60,
     .carrots = 5000,
     .characterEquipment = {
-      Item{.uid = 100, .tid = 30035, .val = 0, .count = 1}}
+      Item{.uid = 100, .tid = 30035, .val = 0, .count = 1}
+    },
+    .mountedOn = 1
+  };
+  _users[1].horses[1] = {
+    .tid = 0x4E21,
+    .name = "idontunderstand"
+  };
+  _users[1].horses[2] = {
+    .tid = 0x4E21,
+    .name = "iunderstand"
+  };  
+
+  _userTokens[2] = "another test";
+  _users[2] = {
+    .nickName = "Laith",
+    .gender = alicia::Gender::Unspecified,
+    .level = 1,
+    .carrots = 0,
+    .characterEquipment = {
+      Item{.uid = 100, .tid = 30035, .val = 0, .count = 1}
+    },
+    .mountedOn = 3
+  };
+  _users[2].horses[3] = {
+    .tid = 0x4E21,
+    .name = "andyoudontseemto"
   };
 }
 
@@ -65,7 +91,7 @@ void LoginDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
     return;
   }
 
-  const auto& [userId, user] = *userItr;
+  auto& [userId, user] = *userItr;
   // Login succeeded, assign the active user to client.
   _clients[clientId] = userId;
 
@@ -116,8 +142,10 @@ void LoginDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
 
         .val6 = "val6",
 
+        // TODO: Move somewhere configurable
         .address = 2130706433, // 127.0.0.1
         .port = 10031,         // 10031
+
         .scramblingConstant = 0,
 
         .character =
@@ -136,9 +164,9 @@ void LoginDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
               .val1 = 0xFF}
           },
         .horse =
-          {.uid = 0x01,
-           .tid = 0x4E21,
-           .name = "idontunderstand",
+          {.uid = user.mountedOn,
+           .tid = user.horses[user.mountedOn].tid,
+           .name = user.horses[user.mountedOn].name,
            .parts = {.skinId = 0x1, .maneId = 0x4, .tailId = 0x4, .faceId = 0x5},
            .appearance =
              {.scale = 0x0,
@@ -176,7 +204,7 @@ void LoginDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
               {0x43, 0x4},
               {0x45, 0x0}}},
         .val8 = 0xE06,
-        .val17 = {.val0 = 0x1, .val1 = 0x12}};
+        .val17 = {.horseUId = user.mountedOn, .val1 = 0x12}};
 
       LobbyCommandLoginOK::Write(command, sink);
     });

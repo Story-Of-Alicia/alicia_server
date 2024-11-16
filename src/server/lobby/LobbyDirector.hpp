@@ -5,29 +5,10 @@
 #ifndef LOBBYDIRECTOR_HPP
 #define LOBBYDIRECTOR_HPP
 
-#include <libserver/command/CommandServer.hpp>
+#include "../Director.hpp"
 
 namespace alicia
 {
-
-//! Unique user identifier.
-using UserId = std::uint32_t;
-//! Invalid user identifier.
-constexpr UserId InvalidUserId = std::numeric_limits<UserId>::max();
-
-//! User.
-struct User
-{
-  std::string nickName;
-  Gender gender = Gender::Unspecified;
-
-  uint16_t level{};
-  int32_t carrots{};
-
-  std::vector<Item> characterEquipment;
-
-  std::chrono::system_clock::time_point lastHeartbeat;
-};
 
 class LoginDirector
 {
