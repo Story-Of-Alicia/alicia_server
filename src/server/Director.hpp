@@ -16,6 +16,8 @@ constexpr UserId InvalidUserId = std::numeric_limits<UserId>::max();
 
 using HorseId = std::uint32_t;
 
+//! Unique ranch identifier.
+using RanchId = std::uint32_t;
 
 struct HorseData
 {
@@ -40,6 +42,12 @@ struct User
   std::chrono::system_clock::time_point lastHeartbeat;
 };
 
+struct Ranch
+{
+  std::string ranchName;
+  std::vector<HorseId> horses;
+  std::vector<UserId> players;
+};
 
 }
 

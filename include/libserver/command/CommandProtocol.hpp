@@ -114,6 +114,11 @@ enum class CommandId
   LobbyEnterRanchOK = 0xfd,
   LobbyEnterRanchCancel = 0xfe,
 
+  RanchEnterRanch = 0x12b,
+  RanchEnterRanchCancel = 0x12d,
+  RanchEnterRanchNotify = 0x12e,
+  RanchEnterRanchOK = 0x12c,
+
   Count = 0xFFFF
 };
 
