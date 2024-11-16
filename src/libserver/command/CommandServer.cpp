@@ -125,7 +125,7 @@ CommandServer::CommandServer()
         const MessageMagic magic = decode_message_magic(
           magicValue);
 
-        // Handle invalid command ID in the magic.
+        // Command ID must be within the valid range.
         if (magic.id > static_cast<uint16_t>(CommandId::Count))
         {
           throw std::runtime_error(
@@ -134,7 +134,8 @@ CommandServer::CommandServer()
               magic.id).c_str());
         }
 
-        // Handle invalid command size in the magic.
+        // The provided payload length must be at least the size
+        // of the magic itself and smaller than the max command size.
         if (magic.length < sizeof(MessageMagic)
           || magic.length > MaxCommandSize)
         {
@@ -144,12 +145,8 @@ CommandServer::CommandServer()
               magic.length).c_str());
         }
 
-        // The provided length must be at least the size of the magic itself.
-        assert(magic.length >= sizeof(MessageMagic));
-
         // Size of the data portion of the command.
         const size_t commandDataSize = static_cast<size_t>(magic.length) - commandStream.GetCursor();
-        assert(commandDataSize <= MaxCommandDataSize);
 
         // If all the required command data are not buffered,
         // wait for them to arrive.
