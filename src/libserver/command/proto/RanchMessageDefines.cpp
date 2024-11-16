@@ -87,7 +87,7 @@ void WriteRanchPlayer(SinkStream& buf, const RanchPlayer& ranchPlayer)
 
   // Struct6
   const auto& struct6 = ranchPlayer.anotherPlayerRelatedThing;
-  buf.Write(struct6.val0)
+  buf.Write(struct6.horseUId)
     .Write(struct6.val1)
     .Write(struct6.val2);
 

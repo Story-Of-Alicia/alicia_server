@@ -233,7 +233,7 @@ struct Struct5
 //!
 struct Struct6
 {
-  uint32_t val0{};
+  uint32_t horseUId{};
   uint32_t val1{};
   uint32_t val2{};
 };

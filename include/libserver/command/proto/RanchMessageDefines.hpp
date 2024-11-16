@@ -159,9 +159,9 @@ struct RanchCommandMountFamilyTreeCancel
 //! Serverbound get messenger info command.
 struct RanchCommandEnterRanch
 {
-  uint32_t unk0;
-  uint32_t unk1;
-  uint32_t unk2;
+  uint32_t unk0; // character id? ranch id?
+  uint32_t unk1; // probably the auth token from LobbyCommandEnterRanchOK
+  uint32_t unk2; // char id again? ranch id?
 
   //! Writes the command to a provided sink buffer.
   //! @param command Command.

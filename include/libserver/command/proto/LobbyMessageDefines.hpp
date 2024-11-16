@@ -581,7 +581,7 @@ struct LobbyCommandEnterRanch
 struct LobbyCommandEnterRanchOK
 {
   uint32_t unk0;
-  uint32_t unk1;
+  uint32_t unk1; // probably some auth token that has to be double checked in the ranch server
   uint32_t ip;
   uint16_t port;
 
