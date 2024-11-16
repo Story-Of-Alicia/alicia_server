@@ -24,9 +24,6 @@
 namespace alicia
 {
 
-namespace
-{
-
 //! Writes item data to the buffer.
 //! @param buf Sink buffer.
 //! @param item Item data to write.
@@ -148,8 +145,6 @@ void WriteHorse(
   buf.Write(horse.val16)
     .Write(horse.val17);
 }
-
-} // anon namespace
 
 void LobbyCommandLogin::Write(
   const LobbyCommandLogin& command, SinkStream& buffer)
