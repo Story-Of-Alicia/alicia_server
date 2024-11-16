@@ -22,6 +22,8 @@
 #include "../../../3rd-party/spdlog/include/spdlog/spdlog.h"
 #include "libserver/Util.hpp"
 
+#include <spdlog/spdlog.h>
+
 namespace alicia
 {
 
@@ -168,7 +170,7 @@ CommandServer::CommandServer()
 
         // Source stream of the command data.
         SourceStream commandDataStream(
-          {commandDataBuffer.begin(), commandDataBuffer.end()});
+          {commandDataBuffer.begin(), commandDataSize});
 
         // Validate and process the command data.
         if (commandDataSize > 0)
@@ -176,7 +178,7 @@ CommandServer::CommandServer()
           // Sink stream of the command data.
           // Points to the same buffer.
           SinkStream commandDataDecodedStream(
-            {commandDataBuffer.begin(), commandDataBuffer.end()});
+            {commandDataBuffer.begin(), commandDataSize});
 
           // Apply XOR algorithm to the data.
           const auto& code = commandClient.GetRollingCode();
@@ -184,7 +186,7 @@ CommandServer::CommandServer()
             code,
             commandDataStream,
             commandDataDecodedStream,
-            commandDataBuffer.size());
+            commandDataSize);
 
           commandClient.RollCode();
         }

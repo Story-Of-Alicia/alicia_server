@@ -19,6 +19,8 @@
 
 #include "libserver/base/Server.hpp"
 
+#include "spdlog/spdlog.h"
+
 namespace alicia
 {
 
@@ -96,28 +98,37 @@ void Client::ReadLoop() noexcept
     _readBuffer.prepare(MaxBufferSize),
     [&](boost::system::error_code error, std::size_t size)
     {
-      if (error)
+      try
       {
-        printf("Failed to read\n");
-        _socket.close();
-        return;
-      }
-
-      // Commit the received bytes, so they can be read by the handler.
-      _readBuffer.commit(size);
-
-      // ToDo: Read & handle timing.
-      {
-        // Call the read handler
-        std::scoped_lock readLock(_readMutex);
-        if (_readHandler)
+        if (error)
         {
-          _readHandler(_readBuffer);
+          throw std::runtime_error(
+            fmt::format("Network error: (0x%X)", error.what(), error.value()));
         }
-      }
 
-      // Continue the read loop.
-      ReadLoop();
+        // Commit the received bytes, so they can be read by the handler.
+        _readBuffer.commit(size);
+
+        // ToDo: Read & handle timing.
+        {
+          // Call the read handler
+          std::scoped_lock readLock(_readMutex);
+          if (_readHandler)
+          {
+            _readHandler(_readBuffer);
+          }
+        }
+
+        // Continue the read loop.
+        ReadLoop();
+      }
+      catch (const std::exception& x)
+      {
+        spdlog::error(
+          "Error in the client read loop: {}",
+          x.what());
+        _socket.close();
+      }
     });
 }
 
