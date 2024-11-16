@@ -45,6 +45,16 @@ public:
     ClientId clientId, const
     LobbyCommandRequestQuestList& requestQuestList);
 
+  //!
+  void HandleRequestSpecialEventList(
+    ClientId clientId, const
+    LobbyCommandRequestSpecialEventList& requestQuestList);
+
+  //!
+  void HandleEnterRanch(
+    ClientId clientId, const
+    LobbyCommandEnterRanch& requestEnterRanch);
+
 private:
   CommandServer& _lobbyServer;
 

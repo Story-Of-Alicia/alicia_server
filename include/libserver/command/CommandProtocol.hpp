@@ -107,6 +107,13 @@ enum class CommandId
   LobbyRequestQuestListOK = 0x03f9,
   LobbyRequestQuestListCancel = 0x03fa,
 
+  LobbyRequestSpecialEventList = 0x417,
+  LobbyRequestSpecialEventListOK = 0x418,
+
+  LobbyEnterRanch = 0xfc,
+  LobbyEnterRanchOK = 0xfd,
+  LobbyEnterRanchCancel = 0xfe,
+
   Count = 0xFFFF
 };
 
