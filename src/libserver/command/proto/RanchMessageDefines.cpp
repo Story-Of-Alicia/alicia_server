@@ -53,7 +53,15 @@ void WriteMountFamilyTreeItem(
     .Write(mountFamilyTreeItem.unk3);
 }
 
-void WriteRanchPlayer(SinkStream& buf, const RanchPlayer& ranchPlayer)
+void WriteRanchHorse(
+  SinkStream& buf, const RanchHorse& ranchHorse)
+{
+  buf.Write(ranchHorse.ranchIndex);
+  WriteHorse(buf, ranchHorse.horse);
+}
+
+void WriteRanchPlayer(
+  SinkStream& buf, const RanchPlayer& ranchPlayer)
 {
   buf.Write(ranchPlayer.id)
     .Write(ranchPlayer.name)
@@ -213,13 +221,13 @@ void RanchCommandEnterRanchOK::Write(
   buffer.Write(static_cast<uint8_t>(command.horses.size()));
   for (auto& horse : command.horses)
   {
-    buffer.Write(horse);
+    WriteRanchHorse(buffer, horse);
   }
 
   buffer.Write(static_cast<uint8_t>(command.players.size()));
   for (auto& player : command.players)
   {
-    buffer.Write(player);
+    WriteRanchPlayer(buffer, player);
   }
 
   buffer.Write(command.unk1)
@@ -240,7 +248,6 @@ void RanchCommandEnterRanchOK::Write(
     .Write(command.unk8)
     .Write(command.unk9);
 
-  // TODO: Figure out how to encode the length in unk7 bitset
   for (auto& unk : command.unk10)
   {
     buffer.Write(unk.horseTID)

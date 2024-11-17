@@ -224,8 +224,7 @@ struct RanchCommandEnterRanchOK
     uint32_t unk7{};
   };
   
-  // max length 3
-  std::vector<Unk10> unk10;
+  std::array<Unk10, 3> unk10;
 
   struct Unk11 {
     uint8_t unk0{};
