@@ -18,7 +18,11 @@
 **/
 
 #include "libserver/command/CommandServer.hpp"
+
+#include "../../../3rd-party/spdlog/include/spdlog/spdlog.h"
 #include "libserver/Util.hpp"
+
+#include <spdlog/spdlog.h>
 
 namespace alicia
 {
@@ -26,16 +30,29 @@ namespace alicia
 namespace
 {
 
-constexpr std::size_t MaxCommandSize = 2048;
+//! Max size of the command data.
+constexpr std::size_t MaxCommandDataSize = 4092;
 
-} // anon namespace
+//! Max size of the whole command payload.
+//! That is command data size + size of the message magic.
+constexpr std::size_t MaxCommandSize = MaxCommandDataSize + sizeof(MessageMagic);
 
+//! Performs XOR on all the specified bytes of the source stream and writes them to sink.
+//! After all the specified bytes are processed, resets both source and sink cursors to the origin position.
+//!
+//! @param key Xor Key
+//! @param source Source stream.
+//! @param sink Sink stream.
+//! @param size Size of the stream to process.
 void XorAlgorithm(
-  const std::array<std::byte, 4>& key,
+  const XorCode& key,
   SourceStream& source,
   SinkStream& sink,
   size_t size)
 {
+  const auto sourceOrigin = source.GetCursor();
+  const auto sinkOrigin = sink.GetCursor();
+
   for (std::size_t idx = 0; idx < size; idx++)
   {
     const auto shift = idx % 4;
@@ -47,7 +64,47 @@ void XorAlgorithm(
     // Xor it with the key.
     sink.Write(v ^ key[shift]);
   }
+
+  source.Seek(sourceOrigin);
+  sink.Seek(sinkOrigin);
 }
+
+void LogBytes(std::span<std::byte> data)
+{
+  char rowString[17];
+  memset(rowString, 0, 17);
+
+  int column = 0;
+  for (int i = 0; i < data.size(); ++i) {
+    column = i%16;
+
+    if(i > 0)
+    {
+      switch(column)
+      {
+        case 0:
+          printf("\t%s\n\t", rowString);
+        memset(rowString, 0, 17);
+        break;
+        case 8:
+          printf(" ");
+        break;
+      }
+    }
+
+    std::byte datum = data[i];
+    if(datum >= std::byte(32) && datum <= std::byte(126)) {
+      rowString[column] = (char)datum;
+    } else {
+      rowString[column] = '.';
+    }
+
+    printf(" %02X", datum);
+  }
+  printf("%*s\t%s\n\n", (16-column)*3, "", rowString);
+}
+
+} // anon namespace
 
 CommandClient::CommandClient()
 {
@@ -62,7 +119,7 @@ void CommandClient::ResetCode()
 
 void CommandClient::RollCode()
 {
-  auto rollingCode = *reinterpret_cast<uint32_t*>(
+  auto& rollingCode = *reinterpret_cast<uint32_t*>(
     _rollingCode.data());
   const auto xorMultiplier = *reinterpret_cast<const uint32_t*>(
     XorMultiplier.data());
@@ -86,7 +143,7 @@ CommandServer::CommandServer()
 
     // Set the read handler for the new client.
     client.SetReadHandler(
-      [this, clientId, &commandClient](asio::streambuf& readBuffer) -> bool
+      [this, clientId, &commandClient](asio::streambuf& readBuffer)
       {
         SourceStream commandStream({
           static_cast<const std::byte*>(readBuffer.data().data()),
@@ -106,7 +163,7 @@ CommandServer::CommandServer()
 
           // Consume the amount of bytes that were
           // read from the command stream.
-          readBuffer.consume(commandStream.GetCursor() + 1);
+          readBuffer.consume(commandStream.GetCursor());
         });
 
         // Read the message magic.
@@ -116,12 +173,68 @@ CommandServer::CommandServer()
         const MessageMagic magic = decode_message_magic(
           magicValue);
 
-        // Handle invalid magic.
-        if (magic.id > static_cast<uint16_t>(CommandId::Count)
+        // Command ID must be within the valid range.
+        if (magic.id > static_cast<uint16_t>(CommandId::Count))
+        {
+          throw std::runtime_error(
+            std::format(
+              "Invalid command magic: Bad command ID '{}'.",
+              magic.id).c_str());
+        }
+
+        // The provided payload length must be at least the size
+        // of the magic itself and smaller than the max command size.
+        if (magic.length < sizeof(MessageMagic)
           || magic.length > MaxCommandSize)
         {
-          printf(std::format("Unhandled message\n").c_str());
-          return true;
+          throw std::runtime_error(
+            std::format(
+              "Invalid command magic: Bad command data size '{}'.",
+              magic.length).c_str());
+        }
+
+        // Size of the data portion of the command.
+        const size_t commandDataSize = static_cast<size_t>(magic.length) - commandStream.GetCursor();
+
+        // If all the required command data are not buffered,
+        // wait for them to arrive.
+        if (commandDataSize > readBuffer.in_avail())
+        {
+          // Indicate that the bytes read until now
+          // shouldn't be consumed, as we expect more data to arrive.
+          consumeBytesOnExit = false;
+          return;
+        }
+
+        // Buffer for the command data.
+        // ToDo: Get rid of the command data buffer.
+        std::array<std::byte, MaxCommandDataSize> commandDataBuffer{};
+
+        // Read the command data.
+        commandStream.Read(
+          commandDataBuffer.data(), commandDataSize);
+
+        // Source stream of the command data.
+        SourceStream commandDataStream(
+          {commandDataBuffer.begin(), commandDataSize});
+
+        // Validate and process the command data.
+        if (commandDataSize > 0)
+        {
+          // Sink stream of the command data.
+          // Points to the same buffer.
+          SinkStream commandDataDecodedStream(
+            {commandDataBuffer.begin(), commandDataSize});
+
+          // Apply XOR algorithm to the data.
+          const auto& code = commandClient.GetRollingCode();
+          XorAlgorithm(
+            code,
+            commandDataStream,
+            commandDataDecodedStream,
+            commandDataSize);
+
+          commandClient.RollCode();
         }
 
         // Find the handler of the command.
@@ -129,64 +242,27 @@ CommandServer::CommandServer()
         const auto handlerIter = _handlers.find(commandId);
         if (handlerIter == _handlers.cend())
         {
-          printf(
-            std::format("Unhandled command '{}', ID: 0x{:x}, Length: {}\n",
-              GetCommandName(commandId),
-              magic.id,
-              magic.length).c_str());
-          return true;
+          spdlog::warn("Unhandled command '{}', ID: 0x{:x}, Length: {}",
+            GetCommandName(commandId),
+            magic.id,
+            magic.length);
+
+          LogBytes({commandDataBuffer.data(), commandDataSize});
+
+          return;
         }
+
+        spdlog::debug("Handled command '{}', ID: 0x{:x}, Length: {}",
+          GetCommandName(commandId),
+          magic.id,
+          magic.length);
 
         const auto& handler = handlerIter->second;
         // Handler validity is checked when registering.
         assert(handler);
 
-        // Size of the data portion of the command.
-        const size_t commandDataSize = static_cast<size_t>(magic.length) - commandStream.GetCursor();
-
-        // Buffer for the command data.
-        std::vector<std::byte> commandDataBuffer;
-        commandDataBuffer.resize(commandDataSize);
-
-        // Read the command data.
-        commandStream.Read(commandDataBuffer.data(), commandDataBuffer.size());
-
-        // Source stream of the command data.
-        SourceStream commandDataStream(
-          {commandDataBuffer.begin(), commandDataBuffer.end()});
-
-        // Validate and process the command data.
-        if (commandDataSize > 0)
-        {
-          // If all the required command data are not buffered,
-          // wait for them to arrive.
-          if (commandDataSize > readBuffer.in_avail())
-          {
-           // Indicate that the bytes read until now
-           // shouldn't be consumed, as we expect more data to arrive.
-           consumeBytesOnExit = false;
-           return false;
-          }
-
-          // Sink stream of the command data.
-          // Points to the same buffer.
-          SinkStream commandDataDecodedStream(
-            {commandDataBuffer.begin(), commandDataBuffer.end()});
-
-          const auto& code = commandClient.GetRollingCode();
-          XorAlgorithm(
-            code,
-            commandDataStream,
-            commandDataDecodedStream,
-            commandDataBuffer.size());
-
-          commandClient.RollCode();
-        }
-
         // Call the handler.
-        handler(clientId, commandStream);
-
-        return true;
+        handler(clientId, commandDataStream);
       });
   });
 }

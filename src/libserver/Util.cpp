@@ -21,13 +21,10 @@
 
 #define Int32x32To64(a, b)  ((uint16_t)(((uint64_t)((long)(a))) * ((long)(b))))
 
-namespace alicia
-{
-
 namespace
 {
 
-void WriteCString(const std::string& value, SinkStream& buffer)
+void WriteCString(const std::string& value, alicia::SinkStream& buffer)
 {
   for (char b : value)
   {
@@ -37,7 +34,7 @@ void WriteCString(const std::string& value, SinkStream& buffer)
   buffer.Write(static_cast<char>(0x00));
 }
 
-void ReadCString(std::string& value, SourceStream& buffer)
+void ReadCString(std::string& value, alicia::SourceStream& buffer)
 {
   value.reserve(512);
 
@@ -59,6 +56,9 @@ void ReadCString(std::string& value, SourceStream& buffer)
 }
 
 } // namespace anon
+
+namespace alicia
+{
 
 // Sources:
 //  https://learn.microsoft.com/en-us/windows/win32/api/winnt/nf-winnt-int32x32to64
@@ -91,7 +91,11 @@ void SinkStream::Write(const void* data, std::size_t size)
   if (_cursor + size > _storage.size())
   {
     throw std::overflow_error(
-      std::format("Couldn't write {} bytes to the buffer. Not enough space.", size));
+      std::format(
+        "Couldn't write {} bytes to the buffer (cursor: {}, available: {}). Not enough space.",
+        size,
+        _cursor,
+        _storage.size()));
   }
 
   // Write the bytes.
@@ -106,7 +110,11 @@ void SourceStream::Read(void* data, std::size_t size)
   if (_cursor + size > _storage.size())
   {
     throw std::overflow_error(
-      std::format("Couldn't read {} bytes from the buffer. Not enough space.", size));
+      std::format(
+        "Couldn't read {} bytes to the buffer (cursor: {}, available: {}). Not enough space.",
+        size,
+        _cursor,
+        _storage.size()));
   }
 
   // Read the bytes.

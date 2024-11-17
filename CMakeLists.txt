@@ -22,12 +22,11 @@ add_library(alicia-libserver STATIC
         src/libserver/command/CommandServer.cpp
         src/libserver/command/proto/LobbyMessageDefines.cpp
         src/libserver/command/proto/RanchMessageDefines.cpp
-        include/libserver/command/proto/DataDefines.hpp
-)
+        include/libserver/command/proto/DataDefines.hpp)
 target_include_directories(alicia-libserver
         PUBLIC include/)
 target_link_libraries(alicia-libserver
-        PUBLIC project-properties Boost::headers)
+        PUBLIC project-properties Boost::headers spdlog::spdlog)
 
 # Alicia server executable
 add_executable(alicia-server)
@@ -48,7 +47,7 @@ target_sources(alicia-server PRIVATE
         src/server/lobby/LobbyDirector.cpp
         src/server/ranch/RanchDirector.cpp)
 target_link_libraries(alicia-server
-        PRIVATE project-properties alicia-libserver spdlog::spdlog)
+        PRIVATE project-properties alicia-libserver)
 target_include_directories(alicia-server PUBLIC
         "${PROJECT_BINARY_DIR}/generated")
 
