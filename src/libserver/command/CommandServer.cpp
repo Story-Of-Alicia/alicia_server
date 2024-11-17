@@ -30,48 +30,22 @@ namespace alicia
 namespace
 {
 
+//! Max size of the command data.
 constexpr std::size_t MaxCommandDataSize = 4092;
+
+//! Max size of the whole command payload.
+//! That is command data size + size of the message magic.
 constexpr std::size_t MaxCommandSize = MaxCommandDataSize + sizeof(MessageMagic);
 
-} // anon namespace
-
-void LogBytes(std::byte* data, size_t size)
-{
-  char rowString[17];
-  memset(rowString, 0, 17);
-
-  int column = 0;
-  for (int i = 0; i < size; ++i) {
-    column = i%16;
-
-    if(i > 0)
-    {
-      switch(column)
-      {
-        case 0:
-          printf("\t%s\n\t", rowString);
-          memset(rowString, 0, 17);
-          break;
-        case 8:
-          printf(" ");
-          break;
-      }
-    }
-
-    std::byte datum = data[i];
-    if(datum >= std::byte(32) && datum <= std::byte(126)) {
-      rowString[column] = (char)datum;
-    } else {
-      rowString[column] = '.';
-    }
-
-    printf(" %02X", datum);
-  }
-  printf("%*s\t%s\n\n", (16-column)*3, "", rowString);
-}
-
+//! Performs XOR on all the specified bytes of the source stream and writes them to sink.
+//! After all the specified bytes are processed, resets both source and sink cursors to the origin position.
+//!
+//! @param key Xor Key
+//! @param source Source stream.
+//! @param sink Sink stream.
+//! @param size Size of the stream to process.
 void XorAlgorithm(
-  const std::array<std::byte, 4>& key,
+  const XorCode& key,
   SourceStream& source,
   SinkStream& sink,
   size_t size)
@@ -94,6 +68,43 @@ void XorAlgorithm(
   source.Seek(sourceOrigin);
   sink.Seek(sinkOrigin);
 }
+
+void LogBytes(std::span<std::byte> data)
+{
+  char rowString[17];
+  memset(rowString, 0, 17);
+
+  int column = 0;
+  for (int i = 0; i < data.size(); ++i) {
+    column = i%16;
+
+    if(i > 0)
+    {
+      switch(column)
+      {
+        case 0:
+          printf("\t%s\n\t", rowString);
+        memset(rowString, 0, 17);
+        break;
+        case 8:
+          printf(" ");
+        break;
+      }
+    }
+
+    std::byte datum = data[i];
+    if(datum >= std::byte(32) && datum <= std::byte(126)) {
+      rowString[column] = (char)datum;
+    } else {
+      rowString[column] = '.';
+    }
+
+    printf(" %02X", datum);
+  }
+  printf("%*s\t%s\n\n", (16-column)*3, "", rowString);
+}
+
+} // anon namespace
 
 CommandClient::CommandClient()
 {
@@ -235,7 +246,9 @@ CommandServer::CommandServer()
             GetCommandName(commandId),
             magic.id,
             magic.length);
-          LogBytes(commandDataBuffer.data(), commandDataSize);
+
+          LogBytes({commandDataBuffer.data(), commandDataSize});
+
           return;
         }
 
