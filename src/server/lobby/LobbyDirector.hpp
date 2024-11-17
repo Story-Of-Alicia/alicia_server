@@ -55,6 +55,11 @@ public:
     ClientId clientId, const
     LobbyCommandEnterRanch& requestEnterRanch);
 
+  //!
+  void HandleGetMessengerInfo(
+    ClientId clientId, const
+    LobbyCommandGetMessengerInfo& requestMessengerInfo);
+
 private:
   CommandServer& _lobbyServer;
 

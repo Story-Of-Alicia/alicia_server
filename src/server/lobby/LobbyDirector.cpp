@@ -355,4 +355,28 @@ void LoginDirector::HandleEnterRanch(
      });
 }
 
+void LoginDirector::HandleGetMessengerInfo(
+  ClientId clientId, 
+  const LobbyCommandGetMessengerInfo& getMessengerInfo)
+{
+  _lobbyServer.QueueCommand(
+    clientId, 
+    CommandId::LobbyGetMessengerInfoOK, 
+    [&](auto& sink)
+    {
+      // TODO: Move somewhere configurable
+      struct in_addr addr;
+      inet_pton(AF_INET, "127.0.0.1", &addr);
+      uint16_t port = 10032;
+
+      LobbyCommandGetMessengerInfoOK response{
+        .unk0 = 0, // TODO: Generate and store in the messenger server instance
+        .ip = (uint32_t) addr.s_addr,
+        .port = port
+      };
+      LobbyCommandGetMessengerInfoOK::Write(response, sink);
+    });
+}
+
+
 } // namespace alicia

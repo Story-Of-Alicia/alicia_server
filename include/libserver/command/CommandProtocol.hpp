@@ -108,6 +108,10 @@ enum class CommandId
   LobbyEnterRanchOK = 0xfd,
   LobbyEnterRanchCancel = 0xfe,
 
+  LobbyGetMessengerInfo = 0x186,
+  LobbyGetMessengerInfoOK = 0x187,
+  LobbyGetMessengerInfoCancel = 0x188,
+
   RanchEnterRanch = 0x12b,
   RanchEnterRanchCancel = 0x12d,
   RanchEnterRanchNotify = 0x12e,

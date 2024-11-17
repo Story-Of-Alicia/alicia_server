@@ -140,6 +140,14 @@ int main()
         g_loginDirector->HandleEnterRanch(clientId, enterRanch);
       });
 
+    lobbyServer.RegisterCommandHandler<alicia::LobbyCommandGetMessengerInfo>(
+      alicia::CommandId::LobbyGetMessengerInfo,
+      [](alicia::ClientId clientId, const auto& message)
+      {
+        g_loginDirector->HandleGetMessengerInfo(clientId, message);
+
+      });
+
     // Host
     lobbyServer.Host("127.0.0.1", 10030);
   });
@@ -161,6 +169,14 @@ int main()
       });
 
     ranchServer.Host("127.0.0.1", 10031);
+  });
+
+  // Messenger thread.
+  std::jthread messengerThread([]()
+  {
+    alicia::CommandServer messengerServer("Messenger");
+    // TODO: Messenger
+    messengerServer.Host("127.0.0.1", 10032);
   });
 
   return 0;
