@@ -47,7 +47,7 @@ int main()
   // Lobby thread.
   std::jthread lobbyThread([]()
   {
-    alicia::CommandServer lobbyServer;
+    alicia::CommandServer lobbyServer("Lobby");
     g_loginDirector = std::make_unique<alicia::LoginDirector>(lobbyServer);
 
     // Handlers
@@ -141,14 +141,13 @@ int main()
       });
 
     // Host
-    spdlog::debug("Lobby server hosted on 127.0.0.1:{}", 10030);
     lobbyServer.Host("127.0.0.1", 10030);
   });
 
   // Ranch thread.
   std::jthread ranchThread([]()
   {
-    alicia::CommandServer ranchServer;
+    alicia::CommandServer ranchServer("Ranch");
     g_ranchDirector = std::make_unique<alicia::RanchDirector>(ranchServer);
 
     ranchServer.RegisterCommandHandler(
@@ -161,7 +160,6 @@ int main()
         g_ranchDirector->HandleEnterRanch(clientId, enterRanch);
       });
 
-    spdlog::debug("Ranch server hosted on 127.0.0.1:{}", 10031);
     ranchServer.Host("127.0.0.1", 10031);
   });
 

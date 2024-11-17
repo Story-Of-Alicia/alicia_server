@@ -131,10 +131,12 @@ int32_t CommandClient::GetRollingCodeInt() const
   return *reinterpret_cast<const int32_t*>(_rollingCode.data());
 }
 
-CommandServer::CommandServer()
+CommandServer::CommandServer(std::string name)
 {
+  _name = name;
   _server.SetOnConnectHandler([&](ClientId clientId)
   {
+    spdlog::info("Client {} connected to {}", clientId, this->_name);
     auto& client = _server.GetClient(clientId);
     auto& commandClient = _clients[clientId];
 
@@ -304,6 +306,7 @@ void CommandServer::Host(
   uint16_t port)
 {
   _server.Host(interface, port);
+  spdlog::debug("{} server hosted on %s:%d", this->_name, interface, port);
 }
 
 void CommandServer::RegisterCommandHandler(
@@ -330,7 +333,7 @@ void CommandServer::QueueCommand(
 {
   // ToDo: Actual queue.
   _server.GetClient(client).QueueWrite(
-    [command, supplier = std::move(supplier)](asio::streambuf& writeBuffer)
+    [client, command, supplier = std::move(supplier)](asio::streambuf& writeBuffer)
     {
       const auto mutableBuffer = writeBuffer.prepare(MaxCommandSize);
       const auto writeBufferView = std::span(
@@ -360,6 +363,15 @@ void CommandServer::QueueCommand(
 
       commandSink.Write(encode_message_magic(magic));
       writeBuffer.commit(magic.length);
+
+      if(!IsMuted(command))
+      {
+        spdlog::debug("Sent to client {} command '{}' (0x{:X}), Data Size: {}",
+          client,
+          GetCommandName(command),
+          magic.id,
+          streamOrigin);
+      }
     });
 }
 

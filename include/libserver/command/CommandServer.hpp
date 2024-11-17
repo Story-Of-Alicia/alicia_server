@@ -55,7 +55,7 @@ class CommandServer
 {
 public:
   //! Default constructor;
-  CommandServer();
+  CommandServer(std::string name);
 
   //! Hosts the command server on the specified interface with the provided port.
   //! Runs the processing loop and blocks until exception or stopped.
@@ -99,6 +99,8 @@ public:
     CommandSupplier supplier);
 
 private:
+  std::string _name;
+
   std::unordered_map<CommandId, RawCommandHandler> _handlers{};
   std::unordered_map<ClientId, CommandClient> _clients{};
 
