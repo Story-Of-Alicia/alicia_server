@@ -78,6 +78,10 @@ size_t XorAlgorithm(
 
 void LogBytes(std::span<std::byte> data)
 {
+  if(data.size() == 0) {
+    return;
+  }
+
   char rowString[17];
   memset(rowString, 0, 17);
 
@@ -113,13 +117,9 @@ void LogBytes(std::span<std::byte> data)
 
 } // anon namespace
 
-CommandClient::CommandClient()
+void CommandClient::SetCode(XorCode code)
 {
-}
-
-void CommandClient::ResetCode()
-{
-  this->_rollingCode = {};
+  this->_rollingCode = code;
 }
 
 void CommandClient::RollCode()
@@ -305,9 +305,9 @@ void CommandServer::RegisterCommandHandler(
   _handlers[command] = std::move(handler);
 }
 
-void CommandServer::ResetCode(ClientId client)
+void CommandServer::SetCode(ClientId client, XorCode code)
 {
-  _clients[client].ResetCode();
+  _clients[client].SetCode(code);
 }
 
 void CommandServer::QueueCommand(

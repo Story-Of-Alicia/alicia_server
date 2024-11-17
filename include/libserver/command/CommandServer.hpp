@@ -39,9 +39,7 @@ using CommandSupplier = std::function<void(SinkStream&)>;
 class CommandClient
 {
 public:
-  CommandClient();
-
-  void ResetCode();
+  void SetCode(XorCode code);
   void RollCode();
 
   [[nodiscard]] const XorCode& GetRollingCode() const;
@@ -92,7 +90,7 @@ public:
       });
   }
 
-  void ResetCode(ClientId client);
+  void SetCode(ClientId client, XorCode code);
 
   //!
   void QueueCommand(
