@@ -52,6 +52,14 @@ LoginDirector::LoginDirector(CommandServer& lobbyServer) noexcept
     .tid = 0x4E21,
     .name = "andyoudontseemto"
   };
+  _users[2].horses[4] = {
+    .tid = 0x4E21,
+    .name = "test1"
+  };
+  _users[2].horses[5] = {
+    .tid = 0x4E21,
+    .name = "test2"
+  };
 }
 
 void LoginDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& login)
