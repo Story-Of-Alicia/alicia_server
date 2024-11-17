@@ -159,7 +159,8 @@ void LobbyCommandLogin::Read(
     .Read(command.constant1)
     .Read(command.loginId)
     .Read(command.memberNo)
-    .Read(command.authKey);
+    .Read(command.authKey)
+    .Read(command.val0);
 }
 
 void LobbyCommandLoginOK::Write(

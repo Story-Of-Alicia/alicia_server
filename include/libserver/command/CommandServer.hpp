@@ -30,7 +30,8 @@ namespace alicia
 {
 
 //! A command handler.
-using CommandHandler = std::function<void(ClientId, SourceStream&)>;
+using RawCommandHandler = std::function<void(ClientId, SourceStream&)>;
+
 //! A command supplier.
 using CommandSupplier = std::function<void(SinkStream&)>;
 
@@ -42,7 +43,9 @@ public:
 
   void ResetCode();
   void RollCode();
+
   [[nodiscard]] const XorCode& GetRollingCode() const;
+  [[nodiscard]] int32_t GetRollingCodeInt() const;
 
 private:
   std::queue<CommandSupplier> _commandQueue;
@@ -63,11 +66,31 @@ public:
   void Host(const std::string& interface, uint16_t port);
 
   //! Registers a command handler.
-  //! @param command Id of the command.
-  //! @param handler Handler of the command.
+  //!
+  //! @param commandId ID of the command to register the handler for.
+  //! @param handler Handler function.
   void RegisterCommandHandler(
-    CommandId command,
-    CommandHandler handler);
+    CommandId commandId,
+    RawCommandHandler handler);
+
+  //! Registers a command handler.
+  //!
+  //! @param commandId ID of the command to register the handler for.
+  //! @param handler Handler function.
+  template<typename T>
+  void RegisterCommandHandler(
+    CommandId commandId,
+    std::function<void(ClientId clientId, const T&)> handler)
+  {
+    RegisterCommandHandler(
+      commandId,
+      [=](ClientId clientId, SourceStream& source)
+      {
+        T command;
+        T::Read(command, source);
+        handler(clientId, command);
+      });
+  }
 
   void ResetCode(ClientId client);
 
@@ -78,7 +101,7 @@ public:
     CommandSupplier supplier);
 
 private:
-  std::unordered_map<CommandId, CommandHandler> _handlers{};
+  std::unordered_map<CommandId, RawCommandHandler> _handlers{};
   std::unordered_map<ClientId, CommandClient> _clients{};
 
   Server _server;

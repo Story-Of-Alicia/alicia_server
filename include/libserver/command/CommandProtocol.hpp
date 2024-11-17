@@ -39,19 +39,13 @@ using XorCode = std::array<std::byte, 4>;
 
 //! A constant 4-byte XOR control value,
 //! with which message bytes are XORed.
-constexpr XorCode XorControl{
-  static_cast<std::byte>(0xCB),
-  static_cast<std::byte>(0x91),
-  static_cast<std::byte>(0x01),
-  static_cast<std::byte>(0xA2),
+constexpr int32_t XorControl{
+  static_cast<int32_t>(0xA20191CB)
 };
 
 //! XOR rolling key algorithm constant
-constexpr XorCode XorMultiplier{
-  static_cast<std::byte>(0xDB),
-  static_cast<std::byte>(0xF7),
-  static_cast<std::byte>(0xF7),
-  static_cast<std::byte>(0xDF),
+constexpr int32_t XorMultiplier{
+  0x20080825
 };
 
 //! Message magic with which all messages are prefixed.

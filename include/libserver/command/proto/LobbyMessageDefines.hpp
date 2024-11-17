@@ -58,6 +58,7 @@ struct LobbyCommandLogin
   std::string loginId{};
   uint32_t memberNo{0x00};
   std::string authKey{};
+  uint8_t val0{};
 
   //! Writes the command to a provided sink buffer.
   //! @param command Command.
