@@ -71,8 +71,7 @@ struct WinFileTime {
 WinFileTime UnixTimeToFileTime(
   const std::chrono::system_clock::time_point& timePoint);
 
-template<typename StorageType>
-class StreamBase
+template <typename StorageType> class StreamBase
 {
 public:
   //! Storage type.
@@ -80,7 +79,11 @@ public:
 
   //! Default constructor.
   explicit StreamBase(Storage storage) noexcept
-    : _storage(storage) {};
+      : _storage(storage){};
+
+  //! Empty constructor.
+  explicit StreamBase(nullptr_t) noexcept
+      : _storage(){};
 
   //! Virtual destructor.
   virtual ~StreamBase() = default;
@@ -91,21 +94,19 @@ public:
   {
     if (cursor > _storage.size())
     {
-      throw std::overflow_error(
-        std::format(
-          "Couldn't seek to {}. Not enough space.",
-          cursor));
+      throw std::overflow_error(std::format("Couldn't seek to {}. Not enough space.", cursor));
     }
 
     _cursor = cursor;
   }
 
+  //! Gets the size of the underlying storage.
+  //! @returns Size fo the underlying storage.
+  [[nodiscard]] virtual std::size_t Size() const { return _storage.size(); }
+
   //! Gets the cursor of the storage.
   //! @returns Cursor position.
- [[nodiscard]] virtual std::size_t GetCursor() const
- {
-   return _cursor;
- }
+  [[nodiscard]] virtual std::size_t GetCursor() const { return _cursor; }
 
 protected:
   Storage _storage;
@@ -125,6 +126,8 @@ public:
   //!
   //! @param buffer Underlying storage buffer.
   explicit SinkStream(Storage buffer) noexcept;
+  //! Empty constructor
+  explicit SinkStream(nullptr_t) noexcept;
 
   //! Deleted copy constructor.
   SinkStream(const SinkStream&) = delete;
@@ -186,16 +189,19 @@ public:
   //!
   //! @param stream Source buffer.
   explicit SourceStream(Storage buffer);
+  //! Empty constructor
+  explicit SourceStream(nullptr_t);
+
+  //! Move constructor
+  SourceStream(SourceStream&& rhs) noexcept;
+  //! Move assignment.
+  SourceStream& operator=(SourceStream&&) noexcept;
 
   //! Deleted copy constructor.
   SourceStream(const SourceStream&) = delete;
   //! Deleted copy assignement.
   void operator=(const SourceStream&) = delete;
 
-  //! Deleted move constructor.
-  SourceStream(SourceStream&&) = delete;
-  //! Deleted move assignement.
-  void operator=(SourceStream&&) = delete;
 
   //! Read from the buffer storage.
   //! Fails if the operation can't be completed wholly.
@@ -234,17 +240,17 @@ template <typename T> struct StreamReader
 DECLARE_WRITER_READER(std::string)
 
 //!
-struct deferred
+struct Deferred
 {
   //! Function.
   using Fnc = std::function<void(void)>;
 
   //!
-  explicit deferred(Fnc func) noexcept
+  explicit Deferred(Fnc func) noexcept
     : _func(std::move(func)) {};
 
   //!
-  ~deferred()
+  ~Deferred()
   {
     _func();
   }

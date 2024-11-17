@@ -81,8 +81,26 @@ SourceStream::SourceStream(Storage buffer)
 {
 }
 
+SourceStream::SourceStream(nullptr_t)
+    : StreamBase(nullptr)
+{
+}
+
+SourceStream::SourceStream(SourceStream&& rhs) noexcept
+  : StreamBase(rhs._storage)
+{
+  _cursor = rhs._cursor;
+}
+
+SourceStream& SourceStream::operator=(SourceStream&& rhs) noexcept
+{
+  this->_cursor = rhs._cursor;
+  this->_storage = rhs._storage;
+  return *this;
+}
+
 SinkStream::SinkStream(Storage buffer) noexcept
-    : StreamBase(buffer)
+  : StreamBase(buffer)
 {
 }
 
