@@ -35,6 +35,41 @@ constexpr std::size_t MaxCommandSize = MaxCommandDataSize + sizeof(MessageMagic)
 
 } // anon namespace
 
+void LogBytes(std::byte* data, size_t size)
+{
+  char rowString[17];
+  memset(rowString, 0, 17);
+
+  int column = 0;
+  for (int i = 0; i < size; ++i) {
+    column = i%16;
+
+    if(i > 0)
+    {
+      switch(column)
+      {
+        case 0:
+          printf("\t%s\n\t", rowString);
+          memset(rowString, 0, 17);
+          break;
+        case 8:
+          printf(" ");
+          break;
+      }
+    }
+
+    std::byte datum = data[i];
+    if(datum >= std::byte(32) && datum <= std::byte(126)) {
+      rowString[column] = (char)datum;
+    } else {
+      rowString[column] = '.';
+    }
+
+    printf(" %02X", datum);
+  }
+  printf("%*s\t%s\n\n", (16-column)*3, "", rowString);
+}
+
 void XorAlgorithm(
   const std::array<std::byte, 4>& key,
   SourceStream& source,
@@ -200,6 +235,7 @@ CommandServer::CommandServer()
             GetCommandName(commandId),
             magic.id,
             magic.length);
+          LogBytes(commandDataBuffer.data(), commandDataSize);
           return;
         }
 
