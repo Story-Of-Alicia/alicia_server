@@ -129,15 +129,15 @@ public:
   //! Empty constructor
   explicit SinkStream(nullptr_t) noexcept;
 
+  //! Move constructor.
+  SinkStream(SinkStream&&) noexcept;
+  //! Move assignment.
+  SinkStream& operator=(SinkStream&&) noexcept;
+
   //! Deleted copy constructor.
   SinkStream(const SinkStream&) = delete;
   //! Deleted copy assignment.
   void operator=(const SinkStream&) = delete;
-
-  //! Deleted move constructor.
-  SinkStream(SinkStream&&) = delete;
-  //! Deleted move assignment.
-  void operator=(SinkStream&&) = delete;
 
   //! Writes to the buffer storage.
   //! Fails if the operation can't be completed wholly.
