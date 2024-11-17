@@ -81,9 +81,45 @@ SourceStream::SourceStream(Storage buffer)
 {
 }
 
-SinkStream::SinkStream(Storage buffer) noexcept
-    : StreamBase(buffer)
+SourceStream::SourceStream(nullptr_t)
+  : StreamBase(nullptr)
 {
+}
+
+SourceStream::SourceStream(SourceStream&& rhs) noexcept
+  : StreamBase(rhs._storage)
+{
+  _cursor = rhs._cursor;
+}
+
+SourceStream& SourceStream::operator=(SourceStream&& rhs) noexcept
+{
+  this->_cursor = rhs._cursor;
+  this->_storage = rhs._storage;
+  return *this;
+}
+
+SinkStream::SinkStream(Storage buffer) noexcept
+  : StreamBase(buffer)
+{
+}
+
+SinkStream::SinkStream(nullptr_t) noexcept
+    : StreamBase(nullptr)
+{
+}
+
+SinkStream::SinkStream(SinkStream&& rhs) noexcept
+    : StreamBase(rhs._storage)
+{
+  _cursor = rhs._cursor;
+}
+
+SinkStream& SinkStream::operator=(SinkStream&& rhs) noexcept
+{
+  this->_cursor = rhs._cursor;
+  this->_storage = rhs._storage;
+  return *this;
 }
 
 void SinkStream::Write(const void* data, std::size_t size)

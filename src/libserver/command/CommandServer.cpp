@@ -35,31 +35,20 @@ constexpr std::size_t MaxCommandDataSize = 4092;
 //! That is command data size + size of the message magic.
 constexpr std::size_t MaxCommandSize = MaxCommandDataSize + sizeof(MessageMagic);
 
-//! Performs XOR on all the specified bytes of the source stream and writes them to sink.
-//! After all the specified bytes are processed, resets both source and sink cursors to the origin position.
+//! Reads every specified byte of the source stream,
+//! performs XOR operation on that byte with the specified sliding key
+//! and writes the result to the sink stream.
 //!
 //! @param key Xor Key
 //! @param source Source stream.
 //! @param sink Sink stream.
-//! @param size Size of the stream to process.
-size_t XorAlgorithm(
+void XorAlgorithm(
   const XorCode& key,
   SourceStream& source,
-  SinkStream& sink,
-  size_t size,
-  size_t actualDataSize)
+  SinkStream& sink)
 {
-  const auto sourceOrigin = source.GetCursor();
-  const auto sinkOrigin = sink.GetCursor();
-
-  for (std::size_t idx = 0; idx < size; idx++)
+  for (std::size_t idx = 0; idx < source.Size(); idx++)
   {
-    if (idx >= actualDataSize)
-    {
-      sink.Write(0x00);
-      continue;
-    }
-
     const auto shift = idx % 4;
 
     // Read a byte.
@@ -69,11 +58,6 @@ size_t XorAlgorithm(
     // Xor it with the key.
     sink.Write(v ^ key[shift]);
   }
-
-  source.Seek(sourceOrigin);
-  sink.Seek(sinkOrigin);
-
-  return actualDataSize;
 }
 
 void LogBytes(std::span<std::byte> data)
@@ -131,7 +115,10 @@ void CommandClient::RollCode()
   rollingCode = XorControl - rollingCode;
 }
 
-const XorCode& CommandClient::GetRollingCode() const { return _rollingCode; }
+const XorCode& CommandClient::GetRollingCode() const
+{
+  return _rollingCode;
+}
 
 int32_t CommandClient::GetRollingCodeInt() const
 {
@@ -160,7 +147,7 @@ CommandServer::CommandServer()
 
         // Defer the consumption of the bytes from the read buffer,
         // until the end of the function.
-        const deferred deferredConsume([&]()
+        const Deferred deferredConsume([&]()
         {
           if (!consumeBytesOnExit)
             return;
@@ -218,16 +205,13 @@ CommandServer::CommandServer()
           magic.length);
 
         // Buffer for the command data.
-        // ToDo: Get rid of the command data buffer.
         std::array<std::byte, MaxCommandDataSize> commandDataBuffer{};
 
         // Read the command data.
         commandStream.Read(
           commandDataBuffer.data(), commandDataSize);
 
-        // Source stream of the command data.
-        SourceStream commandDataStream(
-          {commandDataBuffer.begin(), commandDataSize});
+        SourceStream commandDataStream(nullptr);
 
         // Validate and process the command data.
         if (commandDataSize > 0)
@@ -235,9 +219,11 @@ CommandServer::CommandServer()
           commandClient.RollCode();
 
           const uint32_t code = commandClient.GetRollingCodeInt();
+
+          // Extract the padding from the code.
           const auto padding = code & 7;
           const auto actualCommandDataSize = commandDataSize - padding;
-
+          
           spdlog::debug("Data for command '{}' (0x{:X}), Code: {:#X}, Data Size: {} (padding: {}), Actual Data Size: {}",
             GetCommandName(commandId),
             magic.id,
@@ -246,18 +232,22 @@ CommandServer::CommandServer()
             padding,
             actualCommandDataSize);
 
+          // Source stream of the command data.
+          SourceStream dataSourceStream(
+            {commandDataBuffer.begin(), commandDataSize});
           // Sink stream of the command data.
-          // Points to the same buffer.
-          SinkStream commandDataDecodedStream(
-            {commandDataBuffer.begin(), MaxCommandDataSize});
+          // Correctly points to the same buffer.
+          SinkStream dataSinkStream(
+            {commandDataBuffer.begin(), commandDataBuffer.end()});
 
           // Apply XOR algorithm to the data.
           XorAlgorithm(
             commandClient.GetRollingCode(),
-            commandDataStream,
-            commandDataDecodedStream,
-            commandDataSize,
-            actualCommandDataSize);
+            dataSourceStream,
+            dataSinkStream);
+
+          commandDataStream = std::move(SourceStream(
+            {commandDataBuffer.begin(), actualCommandDataSize}));
         }
 
         // Find the handler of the command.
@@ -277,9 +267,10 @@ CommandServer::CommandServer()
         const auto& handler = handlerIter->second;
         // Handler validity is checked when registering.
         assert(handler);
-
-        // Call the handler.
         handler(clientId, commandDataStream);
+
+        // There shouldn't be any left-over data in the stream.
+        assert(commandDataStream.GetCursor() == commandDataStream.Size());
 
         spdlog::debug("Handled command '{}' (0x{:X})", GetCommandName(commandId), magic.id);
       });
