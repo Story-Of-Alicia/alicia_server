@@ -52,15 +52,24 @@ const std::unordered_map<CommandId, std::string_view> commands = {
   {CommandId::LobbyRequestDailyQuestListOK, "RequestDailyQuestListOK"},
   {CommandId::LobbyRequestDailyQuestListCancel, "RequestDailyQuestListCancel"},
 
+  // RequestLeagueInfo
+  {CommandId::LobbyRequestLeagueInfo, "LobbyRequestLeagueInfo"},
+  {CommandId::LobbyRequestLeagueInfoOK, "LobbyRequestLeagueInfoOK"},
+  {CommandId::LobbyRequestLeagueInfoCancel, "LobbyRequestLeagueInfoCancel"},
+
   // RequestQuestList
   {CommandId::LobbyRequestQuestList, "RequestQuestList"},
   {CommandId::LobbyRequestQuestListOK, "RequestQuestListOK"},
   {CommandId::LobbyRequestQuestListCancel, "RequestQuestListCancel"},
 
-  // RequestLeagueInfo
-  {CommandId::LobbyRequestLeagueInfo, "LobbyRequestLeagueInfo"},
-  {CommandId::LobbyRequestLeagueInfoOK, "LobbyRequestLeagueInfoOK"},
-  {CommandId::LobbyRequestLeagueInfoCancel, "LobbyRequestLeagueInfoCancel"},
+  // RequestSpecialEventList
+  {CommandId::LobbyRequestSpecialEventList, "LobbyRequestSpecialEventList"},
+  {CommandId::LobbyRequestSpecialEventListOK, "LobbyRequestSpecialEventListOK"},
+
+  // EnterRanch
+  {CommandId::LobbyEnterRanch, "LobbyEnterRanch"},
+  {CommandId::LobbyEnterRanchOK, "LobbyEnterRanchOK"},
+  {CommandId::LobbyEnterRanchCancel, "LobbyEnterRanchCancel"},
 };
 
 } // namespace anon

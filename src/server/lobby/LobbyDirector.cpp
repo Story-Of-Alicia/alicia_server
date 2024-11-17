@@ -2,12 +2,16 @@
 // Created by rgnter on 10/11/2024.
 //
 
+#include <random>
+
 #include "LobbyDirector.hpp"
 
 #include "spdlog/spdlog.h"
 
 namespace  alicia
 {
+
+std::random_device rd;
 
 LoginDirector::LoginDirector(CommandServer& lobbyServer) noexcept
     : _lobbyServer(lobbyServer)
@@ -95,15 +99,16 @@ void LoginDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
   // Login succeeded, assign the active user to client.
   _clients[clientId] = userId;
 
-  // Reset XOR scrambler
-  // TODO: Verify whether it gets reset to 0 or if it gets
-  // set to some value we're sending in the OK response.
-  _lobbyServer.ResetCode(clientId);
+  // Set XOR scrambler code
+  uint32_t scramblingConstant = rd(); // TODO: Use something more secure
+  XorCode code;
+  *((uint32_t*) code.data()) = scramblingConstant;
+  _lobbyServer.SetCode(clientId, code);
 
   _lobbyServer.QueueCommand(
     clientId,
     CommandId::LobbyLoginOK,
-    [&user, userId](SinkStream& sink)
+    [&user, userId, scramblingConstant](SinkStream& sink)
     {
       const WinFileTime time = UnixTimeToFileTime(std::chrono::system_clock::now());
 
@@ -146,7 +151,7 @@ void LoginDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
         .address = 2130706433, // 127.0.0.1
         .port = 10031,         // 10031
 
-        .scramblingConstant = 0,
+        .scramblingConstant = scramblingConstant,
 
         .character =
           {

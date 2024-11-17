@@ -52,16 +52,12 @@ int main()
 
     // Handlers
 
-    // Login handler
-    lobbyServer.RegisterCommandHandler(
+    //! Login handler
+    lobbyServer.RegisterCommandHandler<alicia::LobbyCommandLogin>(
       alicia::CommandId::LobbyLogin,
-      [](alicia::ClientId clientId, auto& buffer)
+      [](alicia::ClientId clientId, const auto& message)
       {
-        alicia::LobbyCommandLogin loginCommand;
-        alicia::LobbyCommandLogin::Read(
-          loginCommand, buffer);
-
-        g_loginDirector->HandleUserLogin(clientId, loginCommand);
+        g_loginDirector->HandleUserLogin(clientId, message);
       });
 
     // Heartbeat handler

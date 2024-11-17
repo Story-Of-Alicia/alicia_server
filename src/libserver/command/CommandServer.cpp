@@ -18,8 +18,6 @@
 **/
 
 #include "libserver/command/CommandServer.hpp"
-
-#include "../../../3rd-party/spdlog/include/spdlog/spdlog.h"
 #include "libserver/Util.hpp"
 
 #include <spdlog/spdlog.h>
@@ -44,17 +42,24 @@ constexpr std::size_t MaxCommandSize = MaxCommandDataSize + sizeof(MessageMagic)
 //! @param source Source stream.
 //! @param sink Sink stream.
 //! @param size Size of the stream to process.
-void XorAlgorithm(
+size_t XorAlgorithm(
   const XorCode& key,
   SourceStream& source,
   SinkStream& sink,
-  size_t size)
+  size_t size,
+  size_t actualDataSize)
 {
   const auto sourceOrigin = source.GetCursor();
   const auto sinkOrigin = sink.GetCursor();
 
   for (std::size_t idx = 0; idx < size; idx++)
   {
+    if (idx >= actualDataSize)
+    {
+      sink.Write(0x00);
+      continue;
+    }
+
     const auto shift = idx % 4;
 
     // Read a byte.
@@ -67,10 +72,16 @@ void XorAlgorithm(
 
   source.Seek(sourceOrigin);
   sink.Seek(sinkOrigin);
+
+  return actualDataSize;
 }
 
 void LogBytes(std::span<std::byte> data)
 {
+  if(data.size() == 0) {
+    return;
+  }
+
   char rowString[17];
   memset(rowString, 0, 17);
 
@@ -106,32 +117,25 @@ void LogBytes(std::span<std::byte> data)
 
 } // anon namespace
 
-CommandClient::CommandClient()
+void CommandClient::SetCode(XorCode code)
 {
-  // Initial roll for the XOR scrambler
-  this->RollCode();
-}
-
-void CommandClient::ResetCode()
-{
-  this->_rollingCode = {};
+  this->_rollingCode = code;
 }
 
 void CommandClient::RollCode()
 {
-  auto& rollingCode = *reinterpret_cast<uint32_t*>(
+  auto& rollingCode = *reinterpret_cast<int32_t*>(
     _rollingCode.data());
-  const auto xorMultiplier = *reinterpret_cast<const uint32_t*>(
-    XorMultiplier.data());
-  const auto xorControl = *reinterpret_cast<const uint32_t*>(
-    XorControl.data());
 
-  rollingCode = rollingCode * xorMultiplier + xorControl;
+  rollingCode = rollingCode * XorMultiplier;
+  rollingCode = XorControl - rollingCode;
 }
 
-const XorCode& CommandClient::GetRollingCode() const
+const XorCode& CommandClient::GetRollingCode() const { return _rollingCode; }
+
+int32_t CommandClient::GetRollingCodeInt() const
 {
-  return _rollingCode;
+  return *reinterpret_cast<const int32_t*>(_rollingCode.data());
 }
 
 CommandServer::CommandServer()
@@ -182,6 +186,8 @@ CommandServer::CommandServer()
               magic.id).c_str());
         }
 
+        const auto commandId = static_cast<CommandId>(magic.id);
+
         // The provided payload length must be at least the size
         // of the magic itself and smaller than the max command size.
         if (magic.length < sizeof(MessageMagic)
@@ -206,6 +212,11 @@ CommandServer::CommandServer()
           return;
         }
 
+        spdlog::debug("Received command '{}', ID: 0x{:x}, Length: {},",
+          GetCommandName(commandId),
+          magic.id,
+          magic.length);
+
         // Buffer for the command data.
         // ToDo: Get rid of the command data buffer.
         std::array<std::byte, MaxCommandDataSize> commandDataBuffer{};
@@ -221,24 +232,35 @@ CommandServer::CommandServer()
         // Validate and process the command data.
         if (commandDataSize > 0)
         {
+          commandClient.RollCode();
+
+          const uint32_t code = commandClient.GetRollingCodeInt();
+          const auto padding = code & 7;
+          const auto actualCommandDataSize = commandDataSize - padding;
+
+          spdlog::debug("Data for command '{}' (0x{:X}), Code: {:#X}, Data Size: {} (padding: {}), Actual Data Size: {}",
+            GetCommandName(commandId),
+            magic.id,
+            code,
+            commandDataSize,
+            padding,
+            actualCommandDataSize);
+
           // Sink stream of the command data.
           // Points to the same buffer.
           SinkStream commandDataDecodedStream(
-            {commandDataBuffer.begin(), commandDataSize});
+            {commandDataBuffer.begin(), MaxCommandDataSize});
 
           // Apply XOR algorithm to the data.
-          const auto& code = commandClient.GetRollingCode();
           XorAlgorithm(
-            code,
+            commandClient.GetRollingCode(),
             commandDataStream,
             commandDataDecodedStream,
-            commandDataSize);
-
-          commandClient.RollCode();
+            commandDataSize,
+            actualCommandDataSize);
         }
 
         // Find the handler of the command.
-        const auto commandId = static_cast<CommandId>(magic.id);
         const auto handlerIter = _handlers.find(commandId);
         if (handlerIter == _handlers.cend())
         {
@@ -252,17 +274,14 @@ CommandServer::CommandServer()
           return;
         }
 
-        spdlog::debug("Handled command '{}', ID: 0x{:x}, Length: {}",
-          GetCommandName(commandId),
-          magic.id,
-          magic.length);
-
         const auto& handler = handlerIter->second;
         // Handler validity is checked when registering.
         assert(handler);
 
         // Call the handler.
         handler(clientId, commandDataStream);
+
+        spdlog::debug("Handled command '{}' (0x{:X})", GetCommandName(commandId), magic.id);
       });
   });
 }
@@ -276,7 +295,7 @@ void CommandServer::Host(
 
 void CommandServer::RegisterCommandHandler(
   CommandId command,
-  CommandHandler handler)
+  RawCommandHandler handler)
 {
   if (!handler)
   {
@@ -286,9 +305,9 @@ void CommandServer::RegisterCommandHandler(
   _handlers[command] = std::move(handler);
 }
 
-void CommandServer::ResetCode(ClientId client)
+void CommandServer::SetCode(ClientId client, XorCode code)
 {
-  _clients[client].ResetCode();
+  _clients[client].SetCode(code);
 }
 
 void CommandServer::QueueCommand(
