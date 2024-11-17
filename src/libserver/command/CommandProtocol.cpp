@@ -43,9 +43,9 @@ const std::unordered_map<CommandId, std::string_view> commands = {
   {CommandId::LobbyShowInventoryCancel, "LobbyShowInventoryCancel"},
 
   // Inventory
-  {CommandId::LobbyAchievementCompleteList, "AchievementCompleteList"},
-  {CommandId::LobbyAchievementCompleteListOK, "AchievementCompleteListOK"},
-  {CommandId::LobbyAchievementCompleteListCancel, "AchievementCompleteListCancel"},
+  {CommandId::LobbyAchievementCompleteList, "LobbyAchievementCompleteList"},
+  {CommandId::LobbyAchievementCompleteListOK, "LobbyAchievementCompleteListOK"},
+  {CommandId::LobbyAchievementCompleteListCancel, "LobbyAchievementCompleteListCancel"},
 
   // RequestDailyQuestList
   {CommandId::LobbyRequestDailyQuestList, "RequestDailyQuestList"},
@@ -58,9 +58,9 @@ const std::unordered_map<CommandId, std::string_view> commands = {
   {CommandId::LobbyRequestLeagueInfoCancel, "LobbyRequestLeagueInfoCancel"},
 
   // RequestQuestList
-  {CommandId::LobbyRequestQuestList, "RequestQuestList"},
-  {CommandId::LobbyRequestQuestListOK, "RequestQuestListOK"},
-  {CommandId::LobbyRequestQuestListCancel, "RequestQuestListCancel"},
+  {CommandId::LobbyRequestQuestList, "LobbyRequestQuestList"},
+  {CommandId::LobbyRequestQuestListOK, "LobbyRequestQuestListOK"},
+  {CommandId::LobbyRequestQuestListCancel, "LobbyRequestQuestListCancel"},
 
   // RequestSpecialEventList
   {CommandId::LobbyRequestSpecialEventList, "LobbyRequestSpecialEventList"},
@@ -70,6 +70,8 @@ const std::unordered_map<CommandId, std::string_view> commands = {
   {CommandId::LobbyEnterRanch, "LobbyEnterRanch"},
   {CommandId::LobbyEnterRanchOK, "LobbyEnterRanchOK"},
   {CommandId::LobbyEnterRanchCancel, "LobbyEnterRanchCancel"},
+
+  {CommandId::RanchHeartbeat, "RanchHeartbeat"},
 };
 
 } // namespace anon

@@ -113,6 +113,8 @@ enum class CommandId
   RanchEnterRanchNotify = 0x12e,
   RanchEnterRanchOK = 0x12c,
 
+  RanchHeartbeat = 0x9e,
+
   Count = 0xFFFF
 };
 

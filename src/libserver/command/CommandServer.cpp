@@ -60,6 +60,12 @@ void XorAlgorithm(
   }
 }
 
+bool IsMuted(CommandId id)
+{
+  return id == CommandId::LobbyHeartbeat
+      || id == CommandId::RanchHeartbeat;
+}
+
 void LogBytes(std::span<std::byte> data)
 {
   if(data.size() == 0) {
@@ -78,7 +84,7 @@ void LogBytes(std::span<std::byte> data)
       switch(column)
       {
         case 0:
-          printf("\t%s\n\t", rowString);
+          printf("\t%s\n", rowString);
         memset(rowString, 0, 17);
         break;
         case 8:
@@ -199,10 +205,13 @@ CommandServer::CommandServer()
           return;
         }
 
-        spdlog::debug("Received command '{}', ID: 0x{:x}, Length: {},",
-          GetCommandName(commandId),
-          magic.id,
-          magic.length);
+        if(!IsMuted(commandId))
+        {
+          spdlog::debug("Received command '{}', ID: 0x{:x}, Length: {},",
+            GetCommandName(commandId),
+            magic.id,
+            magic.length);
+        }
 
         // Buffer for the command data.
         std::array<std::byte, MaxCommandDataSize> commandDataBuffer{};
@@ -223,14 +232,18 @@ CommandServer::CommandServer()
           // Extract the padding from the code.
           const auto padding = code & 7;
           const auto actualCommandDataSize = commandDataSize - padding;
-          
-          spdlog::debug("Data for command '{}' (0x{:X}), Code: {:#X}, Data Size: {} (padding: {}), Actual Data Size: {}",
-            GetCommandName(commandId),
-            magic.id,
-            code,
-            commandDataSize,
-            padding,
-            actualCommandDataSize);
+
+          if(!IsMuted(commandId))
+          {
+            spdlog::debug("Data for command '{}' (0x{:X}), Code: {:#X}, Data Size: {} (padding: {}), Actual Data Size: {}",
+              GetCommandName(commandId),
+              magic.id,
+              code,
+              commandDataSize,
+              padding,
+              actualCommandDataSize);
+            LogBytes({commandDataBuffer.data(), commandDataSize});
+          }
 
           // Source stream of the command data.
           SourceStream dataSourceStream(
@@ -254,25 +267,34 @@ CommandServer::CommandServer()
         const auto handlerIter = _handlers.find(commandId);
         if (handlerIter == _handlers.cend())
         {
-          spdlog::warn("Unhandled command '{}', ID: 0x{:x}, Length: {}",
-            GetCommandName(commandId),
-            magic.id,
-            magic.length);
-
-          LogBytes({commandDataBuffer.data(), commandDataSize});
-
-          return;
+          if(!IsMuted(commandId))
+          {
+            spdlog::warn("Unhandled command '{}', ID: 0x{:x}, Length: {}",
+              GetCommandName(commandId),
+              magic.id,
+              magic.length);
+          }
         }
+        else
+        {
+          const auto& handler = handlerIter->second;
+          // Handler validity is checked when registering.
+          assert(handler);
 
-        const auto& handler = handlerIter->second;
-        // Handler validity is checked when registering.
-        assert(handler);
-        handler(clientId, commandDataStream);
+          // Call the handler.
+          handler(clientId, commandDataStream);
+        
+          // There shouldn't be any left-over data in the stream.
+          assert(commandDataStream.GetCursor() == commandDataStream.Size());
 
-        // There shouldn't be any left-over data in the stream.
-        assert(commandDataStream.GetCursor() == commandDataStream.Size());
-
-        spdlog::debug("Handled command '{}' (0x{:X})", GetCommandName(commandId), magic.id);
+          if(!IsMuted(commandId))
+          {
+            spdlog::debug("Handled command '{}', ID: 0x{:x}, Length: {}",
+                GetCommandName(commandId),
+                magic.id,
+                magic.length);
+          }
+        }
       });
   });
 }
