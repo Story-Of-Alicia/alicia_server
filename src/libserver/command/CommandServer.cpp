@@ -223,7 +223,7 @@ CommandServer::CommandServer()
           // Extract the padding from the code.
           const auto padding = code & 7;
           const auto actualCommandDataSize = commandDataSize - padding;
-
+          
           spdlog::debug("Data for command '{}' (0x{:X}), Code: {:#X}, Data Size: {} (padding: {}), Actual Data Size: {}",
             GetCommandName(commandId),
             magic.id,

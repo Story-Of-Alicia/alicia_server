@@ -71,7 +71,8 @@ struct WinFileTime {
 WinFileTime UnixTimeToFileTime(
   const std::chrono::system_clock::time_point& timePoint);
 
-template <typename StorageType> class StreamBase
+template <typename StorageType>
+class StreamBase
 {
 public:
   //! Storage type.
@@ -239,23 +240,30 @@ template <typename T> struct StreamReader
 
 DECLARE_WRITER_READER(std::string)
 
-//!
-struct Deferred
+//! Performs deferred call on destruction.
+struct Deferred final
 {
   //! Function.
   using Fnc = std::function<void(void)>;
 
-  //!
+  //! Construct deferred call that invokes
+  //! the provided function on destruction of this object.
   explicit Deferred(Fnc func) noexcept
     : _func(std::move(func)) {};
 
-  //!
+  //! Deleted copy constructor.
+  Deferred(const Deferred&) noexcept = delete;
+  //! Deleted move constructor.
+  Deferred(Deferred&&) noexcept = delete;
+
+  //! Destructor.
   ~Deferred()
   {
     _func();
   }
 
 private:
+  //! A function to invoke on destruction.
   Fnc _func;
 };
 
