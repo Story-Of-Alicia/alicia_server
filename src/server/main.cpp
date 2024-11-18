@@ -49,8 +49,11 @@ int main()
     g_loginDirector = std::make_unique<alicia::LoginDirector>(lobbyServer);
 
     // Handlers
+<<<<<<< HEAD
 
     // Login handler
+=======
+>>>>>>> parent of d81bd53 (show inventory impl)
     lobbyServer.RegisterCommandHandler(
       alicia::CommandId::LobbyLogin,
       [](alicia::ClientId clientId, auto& buffer)
@@ -62,6 +65,7 @@ int main()
         g_loginDirector->HandleUserLogin(clientId, loginCommand);
       });
 
+<<<<<<< HEAD
     // Heartbeat handler
     lobbyServer.RegisterCommandHandler(
       alicia::CommandId::LobbyHeartbeat,
@@ -121,6 +125,8 @@ int main()
         g_loginDirector->HandleRequestQuestList(clientId, requestDailyQuestList);
       });
 
+=======
+>>>>>>> parent of d81bd53 (show inventory impl)
     // Host
     spdlog::debug("Lobby server hosted on 127.0.0.1:{}", 10030);
     lobbyServer.Host("127.0.0.1", 10030);

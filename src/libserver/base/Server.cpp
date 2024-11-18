@@ -37,16 +37,11 @@ void Client::QueueWrite(WriteSupplier writeSupplier)
     return;
   }
 
-  // ToDo: Consider frame-based write loop instead of real-time writes.
-  std::scoped_lock writeLock(_writeMutex);
-  // Call the supplier.
-  writeSupplier(_writeBuffer);
-
   // Send the whole buffer.
   asio::async_write(
     _socket,
     _writeBuffer.data(),
-    [&](
+    [&, writeSupplier = std::move(writeSupplier)](
       boost::system::error_code error, std::size_t size)
     {
       if (error)
@@ -55,6 +50,11 @@ void Client::QueueWrite(WriteSupplier writeSupplier)
         return;
       }
 
+      // ToDo: Consider frame-based write loop instead of real-time writes.
+      std::scoped_lock writeLock(_writeMutex);
+
+      // Call the supplier.
+      writeSupplier(_writeBuffer);
       // Consume the sent bytes.
       // Remove them from the input sequence.
       _writeBuffer.consume(size);

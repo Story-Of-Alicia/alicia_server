@@ -4,8 +4,6 @@
 
 #include "LobbyDirector.hpp"
 
-#include "spdlog/spdlog.h"
-
 namespace  alicia
 {
 
@@ -72,9 +70,13 @@ void LoginDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
     CommandId::LobbyLoginOK,
     [&user, userId](SinkStream& sink)
     {
+<<<<<<< HEAD:src/server/LobbyDirector.cpp
       const WinFileTime time = UnixTimeToFileTime(std::chrono::system_clock::now());
+=======
+      const alicia::WinFileTime time = alicia::UnixTimeToFileTime(std::chrono::system_clock::now());
+>>>>>>> parent of d81bd53 (show inventory impl):src/server/lobby/LobbyDirector.cpp
 
-      const LobbyCommandLoginOK command{
+      const alicia::LobbyCommandLoginOK command{
         .lobbyTime =
           {.dwLowDateTime = static_cast<uint32_t>(time.dwLowDateTime),
            .dwHighDateTime = static_cast<uint32_t>(time.dwHighDateTime)},
@@ -169,6 +171,7 @@ void LoginDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
     });
 }
 
+<<<<<<< HEAD:src/server/LobbyDirector.cpp
 void LoginDirector::HandleHeartbeat(
   ClientId clientId,
   const LobbyCommandHeartbeat& heartbeat)
@@ -268,4 +271,6 @@ void LoginDirector::HandleRequestQuestList(
     });
 }
 
+=======
+>>>>>>> parent of d81bd53 (show inventory impl):src/server/lobby/LobbyDirector.cpp
 } // namespace alicia

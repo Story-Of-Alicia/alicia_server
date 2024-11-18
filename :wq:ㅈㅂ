@@ -1,0 +1,32 @@
+Revert "bit of refactoring"
+
+This reverts commit bf0d696f5b83f88b356361965b17c95c0ab3f633.
+This reverts commit bf0d696f5b83f88b356361965b17c95c0ab3f633.
+# Conflicts:
+#	include/libserver/base/server.hpp
+#	src/libserver/base/Server.cpp
+#	src/libserver/command/CommandServer.cpp
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# On branch database
+# Your branch is up to date with 'origin/database'.
+#
+# No commands done.
+# Next command to do (1 remaining command):
+#    noop
+# You are currently rebasing branch 'database' on 'd3615d9'.
+#
+# Changes to be committed:
+#	modified:   CMakeLists.txt
+#	renamed:    include/libserver/base/Server.hpp -> include/libserver/base/server.hpp
+#	modified:   src/libserver/base/Server.cpp
+#	modified:   src/libserver/command/CommandServer.cpp
+#	renamed:    src/server/lobby/LobbyDirector.cpp -> src/server/LobbyDirector.cpp
+#	renamed:    src/server/lobby/LobbyDirector.hpp -> src/server/LobbyDirector.hpp
+#	modified:   src/server/main.cpp
+#
+# Changes not staged for commit:
+#	modified:   3rd-party/libpqxx (modified content, untracked content)
+#

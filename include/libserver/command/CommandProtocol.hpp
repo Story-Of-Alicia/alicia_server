@@ -71,12 +71,11 @@ enum class CommandId
   LobbyLoginOK = 0x0008,
   LobbyLoginCancel = 0x0009,
 
-  LobbyHeartbeat = 0x12,
-
   LobbyShowInventory = 0x007e,
   LobbyShowInventoryOK = 0x007f,
   LobbyShowInventoryCancel = 0x0080,
 
+<<<<<<< HEAD
   LobbyAchievementCompleteList = 0x00e5,
   LobbyAchievementCompleteListOK = 0x00e6,
   LobbyAchievementCompleteListCancel = 0x00e7,
@@ -94,6 +93,8 @@ enum class CommandId
   LobbyRequestQuestListOK = 0x03f9,
   LobbyRequestQuestListCancel = 0x03fa,
 
+=======
+>>>>>>> parent of d81bd53 (show inventory impl)
   Count = 0xFFFF
 };
 
