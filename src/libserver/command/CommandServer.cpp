@@ -24,7 +24,7 @@ uint32_t CommandClient::GetRollingCode()
 
 CommandServer::CommandServer()
 {
-  _server.SetOnConnectHandler([&](ClientId clientId)
+  _server.SetClientHandler([&](ClientId clientId)
   {
     auto& client = _server.GetClient(clientId);
     auto& commandClient = _clients[clientId];

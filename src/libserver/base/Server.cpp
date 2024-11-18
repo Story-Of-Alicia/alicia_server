@@ -6,7 +6,7 @@ namespace alicia
 namespace
 {
 
-constexpr size_t MaxBufferSize = 4092;
+constexpr std::size_t MaxBufferSize = 4096;
 
 } // anon namespace
 
@@ -20,15 +20,14 @@ void Client::SetReadHandler(ReadHandler readHandler)
   _readHandler = std::move(readHandler);
 }
 
+// void Client::SetWriteHandler(WriteHandler writeHandler)
+// {
+//   _writeHandler = std::move(writeHandler);
+// }
+
 void Client::Begin()
 {
-  _shouldProcess = true;
-  ReadLoop();
-}
-
-void Client::End()
-{
-  _shouldProcess = false;
+  read_loop();
 }
 
 void Client::QueueWrite(WriteSupplier writeSupplier)
@@ -52,12 +51,12 @@ void Client::QueueWrite(WriteSupplier writeSupplier)
     {
       if (error)
       {
-        printf("Failed to write\n");
-        _socket.close();
+        printf("Failed to write");
         return;
       }
 
       // Consume the sent bytes.
+      // Remove them from the input sequence.
       _writeBuffer.consume(size);
     });
 
@@ -65,26 +64,24 @@ void Client::QueueWrite(WriteSupplier writeSupplier)
   // ToDo: Write & send batching.
 }
 
-void Client::ReadLoop() noexcept
+void Client::read_loop() noexcept
 {
-  if (!_shouldProcess)
-  {
-    return;
-  }
+  // ToDo: Consider frame-based read loop instead of real-time reads.
 
-  // Chain the asynchronous functions.
   _socket.async_read_some(
     _readBuffer.prepare(MaxBufferSize),
     [&](boost::system::error_code error, std::size_t size)
     {
       if (error)
       {
-        printf("Failed to read\n");
-        _socket.close();
+        printf("Failed to read");
+        // An error occurred in client read loop,
+        // connection reset?
         return;
       }
 
-      // Commit the received bytes, so they can be read by the handler.
+      // Commit the received bytes,
+      // so they can be read.
       _readBuffer.commit(size);
 
       // ToDo: Read & handle timing.
@@ -98,7 +95,7 @@ void Client::ReadLoop() noexcept
       }
 
       // Continue the read loop.
-      ReadLoop();
+      read_loop();
     });
 }
 
@@ -118,18 +115,14 @@ void Server::Host(const std::string_view& interface, uint16_t port)
   _acceptor.bind(server_endpoint);
   _acceptor.listen();
 
-  AcceptLoop();
+  accept_loop();
 
   _io_ctx.run();
 }
 
-void Server::SetOnConnectHandler(OnConnectHandler handler)
+void Server::SetClientHandler(ClientHandler handler)
 {
-  _onConnectHandler = std::move(handler);
-}
-void Server::SetOnDisconnectHandler(OnDisconnectHandler handler)
-{
-  _onDisconnectHandler = std::move(handler);
+  _clientHandler = std::move(handler);
 }
 
 Client& Server::GetClient(ClientId clientId)
@@ -143,7 +136,7 @@ Client& Server::GetClient(ClientId clientId)
   return clientItr->second;
 }
 
-void Server::AcceptLoop() noexcept
+void Server::accept_loop() noexcept
 {
   _acceptor.async_accept(
     [&](
@@ -152,7 +145,7 @@ void Server::AcceptLoop() noexcept
     {
       if (error)
       {
-        printf("Failed to accept");
+        printf("Failed to accept connection");
         return;
       }
 
@@ -164,13 +157,13 @@ void Server::AcceptLoop() noexcept
         clientId, std::move(client_socket));
 
       // Id is sequential so emplacement should never fail.
-      assert(emplaced);
+      assert(emplaced == true);
 
-      _onConnectHandler(clientId);
+      _clientHandler(clientId);
       itr->second.Begin();
 
       // Continue the accept loop.
-      AcceptLoop();
+      accept_loop();
     });
 }
 

@@ -1,6 +1,6 @@
 #include "Version.hpp"
 
-#include "lobby/LobbyDirector.hpp"
+#include "LobbyDirector.hpp"
 
 #include <libserver/base/server.hpp>
 #include <libserver/command/CommandServer.hpp>
