@@ -1,3 +1,6 @@
+# suppress warning
+cmake_policy(SET CMP0167 NEW)
+
 include(CTest)
 
 add_executable(test_magic)
