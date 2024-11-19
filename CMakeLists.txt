@@ -60,3 +60,12 @@ if (BUILD_TESTS)
         enable_testing()
         add_subdirectory(tests)
 endif()
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LIBPQXX REQUIRED libpqxx)
+
+include_directories(${LIBPQXX_INCLUDE_DIRS})
+link_directories(${LIBPQXX_LIBRARY_DIRS})
+
+# Make libpqxx available globally
+set(PROJECT_LIBRARIES ${PROJECT_LIBRARIES} ${LIBPQXX_LIBRARIES})
