@@ -1,6 +1,3 @@
-# suppress warning
-cmake_policy(SET CMP0167 NEW)
-
 include(CTest)
 
 add_executable(test_magic)
@@ -24,5 +21,8 @@ pkg_check_modules(LIBPQXX REQUIRED libpqxx)
 include_directories(${LIBPQXX_INCLUDE_DIRS})
 link_directories(${LIBPQXX_LIBRARY_DIRS})
 
-add_executable(test_executable TestMagic.cpp)
+add_executable(test_executable src/TestMagic.cpp)
 target_link_libraries(test_executable ${LIBPQXX_LIBRARIES})
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)

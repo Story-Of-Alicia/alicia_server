@@ -94,7 +94,7 @@ void LogBytes(std::span<std::byte> data)
       rowString[column] = '.';
     }
 
-    printf(" %02X", datum);
+    printf(" %02X", static_cast<unsigned int>(datum));
   }
   printf("%*s\t%s\n\n", (16-column)*3, "", rowString);
 }

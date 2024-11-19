@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.20)
 # suppress warning
 cmake_policy(SET CMP0167 NEW)
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 project(alicia-server
         VERSION 1.0.0)
 
@@ -72,4 +76,5 @@ link_directories(${LIBPQXX_LIBRARY_DIRS})
 
 # Make libpqxx available globally
 set(PROJECT_LIBRARIES ${PROJECT_LIBRARIES} ${LIBPQXX_LIBRARIES})
+
 
