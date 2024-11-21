@@ -63,7 +63,9 @@ void XorAlgorithm(
 bool IsMuted(CommandId id)
 {
   return id == CommandId::LobbyHeartbeat
-      || id == CommandId::RanchHeartbeat;
+      || id == CommandId::RanchHeartbeat
+      || id == CommandId::RanchSnapshot
+      || id == CommandId::RanchSnapshotNotify;
 }
 
 void LogBytes(std::span<std::byte> data)
@@ -371,6 +373,7 @@ void CommandServer::QueueCommand(
           GetCommandName(command),
           magic.id,
           streamOrigin);
+        LogBytes({ (std::byte *) mutableBuffer.data() + 4, payloadSize });
       }
     });
 }

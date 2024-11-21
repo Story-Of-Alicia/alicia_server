@@ -119,6 +119,12 @@ enum class CommandId
 
   RanchHeartbeat = 0x9e,
 
+  RanchSnapshot = 0x139,
+  RanchSnapshotNotify = 0x13a,
+
+  RanchCmdAction = 0x1c9,
+  RanchCmdActionNotify = 0x1ca,
+
   Count = 0xFFFF
 };
 

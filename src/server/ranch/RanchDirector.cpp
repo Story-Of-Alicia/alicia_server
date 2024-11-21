@@ -284,4 +284,42 @@ void RanchDirector::HandleEnterRanch(
     });
 }
 
+void RanchDirector::HandleSnapshot(
+  ClientId clientId, 
+  const RanchCommandRanchSnapshot& snapshot)
+{
+  // TODO: Actual implementation of it
+  _ranchServer.QueueCommand(
+    clientId, 
+    CommandId::RanchSnapshotNotify, 
+    [&](auto& sink)
+    {
+      RanchCommandRanchSnapshotNotify response{
+        .ranchIndex = 2,
+        .snapshot = snapshot.snapshot
+      };
+      RanchCommandRanchSnapshotNotify::Write(response, sink);
+    });
+}
+
+void RanchDirector::HandleCmdAction(
+    ClientId clientId,
+    const RanchCommandRanchCmdAction& action)
+{
+  // TODO: Actual implementation of it
+  _ranchServer.QueueCommand(
+    clientId, 
+    CommandId::RanchCmdActionNotify, 
+    [action](auto& sink)
+    {
+      RanchCommandRanchCmdActionNotify response{
+       .unk0 = 2,
+       .unk1 = 3,
+       .unk2 = 1,
+      };
+      RanchCommandRanchCmdActionNotify::Write(response, sink);
+    });
+
+}
+
 }

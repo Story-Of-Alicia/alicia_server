@@ -20,6 +20,14 @@ public:
     ClientId clientId,
     const RanchCommandEnterRanch& enterRanch);
 
+  void HandleSnapshot(
+    ClientId clientId,
+    const RanchCommandRanchSnapshot& snapshot);
+
+  void HandleCmdAction(
+    ClientId clientId,
+    const RanchCommandRanchCmdAction& action);
+
 private:
   CommandServer& _ranchServer;
 

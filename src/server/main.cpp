@@ -168,6 +168,26 @@ int main()
         g_ranchDirector->HandleEnterRanch(clientId, enterRanch);
       });
 
+    ranchServer.RegisterCommandHandler(
+      alicia::CommandId::RanchSnapshot,
+      [](alicia::ClientId clientId, auto& buffer)
+      {
+        alicia::RanchCommandRanchSnapshot snapshot;
+        alicia::RanchCommandRanchSnapshot::Read(snapshot, buffer);
+
+        g_ranchDirector->HandleSnapshot(clientId, snapshot);
+      });
+
+    ranchServer.RegisterCommandHandler(
+      alicia::CommandId::RanchCmdAction,
+      [](alicia::ClientId clientId, auto& buffer)
+      {
+        alicia::RanchCommandRanchCmdAction cmdAction;
+        alicia::RanchCommandRanchCmdAction::Read(cmdAction, buffer);
+
+        g_ranchDirector->HandleCmdAction(clientId, cmdAction);
+      });
+
     ranchServer.Host("127.0.0.1", 10031);
   });
 
