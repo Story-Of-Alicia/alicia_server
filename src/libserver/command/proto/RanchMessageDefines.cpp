@@ -304,9 +304,9 @@ void RanchCommandRanchSnapshot::Write(
 void RanchCommandRanchSnapshot::Read(
   RanchCommandRanchSnapshot& command, SourceStream& buffer)
 {
-  uint16_t snapshotLength;
-  buffer.Read(snapshotLength);
+  buffer.Read(command.unk0);
 
+  auto snapshotLength = buffer.Size() - buffer.GetCursor();
   command.snapshot.resize(snapshotLength);
   buffer.Read(command.snapshot.data(), snapshotLength);
 }
@@ -315,7 +315,7 @@ void RanchCommandRanchSnapshotNotify::Write(
   const RanchCommandRanchSnapshotNotify& command, SinkStream& buffer)
 {
   buffer.Write(command.ranchIndex);
-  buffer.Write(static_cast<uint16_t>(command.snapshot.size()));
+  buffer.Write(command.unk0);
   buffer.Write(command.snapshot.data(), command.snapshot.size());
 }
 
@@ -334,9 +334,9 @@ void RanchCommandRanchCmdAction::Write(
 void RanchCommandRanchCmdAction::Read(
   RanchCommandRanchCmdAction& command, SourceStream& buffer)
 {
-  uint16_t length;
-  buffer.Read(length);
+  buffer.Read(command.unk0);
 
+  auto length = buffer.Size() - buffer.GetCursor();
   command.snapshot.resize(length);
   buffer.Read(command.snapshot.data(), length);
 }

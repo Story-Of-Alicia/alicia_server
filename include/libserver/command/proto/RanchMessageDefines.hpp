@@ -284,7 +284,7 @@ struct RanchCommandEnterRanchNotify
 //! Serverbound get messenger info command.
 struct RanchCommandRanchSnapshot
 {
-  // Packet consists of short specifying length, and byte array with the contents
+  uint8_t unk0{};
   std::vector<uint8_t> snapshot{};
 
   //! Writes the command to a provided sink buffer.
@@ -304,7 +304,7 @@ struct RanchCommandRanchSnapshot
 struct RanchCommandRanchSnapshotNotify
 {
   uint16_t ranchIndex{};
-  // Packet consists of short specifying length, and byte array with the contents
+  uint8_t unk0{};
   std::vector<uint8_t> snapshot{};
 
   //! Writes the command to a provided sink buffer.
@@ -324,7 +324,7 @@ struct RanchCommandRanchSnapshotNotify
 //! Serverbound get messenger info command.
 struct RanchCommandRanchCmdAction
 {
-  // Packet consists of short specifying length, and byte array with the contents
+  uint16_t unk0{};
   std::vector<uint8_t> snapshot{};
 
   //! Writes the command to a provided sink buffer.
