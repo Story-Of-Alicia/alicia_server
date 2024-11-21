@@ -34,7 +34,7 @@ RanchDirector::RanchDirector(CommandServer& ranchServer) noexcept
   _ranches[1] = {
     .ranchName = "rgnt ranch",
     .horses = { 2 },
-    .players = { 1 }
+    .players = { 1, 2 }
   };
 
   _users[2] = {
@@ -61,8 +61,8 @@ RanchDirector::RanchDirector(CommandServer& ranchServer) noexcept
   };
   _ranches[2] = {
     .ranchName = "laith ranch",
-    .horses = { 4 },
-    .players = { 2 }
+    .horses = { 4, 5 },
+    .players = { 2, 1 }
   };
 }
 
@@ -97,15 +97,15 @@ void RanchDirector::HandleEnterRanch(
         }
       };
 
-      uint16_t ranchIndex = 1;
 
       // TODO: things right
+      uint16_t horseIndex = 1;
       auto& ranchOwner = _users[enterRanch.unk0];
       for (const HorseId horseId : ranch.horses)
       {
         const auto& horse = ranchOwner.horses[horseId];
         response.horses.push_back({
-          .ranchIndex = ranchIndex++,
+          .ranchIndex = horseIndex++,
           .horse = {
             .uid = horseId,
             .tid = horse.tid,
@@ -180,6 +180,7 @@ void RanchDirector::HandleEnterRanch(
         });
       }
 
+      uint16_t playerIndex = 1;
       for (const UserId playerId : ranch.players)
       {
         auto& player = _users[playerId];
@@ -274,7 +275,7 @@ void RanchDirector::HandleEnterRanch(
           .playerRelatedThing = {
             .val1 = 1
           },
-          .ranchIndex = ranchIndex++,
+          .ranchIndex = playerIndex++,
           .anotherPlayerRelatedThing = {.horseUId = user.mountedOn, .val1 = 0x12}
         });
       }
