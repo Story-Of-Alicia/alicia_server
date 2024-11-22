@@ -18,27 +18,28 @@ LoginDirector::LoginDirector(CommandServer& lobbyServer) noexcept
 {
   // TODO: Dummy data
   _userTokens[1] = "test";
-  _users[1] = User {
+  _users[1] = {
     .nickName = "rgnt",
-    .gender = Gender::Boy,
+    .gender = alicia::Gender::Boy,
     .level = 60,
     .carrots = 5000,
     .characterEquipment = {
       Item{.uid = 100, .tid = 30035, .val = 0, .count = 1}
     },
-    .mountedOn = 1
-  };
-  _users[1].horses[1] = {
-    .tid = 0x4E21,
-    .name = "idontunderstand"
+    .mountedOn = 2,
+    .ranch = 100
   };
   _users[1].horses[2] = {
+    .tid = 0x4E21,
+    .name = "idontunderstand"
+  };  
+  _users[1].horses[3] = {
     .tid = 0x4E21,
     .name = "iunderstand"
   };  
 
-  _userTokens[2] = "another test";
-  _users[2] = {
+  _userTokens[4] = "another test";
+  _users[4] = {
     .nickName = "Laith",
     .gender = alicia::Gender::Unspecified,
     .level = 1,
@@ -46,19 +47,16 @@ LoginDirector::LoginDirector(CommandServer& lobbyServer) noexcept
     .characterEquipment = {
       Item{.uid = 100, .tid = 30035, .val = 0, .count = 1}
     },
-    .mountedOn = 3
+    .mountedOn = 5,
+    .ranch = 100
   };
-  _users[2].horses[3] = {
+  _users[4].horses[5] = {
     .tid = 0x4E21,
-    .name = "andyoudontseemto"
+    .name = "youdontseemtounderstand"
   };
-  _users[2].horses[4] = {
+  _users[4].horses[6] = {
     .tid = 0x4E21,
-    .name = "test1"
-  };
-  _users[2].horses[5] = {
-    .tid = 0x4E21,
-    .name = "test2"
+    .name = "Ramon"
   };
 }
 
@@ -141,17 +139,20 @@ void LoginDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
         .val2 = 0xFF,
         .val3 = 0xFF,
 
+        .optionType = OptionType::Value,
+        .valueOptions = 0x64,
+
         .ageGroup = AgeGroup::Adult,
         .val4 = 0,
 
         .val5 =
-          {{0x18, 1, 2, 1},
-           {0x1F, 1, 2, 1},
-           {0x23, 1, 2, 1},
-           {0x29, 1, 2, 1},
-           {0x2A, 1, 2, 1},
-           {0x2B, 1, 2, 1},
-           {0x2E, 1, 2, 1}},
+          {{0x18, {{2, 1}}},
+           {0x1F, {{2, 1}}},
+           {0x23, {{2, 1}}},
+           {0x29, {{2, 1}}},
+           {0x2A, {{2, 1}}},
+           {0x2B, {{2, 1}}},
+           {0x2E, {{2, 1}}}},
 
         .val6 = "val6",
 
@@ -180,30 +181,72 @@ void LoginDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
           {.uid = user.mountedOn,
            .tid = user.horses[user.mountedOn].tid,
            .name = user.horses[user.mountedOn].name,
-           .parts = {.skinId = 0x1, .maneId = 0x4, .tailId = 0x4, .faceId = 0x5},
-           .appearance =
-             {.scale = 0x0,
-              .legLength = 0x0,
-              .legVolume = 0x0,
-              .bodyLength = 0x0,
-              .bodyVolume = 0x0},
-           .vals0 =
-             {
-               .stamina = 0x00,
-               .attractiveness = 0x00,
-               .hunger = 0x00,
-               .val0 = 0x00,
-               .val1 = 0x03E8,
-               .val2 = 0x00,
-               .val3 = 0x00,
-               .val4 = 0x00,
-               .val5 = 0x03E8,
-               .val6 = 0x1E,
-               .val7 = 0x0A,
-               .val8 = 0x0A,
-               .val9 = 0x0A,
-               .val10 = 0x00,
-             }},
+           .parts = {.skinId = 0x2, .maneId = 0x3, .tailId = 0x3, .faceId = 0x3},
+            .appearance =
+              {.scale = 0x4,
+                .legLength = 0x4,
+                .legVolume = 0x5,
+                .bodyLength = 0x3,
+                .bodyVolume = 0x4},
+            .stats = 
+              {
+                .agility = 9,
+                .spirit = 9,
+                .speed = 9,
+                .strength = 9,
+                .ambition = 0x13
+              },
+            .rating = 0,
+            .clazz = 0x15,
+            .val0 = 1,
+            .grade = 5,
+            .growthPoints = 2,
+            .vals0 =
+              {
+                .stamina = 0x7d0,
+                .attractiveness = 0x3c,
+                .hunger = 0x21c,
+                .val0 = 0x00,
+                .val1 = 0x03E8,
+                .val2 = 0x00,
+                .val3 = 0x00,
+                .val4 = 0x00,
+                .val5 = 0x03E8,
+                .val6 = 0x1E,
+                .val7 = 0x0A,
+                .val8 = 0x0A,
+                .val9 = 0x0A,
+                .val10 = 0x00,
+              },
+            .vals1 = 
+              {
+                .val0 = 0x00,
+                .val1 = 0x00,
+                .val2 = 0xb8a167e4,
+                .val3 = 0x02,
+                .val4 = 0x00,
+                .classProgression = 0x32e7d,
+                .val5 = 0x00,
+                .val6 = 0x00,
+                .val7 = 0x00,
+                .val8 = 0x00,
+                .val9 = 0x00,
+                .val10 = 0x04,
+                .val11 = 0x00,
+                .val12 = 0x00,
+                .val13 = 0x00,
+                .val14 = 0x00,
+                .val15 = 0x01
+              },
+            .mastery = 
+              {
+                .magic = 0x1fe,
+                .jumping = 0x421,
+                .sliding = 0x5f8,
+                .gliding = 0xcfa4,
+              },
+            .val16 = 0xb8a167e4,
+            .val17 = 0},
         .val7 =
           {.values =
              {{0x6, 0x0},
@@ -217,7 +260,14 @@ void LoginDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
               {0x43, 0x4},
               {0x45, 0x0}}},
         .val8 = 0xE06,
-        .val17 = {.horseUId = user.mountedOn, .val1 = 0x12}};
+        .val11 = {4, 0x2B, 4},
+        .val14 = 0xca1b87db,
+        .val15 = {.val1 = 1},
+        .val16 = 4,
+        .val17 = {.horseUId = user.mountedOn, .val1 = 0x12, .val2 = 0x16e67e4},
+        .val18 = 0x3a,
+        .val19 = 0x38e,
+        .val20 = 0x1c6};
 
       LobbyCommandLoginOK::Write(command, sink);
     });

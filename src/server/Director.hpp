@@ -40,6 +40,8 @@ struct User
   std::unordered_map<HorseId, HorseData> horses{};
 
   std::chrono::system_clock::time_point lastHeartbeat;
+
+  RanchId ranch{};
 };
 
 struct Ranch
