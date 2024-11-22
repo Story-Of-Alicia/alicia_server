@@ -108,9 +108,12 @@ struct LobbyCommandLoginOK
   struct Unk1
   {
     uint16_t val0{};
-    uint8_t val1{};
-    uint32_t val2{};
-    uint32_t val3{};
+
+    struct Unk1Unk1 {
+      uint32_t val1{};
+      uint32_t val2{};
+    };
+    std::vector<Unk1Unk1> val1{};
   };
   std::vector<Unk1> val5; // max 17
 

@@ -247,10 +247,14 @@ void LobbyCommandLoginOK::Write(
   buffer.Write(static_cast<uint8_t>(command.val5.size()));
   for (const auto& val : command.val5)
   {
-    buffer.Write(val.val0)
-      .Write(val.val1)
-      .Write(val.val2)
-      .Write(val.val3);
+    buffer.Write(val.val0);
+
+    buffer.Write(static_cast<uint8_t>(val.val1.size()));
+    for (const auto& nestedVal : val.val1)
+    {
+      buffer.Write(nestedVal.val1)
+            .Write(nestedVal.val2);
+    }
   }
 
   //
