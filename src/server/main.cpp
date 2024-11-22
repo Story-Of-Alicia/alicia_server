@@ -149,7 +149,7 @@ int main()
       });
 
     // Host
-    lobbyServer.Host("127.0.0.1", 10030);
+    lobbyServer.Host("0.0.0.0", 10030);
   });
 
   // Ranch thread.
@@ -188,7 +188,7 @@ int main()
         g_ranchDirector->HandleCmdAction(clientId, cmdAction);
       });
 
-    ranchServer.Host("127.0.0.1", 10031);
+    ranchServer.Host("0.0.0.0", 10031);
   });
 
   // Messenger thread.
@@ -196,7 +196,7 @@ int main()
   {
     alicia::CommandServer messengerServer("Messenger");
     // TODO: Messenger
-    messengerServer.Host("127.0.0.1", 10032);
+    messengerServer.Host("0.0.0.0", 10032);
   });
 
   return 0;
