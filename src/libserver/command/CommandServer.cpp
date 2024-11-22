@@ -237,18 +237,6 @@ CommandServer::CommandServer(std::string name)
           const auto padding = code & 7;
           const auto actualCommandDataSize = commandDataSize - padding;
 
-          if(!IsMuted(commandId))
-          {
-            spdlog::debug("Data for command '{}' (0x{:X}), Code: {:#X}, Data Size: {} (padding: {}), Actual Data Size: {}",
-              GetCommandName(commandId),
-              magic.id,
-              code,
-              commandDataSize,
-              padding,
-              actualCommandDataSize);
-            LogBytes({commandDataBuffer.data(), commandDataSize});
-          }
-
           // Source stream of the command data.
           SourceStream dataSourceStream(
             {commandDataBuffer.begin(), commandDataSize});
@@ -265,6 +253,18 @@ CommandServer::CommandServer(std::string name)
 
           commandDataStream = std::move(SourceStream(
             {commandDataBuffer.begin(), actualCommandDataSize}));
+
+          if(!IsMuted(commandId))
+          {
+            spdlog::debug("Data for command '{}' (0x{:X}), Code: {:#X}, Data Size: {} (padding: {}), Actual Data Size: {}",
+              GetCommandName(commandId),
+              magic.id,
+              code,
+              commandDataSize,
+              padding,
+              actualCommandDataSize);
+            LogBytes({commandDataBuffer.data(), commandDataSize});
+          }
         }
 
         // Find the handler of the command.
