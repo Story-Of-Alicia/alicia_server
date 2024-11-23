@@ -21,8 +21,8 @@ RanchDirector::RanchDirector(CommandServer& ranchServer) noexcept
     .characterEquipment = {
       Item{.uid = 100, .tid = 30035, .val = 0, .count = 1}
     },
-    .mountedOn = 2,
-    .ranch = 100
+    .mountUid = 2,
+    .ranchUid = 100
   };
   _users[1].horses[2] = {
     .tid = 0x4E21,
@@ -41,8 +41,8 @@ RanchDirector::RanchDirector(CommandServer& ranchServer) noexcept
     .characterEquipment = {
       Item{.uid = 100, .tid = 30035, .val = 0, .count = 1}
     },
-    .mountedOn = 5,
-    .ranch = 100
+    .mountUid = 5,
+    .ranchUid = 100
   };
   _users[4].horses[5] = {
     .tid = 0x4E21,
@@ -56,33 +56,26 @@ RanchDirector::RanchDirector(CommandServer& ranchServer) noexcept
   _ranches[100] = {
     .ranchName = "SoA ranch",
     .horses = { 3 },
-    .players = { 1, 4 }
+    .users = { 1, 4 }
   };
 }
-
 
 void RanchDirector::HandleEnterRanch(
     ClientId clientId,
     const RanchCommandEnterRanch& enterRanch)
 {
-  // TODO: Validate.
-  const UserId userId = enterRanch.unk0;
-  _clients[clientId] = userId;
-
-  const auto& user = _users[userId];
-
   // TODO: Something better.
-  const RanchId ranchId = user.ranch;
-  const auto& ranch = _ranches[ranchId];
+  const RanchId ranchUid = enterRanch.ranchUid;
+  const auto& ranch = _ranches[ranchUid];
   //ranch.players.push_back(userId);
 
   _ranchServer.QueueCommand(
-    clientId, 
-    CommandId::RanchEnterRanchOK, 
+    clientId,
+    CommandId::RanchEnterRanchOK,
     [&](auto& sink)
     {
       RanchCommandEnterRanchOK response{
-        .ranchId = ranchId,
+        .ranchId = ranchUid,
         .unk0 = "unk0",
         .ranchName = ranch.ranchName,
         .unk11 = {
@@ -91,15 +84,15 @@ void RanchDirector::HandleEnterRanch(
         }
       };
 
-      uint16_t ranchIndex = 1;
+      uint16_t ranchEntityIndex = 0;
 
       // TODO: things right
-      auto& ranchOwner = _users[enterRanch.unk0];
+      auto& ranchOwner = _users[enterRanch.userUid];
       for (const HorseId horseId : ranch.horses)
       {
         const auto& horse = ranchOwner.horses[horseId];
         response.horses.push_back({
-          .ranchIndex = ranchIndex++,
+          .ranchIndex = ++ranchEntityIndex,
           .horse = {
             .uid = horseId,
             .tid = horse.tid,
@@ -111,7 +104,7 @@ void RanchDirector::HandleEnterRanch(
                 .legVolume = 0x5,
                 .bodyLength = 0x3,
                 .bodyVolume = 0x4},
-            .stats = 
+            .stats =
               {
                 .agility = 9,
                 .spirit = 9,
@@ -141,7 +134,7 @@ void RanchDirector::HandleEnterRanch(
                 .val9 = 0x0A,
                 .val10 = 0x00,
               },
-            .vals1 = 
+            .vals1 =
               {
                 .val0 = 0x00,
                 .val1 = 0x00,
@@ -161,7 +154,7 @@ void RanchDirector::HandleEnterRanch(
                 .val14 = 0x00,
                 .val15 = 0x01
               },
-            .mastery = 
+            .mastery =
               {
                 .magic = 0x1fe,
                 .jumping = 0x421,
@@ -174,14 +167,15 @@ void RanchDirector::HandleEnterRanch(
         });
       }
 
-      for (const UserId playerId : ranch.players)
+      for (const UserId userId : ranch.users)
       {
-        auto& player = _users[playerId];
-        const auto& horse = player.horses[player.mountedOn];
-        response.players.push_back({
-          .id = playerId,
-          .name = player.nickName,
-          .gender = player.gender,
+        auto& user = _users[userId];
+        const auto& horse = user.horses[user.mountUid];
+
+        response.users.push_back({
+          .userUid = userId,
+          .name = user.nickName,
+          .gender = user.gender,
           .unk0 = 1,
           .unk1 = 1,
           .description = "yolo",
@@ -194,7 +188,7 @@ void RanchDirector::HandleEnterRanch(
               .legVolume = 0x01,
               .val1 = 0xFF}},
           .horse = {
-            .uid = player.mountedOn,
+            .uid = user.mountUid,
             .tid = horse.tid,
             .name = horse.name,
             .parts = {.skinId = 0x2, .maneId = 0x3, .tailId = 0x3, .faceId = 0x3},
@@ -204,7 +198,7 @@ void RanchDirector::HandleEnterRanch(
                 .legVolume = 0x5,
                 .bodyLength = 0x3,
                 .bodyVolume = 0x4},
-            .stats = 
+            .stats =
               {
                 .agility = 9,
                 .spirit = 9,
@@ -234,7 +228,7 @@ void RanchDirector::HandleEnterRanch(
                 .val9 = 0x0A,
                 .val10 = 0x00,
               },
-            .vals1 = 
+            .vals1 =
               {
                 .val0 = 0x00,
                 .val1 = 0x00,
@@ -254,7 +248,7 @@ void RanchDirector::HandleEnterRanch(
                 .val14 = 0x00,
                 .val15 = 0x01
               },
-            .mastery = 
+            .mastery =
               {
                 .magic = 0x1fe,
                 .jumping = 0x421,
@@ -268,8 +262,8 @@ void RanchDirector::HandleEnterRanch(
           .playerRelatedThing = {
             .val1 = 1
           },
-          .ranchIndex = ranchIndex++,
-          .anotherPlayerRelatedThing = {.horseUId = player.mountedOn, .val1 = 0x12}
+          .ranchIndex = ++ranchEntityIndex,
+          .anotherPlayerRelatedThing = {.mountUid = user.mountUid, .val1 = 0x12}
         });
       }
       

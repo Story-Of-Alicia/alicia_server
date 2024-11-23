@@ -63,7 +63,7 @@ void WriteRanchHorse(
 void WriteRanchPlayer(
   SinkStream& buf, const RanchPlayer& ranchPlayer)
 {
-  buf.Write(ranchPlayer.id)
+  buf.Write(ranchPlayer.userUid)
     .Write(ranchPlayer.name)
     .Write(ranchPlayer.gender)
     .Write(ranchPlayer.unk0)
@@ -72,6 +72,7 @@ void WriteRanchPlayer(
 
   WriteCharacter(buf, ranchPlayer.character);
   WriteHorse(buf, ranchPlayer.horse);
+
   buf.Write(static_cast<uint8_t>(
     ranchPlayer.characterEquipment.size()));
   for (const Item& item : ranchPlayer.characterEquipment)
@@ -95,7 +96,7 @@ void WriteRanchPlayer(
 
   // Struct6
   const auto& struct6 = ranchPlayer.anotherPlayerRelatedThing;
-  buf.Write(struct6.horseUId)
+  buf.Write(struct6.mountUid)
     .Write(struct6.val1)
     .Write(struct6.val2);
 
@@ -206,9 +207,9 @@ void RanchCommandEnterRanch::Write(
 void RanchCommandEnterRanch::Read(
   RanchCommandEnterRanch& command, SourceStream& buffer)
 {
-  buffer.Read(command.unk0)
-    .Read(command.unk1)
-    .Read(command.unk2);
+  buffer.Read(command.userUid)
+    .Read(command.code)
+    .Read(command.ranchUid);
 }
 
 void RanchCommandEnterRanchOK::Write(
@@ -224,8 +225,8 @@ void RanchCommandEnterRanchOK::Write(
     WriteRanchHorse(buffer, horse);
   }
 
-  buffer.Write(static_cast<uint8_t>(command.players.size()));
-  for (auto& player : command.players)
+  buffer.Write(static_cast<uint8_t>(command.users.size()));
+  for (auto& player : command.users)
   {
     WriteRanchPlayer(buffer, player);
   }

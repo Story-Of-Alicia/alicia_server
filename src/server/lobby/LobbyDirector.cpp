@@ -16,6 +16,7 @@ std::random_device rd;
 LoginDirector::LoginDirector(CommandServer& lobbyServer) noexcept
     : _lobbyServer(lobbyServer)
 {
+
   // TODO: Dummy data
   _userTokens[1] = "test";
   _users[1] = {
@@ -26,8 +27,8 @@ LoginDirector::LoginDirector(CommandServer& lobbyServer) noexcept
     .characterEquipment = {
       Item{.uid = 100, .tid = 30035, .val = 0, .count = 1}
     },
-    .mountedOn = 2,
-    .ranch = 100
+    .mountUid = 2,
+    .ranchUid = 100
   };
   _users[1].horses[2] = {
     .tid = 0x4E21,
@@ -47,8 +48,8 @@ LoginDirector::LoginDirector(CommandServer& lobbyServer) noexcept
     .characterEquipment = {
       Item{.uid = 100, .tid = 30035, .val = 0, .count = 1}
     },
-    .mountedOn = 5,
-    .ranch = 100
+    .mountUid = 5,
+    .ranchUid = 100
   };
   _users[4].horses[5] = {
     .tid = 0x4E21,
@@ -178,9 +179,9 @@ void LoginDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
               .val1 = 0xFF}
           },
         .horse =
-          {.uid = user.mountedOn,
-           .tid = user.horses[user.mountedOn].tid,
-           .name = user.horses[user.mountedOn].name,
+          {.uid = user.mountUid,
+           .tid = user.horses[user.mountUid].tid,
+           .name = user.horses[user.mountUid].name,
            .parts = {.skinId = 0x2, .maneId = 0x3, .tailId = 0x3, .faceId = 0x3},
             .appearance =
               {.scale = 0x4,
@@ -264,7 +265,7 @@ void LoginDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
         .val14 = 0xca1b87db,
         .val15 = {.val1 = 1},
         .val16 = 4,
-        .val17 = {.horseUId = user.mountedOn, .val1 = 0x12, .val2 = 0x16e67e4},
+        .val17 = {.mountUid = user.mountUid, .val1 = 0x12, .val2 = 0x16e67e4},
         .val18 = 0x3a,
         .val19 = 0x38e,
         .val20 = 0x1c6};
@@ -392,20 +393,23 @@ void LoginDirector::HandleEnterRanch(
   ClientId clientId, 
   const LobbyCommandEnterRanch& enterRanch)
 {
-  auto& [userId, _] = *_clients.find(clientId);
+  const auto [_, userId] = *_clients.find(clientId);
+
   _lobbyServer.QueueCommand(
     clientId, 
     CommandId::LobbyEnterRanchOK, 
-     [&](auto& sink)
+     [userId, this](auto& sink)
      {
+      auto& [_, user] = *_users.find(userId);
+
       // TODO: Move somewhere configurable
       struct in_addr addr;
       inet_pton(AF_INET, "127.0.0.1", &addr);
       uint16_t port = 10031;
 
       LobbyCommandEnterRanchOK response{
-        .unk0 = userId,
-        .unk1 = 0x44332211, // TODO: Generate and store in the ranch server instance
+        .ranchUid = user.ranchUid,
+        .code = 0x44332211, // TODO: Generate and store in the ranch server instance
         .ip = (uint32_t) addr.s_addr,
         .port = port
       };

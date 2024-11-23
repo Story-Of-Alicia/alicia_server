@@ -584,10 +584,10 @@ struct LobbyCommandEnterRanch
 //! Clientbound enter ranch response.
 struct LobbyCommandEnterRanchOK
 {
-  uint32_t unk0;
-  uint32_t unk1; // probably some auth token that has to be double checked in the ranch server
-  uint32_t ip;
-  uint16_t port;
+  uint32_t ranchUid{};
+  uint32_t code{}; // probably some auth token that has to be double checked in the ranch server
+  uint32_t ip{};
+  uint16_t port{};
 
   //! Writes the command to a provided sink buffer.
   //! @param command Command.

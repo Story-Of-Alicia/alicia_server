@@ -330,7 +330,7 @@ void LobbyCommandLoginOK::Write(
 
   // Struct6
   const auto& struct6 = command.val17;
-  buffer.Write(struct6.horseUId)
+  buffer.Write(struct6.mountUid)
     .Write(struct6.val1)
     .Write(struct6.val2);
 
@@ -654,8 +654,8 @@ void LobbyCommandEnterRanchOK::Write(
   const LobbyCommandEnterRanchOK& command,
   SinkStream& buffer)
 {
-  buffer.Write(command.unk0)
-    .Write(command.unk1)
+  buffer.Write(command.ranchUid)
+    .Write(command.code)
     .Write(command.ip)
     .Write(command.port);
 }

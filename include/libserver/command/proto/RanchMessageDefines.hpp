@@ -159,9 +159,9 @@ struct RanchCommandMountFamilyTreeCancel
 //! Serverbound get messenger info command.
 struct RanchCommandEnterRanch
 {
-  uint32_t unk0; // character id? ranch id?
-  uint32_t unk1; // probably the auth token from LobbyCommandEnterRanchOK
-  uint32_t unk2; // char id again? ranch id?
+  uint32_t userUid;
+  uint32_t code; // probably the auth token from LobbyCommandEnterRanchOK
+  uint32_t ranchUid; // char id again? ranch id?
 
   //! Writes the command to a provided sink buffer.
   //! @param command Command.
@@ -188,7 +188,7 @@ struct RanchCommandEnterRanchOK
   // If the horse list takes indexes 0, 1 and 2
   // the player list must use indexes 3, 4 and 5.
   std::vector<RanchHorse> horses{};
-  std::vector<RanchPlayer> players{};
+  std::vector<RanchPlayer> users{};
 
   uint64_t unk1{};
   uint32_t unk2{};

@@ -135,7 +135,7 @@ int32_t CommandClient::GetRollingCodeInt() const
 
 CommandServer::CommandServer(std::string name)
 {
-  _name = name;
+  _name = std::move(name);
   _server.SetOnConnectHandler([&](ClientId clientId)
   {
     spdlog::info("Client {} connected to {}", clientId, this->_name);
