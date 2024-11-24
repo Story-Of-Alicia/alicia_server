@@ -312,19 +312,35 @@ void RanchDirector::HandleSnapshot(
   ClientId clientId, 
   const RanchCommandRanchSnapshot& snapshot)
 {
-  // TODO: Actual implementation of it
-  _ranchServer.QueueCommand(
-    clientId, 
-    CommandId::RanchSnapshotNotify, 
-    [&](auto& sink)
+  UserId userId = _clients[clientId];
+  User& user = _users[userId];
+  auto& ranch = _ranches[user.ranchUid];
+  auto found = std::find(ranch.users.begin(), ranch.users.end(), userId);
+  uint16_t ranchIndex = ranch.horses.size() + (found - ranch.users.begin()) + 1;
+
+
+  RanchCommandRanchSnapshotNotify response{
+    .ranchIndex = ranchIndex,
+    .unk0 = snapshot.unk0,
+    .snapshot = snapshot.snapshot
+  };
+
+  for(auto& ranchUser : ranch.users)
+  {
+    if (ranchUser != userId)
     {
-      RanchCommandRanchSnapshotNotify response{
-        .ranchIndex = 3,
-        .unk0 = snapshot.unk0,
-        .snapshot = snapshot.snapshot
-      };
-      RanchCommandRanchSnapshotNotify::Write(response, sink);
-    });
+      auto result = std::find_if(_clients.begin(), _clients.end(), [ranchUser](const auto& pair){ return pair.second == ranchUser; });
+      assert(result != _clients.end());
+      ClientId ranchUserClientId = result->first;
+
+      _ranchServer.QueueCommand(
+        ranchUserClientId, 
+        CommandId::RanchSnapshotNotify, 
+        [&](auto& sink){
+          RanchCommandRanchSnapshotNotify::Write(response, sink);
+        });
+    }
+  }
 }
 
 void RanchDirector::HandleCmdAction(ClientId clientId, const RanchCommandRanchCmdAction& action)
