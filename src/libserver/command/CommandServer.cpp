@@ -31,6 +31,9 @@ namespace
 //! Max size of the command data.
 constexpr std::size_t MaxCommandDataSize = 4092;
 
+//! Flag indicating whether to use the XOR algorithm on recieved data.
+constexpr std::size_t UseXorAlgorithm = true;
+
 //! Max size of the whole command payload.
 //! That is command data size + size of the message magic.
 constexpr std::size_t MaxCommandSize = MaxCommandDataSize + sizeof(MessageMagic);
@@ -229,41 +232,60 @@ CommandServer::CommandServer(std::string name)
         // Validate and process the command data.
         if (commandDataSize > 0)
         {
-          commandClient.RollCode();
-
-          const uint32_t code = commandClient.GetRollingCodeInt();
-
-          // Extract the padding from the code.
-          const auto padding = code & 7;
-          const auto actualCommandDataSize = commandDataSize - padding;
-
-          // Source stream of the command data.
-          SourceStream dataSourceStream(
-            {commandDataBuffer.begin(), commandDataSize});
-          // Sink stream of the command data.
-          // Correctly points to the same buffer.
-          SinkStream dataSinkStream(
-            {commandDataBuffer.begin(), commandDataBuffer.end()});
-
-          // Apply XOR algorithm to the data.
-          XorAlgorithm(
-            commandClient.GetRollingCode(),
-            dataSourceStream,
-            dataSinkStream);
-
-          commandDataStream = std::move(SourceStream(
-            {commandDataBuffer.begin(), actualCommandDataSize}));
-
-          if(!IsMuted(commandId))
+          if (UseXorAlgorithm)
           {
-            spdlog::debug("Data for command '{}' (0x{:X}), Code: {:#X}, Data Size: {} (padding: {}), Actual Data Size: {}",
-              GetCommandName(commandId),
-              magic.id,
-              code,
-              commandDataSize,
-              padding,
-              actualCommandDataSize);
-            LogBytes({commandDataBuffer.data(), commandDataSize});
+            commandClient.RollCode();
+
+            const uint32_t code = commandClient.GetRollingCodeInt();
+
+            // Extract the padding from the code.
+            const auto padding = code & 7;
+            const auto actualCommandDataSize = commandDataSize - padding;
+
+            // Source stream of the command data.
+            SourceStream dataSourceStream(
+              {commandDataBuffer.begin(), commandDataSize});
+            // Sink stream of the command data.
+            // Correctly points to the same buffer.
+            SinkStream dataSinkStream(
+              {commandDataBuffer.begin(), commandDataBuffer.end()});
+
+            // Apply XOR algorithm to the data.
+            XorAlgorithm(
+              commandClient.GetRollingCode(),
+              dataSourceStream,
+              dataSinkStream);
+
+            commandDataStream = std::move(SourceStream(
+              {commandDataBuffer.begin(), actualCommandDataSize}));
+
+            if(!IsMuted(commandId))
+            {
+              spdlog::debug("Data for command '{}' (0x{:X}), Code: {:#X}, Data Size: {} (padding: {}), Actual Data Size: {}",
+                GetCommandName(commandId),
+                magic.id,
+                code,
+                commandDataSize,
+                padding,
+                actualCommandDataSize);
+
+              LogBytes({commandDataBuffer.data(), commandDataSize});
+            }
+          }
+          else
+          {
+            commandDataStream = std::move(SourceStream(
+              {commandDataBuffer.begin(), commandDataSize}));
+
+            if(!IsMuted(commandId))
+            {
+              spdlog::debug("Data for command '{}' (0x{:X}), Data Size: {}",
+                GetCommandName(commandId),
+                magic.id,
+                commandDataSize);
+
+              LogBytes({commandDataBuffer.data(), commandDataSize});
+            }
           }
         }
 

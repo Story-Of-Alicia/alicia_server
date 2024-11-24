@@ -69,6 +69,7 @@ void RanchDirector::HandleEnterRanch(
   const auto& ranch = _ranches[ranchUid];
   //ranch.players.push_back(userId);
 
+  _ranchServer.SetCode(clientId, {});
   _ranchServer.QueueCommand(
     clientId,
     CommandId::RanchEnterRanchOK,
