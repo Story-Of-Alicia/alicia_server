@@ -22,16 +22,9 @@ RanchDirector::RanchDirector(CommandServer& ranchServer) noexcept
       Item{.uid = 100, .tid = 30035, .val = 0, .count = 1}
     },
     .mountUid = 2,
+    .horses = {2, 3},
     .ranchUid = 100
   };
-  _users[1].horses[2] = {
-    .tid = 0x4E21,
-    .name = "idontunderstand"
-  };  
-  _users[1].horses[3] = {
-    .tid = 0x4E21,
-    .name = "iunderstand"
-  };  
 
   _users[4] = {
     .nickName = "Laith",
@@ -42,21 +35,31 @@ RanchDirector::RanchDirector(CommandServer& ranchServer) noexcept
       Item{.uid = 100, .tid = 30035, .val = 0, .count = 1}
     },
     .mountUid = 5,
+    .horses = {5, 6},
     .ranchUid = 100
   };
-  _users[4].horses[5] = {
+  
+  _horses[2] = {
+    .tid = 0x4E21,
+    .name = "idontunderstand"
+  };  
+  _horses[3] = {
+    .tid = 0x4E21,
+    .name = "iunderstand"
+  };  
+  _horses[5] = {
     .tid = 0x4E21,
     .name = "youdontseemtounderstand"
   };
-  _users[4].horses[6] = {
+  _horses[6] = {
     .tid = 0x4E21,
     .name = "Ramon"
   };
 
   _ranches[100] = {
     .ranchName = "SoA ranch",
-    .horses = { 3 },
-    .users = { 1 }
+    .horses = { 3, 6 },
+    .users = {}
   };
 }
 
@@ -64,12 +67,11 @@ void RanchDirector::HandleEnterRanch(
     ClientId clientId,
     const RanchCommandEnterRanch& enterRanch)
 {
-  // TODO: Something better.
-  const RanchId ranchUid = enterRanch.ranchUid;
-  const auto& ranch = _ranches[ranchUid];
-  //ranch.players.push_back(userId);
-
   _clients[clientId] = enterRanch.userUid;
+
+  const UserId enteringUserId = _clients[clientId];
+  const RanchId ranchUid = enterRanch.ranchUid;
+  auto& ranch = _ranches[ranchUid];
 
   _ranchServer.SetCode(clientId, {});
   _ranchServer.QueueCommand(
@@ -89,11 +91,9 @@ void RanchDirector::HandleEnterRanch(
 
       uint16_t ranchEntityIndex = 0;
 
-      // TODO: things right
-      auto& ranchOwner = _users[enterRanch.userUid];
       for (const HorseId horseId : ranch.horses)
       {
-        const auto& horse = ranchOwner.horses[horseId];
+        const auto& horse = _horses[horseId];
         response.horses.push_back({
           .ranchIndex = ++ranchEntityIndex,
           .horse = {
@@ -173,7 +173,7 @@ void RanchDirector::HandleEnterRanch(
       for (const UserId userId : ranch.users)
       {
         auto& user = _users[userId];
-        const auto& horse = user.horses[user.mountUid];
+        auto& horse = _horses[user.mountUid];
 
         response.users.push_back({
           .userUid = userId,
