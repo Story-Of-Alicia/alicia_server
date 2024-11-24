@@ -188,6 +188,13 @@ int main()
         g_ranchDirector->HandleCmdAction(clientId, cmdAction);
       });
 
+    ranchServer.RegisterCommandHandler<alicia::RanchCommandRanchStuff>(
+      alicia::CommandId::RanchStuff,
+      [](alicia::ClientId clientId, auto& command)
+      {
+        g_ranchDirector->HandleRanchStuff(clientId, command);
+      });
+
     ranchServer.Host("0.0.0.0", 10031);
   });
 

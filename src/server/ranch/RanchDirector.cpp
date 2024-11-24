@@ -56,7 +56,7 @@ RanchDirector::RanchDirector(CommandServer& ranchServer) noexcept
   _ranches[100] = {
     .ranchName = "SoA ranch",
     .horses = { 3 },
-    .users = { 1, 4 }
+    .users = { 1 }
   };
 }
 
@@ -68,6 +68,8 @@ void RanchDirector::HandleEnterRanch(
   const RanchId ranchUid = enterRanch.ranchUid;
   const auto& ranch = _ranches[ranchUid];
   //ranch.players.push_back(userId);
+
+  _clients[clientId] = enterRanch.userUid;
 
   _ranchServer.SetCode(clientId, {});
   _ranchServer.QueueCommand(
@@ -291,24 +293,47 @@ void RanchDirector::HandleSnapshot(
     });
 }
 
-void RanchDirector::HandleCmdAction(
-    ClientId clientId,
-    const RanchCommandRanchCmdAction& action)
+void RanchDirector::HandleCmdAction(ClientId clientId, const RanchCommandRanchCmdAction& action)
 {
   // TODO: Actual implementation of it
   _ranchServer.QueueCommand(
-    clientId, 
-    CommandId::RanchCmdActionNotify, 
+    clientId,
+    CommandId::RanchCmdActionNotify,
     [action](auto& sink)
     {
       RanchCommandRanchCmdActionNotify response{
-       .unk0 = 2,
-       .unk1 = 3,
-       .unk2 = 1,
+        .unk0 = 2,
+        .unk1 = 3,
+        .unk2 = 1,
       };
       RanchCommandRanchCmdActionNotify::Write(response, sink);
     });
-
 }
 
+void RanchDirector::HandleRanchStuff(ClientId clientId, const RanchCommandRanchStuff& command)
+{
+  const auto userIdItr = _clients.find(clientId);
+  if (userIdItr == _clients.cend())
+  {
+    return;
+  }
+
+  auto& user = _users[userIdItr->second];
+  // todo: needs validation
+  user.carrots += command.value;
+
+  _ranchServer.QueueCommand(
+    clientId,
+    CommandId::RanchStuffOK,
+    [command, &user](auto& sink)
+    {
+      RanchCommandRanchStuffOK response{
+        command.eventId,
+        command.value,
+        user.carrots};
+
+      RanchCommandRanchStuffOK::Write(response, sink);
+    });
 }
+
+} // namespace alicia

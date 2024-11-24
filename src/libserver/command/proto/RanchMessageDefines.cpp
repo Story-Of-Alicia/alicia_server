@@ -414,13 +414,44 @@ void RanchCommandLeaveRanchNotify::Read(
 }
 
 void RanchCommandHeartbeat::Write(
-  const RanchCommandHeartbeat& command, SinkStream& buffer)
+  const RanchCommandHeartbeat& command,
+  SinkStream& buffer)
 {
 }
 
 void RanchCommandHeartbeat::Read(
-  RanchCommandHeartbeat& command, SourceStream& buffer)
+  RanchCommandHeartbeat& command,
+  SourceStream& buffer) {}
+
+void RanchCommandRanchStuff::Write(
+  const RanchCommandRanchStuff& command,
+  SinkStream& buffer)
 {
+  throw std::logic_error("Not implemented.");
 }
 
+void RanchCommandRanchStuff::Read(
+  RanchCommandRanchStuff& command,
+  SourceStream& buffer)
+{
+  buffer.Read(command.eventId)
+    .Read(command.value);
 }
+
+void RanchCommandRanchStuffOK::Write(
+  const RanchCommandRanchStuffOK& command,
+  SinkStream& buffer)
+{
+  buffer.Write(command.eventId)
+    .Write(command.moneyIncrement)
+    .Write(command.totalMoney);
+}
+
+void RanchCommandRanchStuffOK::Read(
+  RanchCommandRanchStuffOK& command,
+  SourceStream& buffer)
+{
+  throw std::logic_error("Not implemented.");
+}
+
+} // namespace alicia

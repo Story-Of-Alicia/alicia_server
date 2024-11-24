@@ -125,6 +125,9 @@ enum class CommandId
   RanchCmdAction = 0x1c9,
   RanchCmdActionNotify = 0x1ca,
 
+  RanchStuff = 0x1af,
+  RanchStuffOK = 0x1b0,
+
   Count = 0xFFFF
 };
 

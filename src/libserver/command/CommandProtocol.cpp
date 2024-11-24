@@ -86,7 +86,10 @@ const std::unordered_map<CommandId, std::string_view> commands = {
   {CommandId::RanchSnapshotNotify, "RanchSnapshotNotify"},
 
   {CommandId::RanchCmdAction, "RanchCmdAction"},
-  {CommandId::RanchCmdActionNotify, "RanchCmdActionNotify"}
+  {CommandId::RanchCmdActionNotify, "RanchCmdActionNotify"},
+
+  {CommandId::RanchStuff, "RanchStuff"},
+  {CommandId::RanchStuffOK, "RanchStuffOK"}
 };
 
 } // namespace anon

@@ -452,17 +452,56 @@ struct RanchCommandLeaveRanchNotify
 //! Serverbound heartbeat command.
 struct RanchCommandHeartbeat
 {
-  //! Writes the command to a provided sink buffer.
+  //! Writes the command to the provided sink stream.
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
     const RanchCommandHeartbeat& command, SinkStream& buffer);
 
-  //! Reader a command from a provided source buffer.
+  //! Reads a command from the provided source stream.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
     RanchCommandHeartbeat& command, SourceStream& buffer);
+};
+
+//! Serverbound RanchStuff command.
+struct RanchCommandRanchStuff
+{
+  uint32_t eventId{};
+  int32_t value{};
+
+  //! Writes the command to the provided sink stream.
+  //! @param command Command.
+  //! @param buffer Sink buffer.
+  static void Write(
+    const RanchCommandRanchStuff& command, SinkStream& buffer);
+
+  //! Reads a command from the provided source stream.
+  //! @param command Command.
+  //! @param buffer Source buffer.
+  static void Read(
+    RanchCommandRanchStuff& command, SourceStream& buffer);
+};
+
+// Clientbound RanchStuffOK command.
+struct RanchCommandRanchStuffOK
+{
+  uint32_t eventId{};
+  int32_t moneyIncrement{};
+  int32_t totalMoney{};
+
+  //! Writes the command to the provided sink stream.
+  //! @param command Command.
+  //! @param buffer Sink buffer.
+  static void Write(
+    const RanchCommandRanchStuffOK& command, SinkStream& buffer);
+
+  //! Reads a command from the provided source stream.
+  //! @param command Command.
+  //! @param buffer Source buffer.
+  static void Read(
+    RanchCommandRanchStuffOK& command, SourceStream& buffer);
 };
 
 // TODO Quest commands: RanchCommandUpdateDailyQuest, RanchCommandEmblemList, RanchCommandRequestNpcDressList, etc.

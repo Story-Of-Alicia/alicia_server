@@ -209,6 +209,7 @@ CommandServer::CommandServer(std::string name)
           // Indicate that the bytes read until now
           // shouldn't be consumed, as we expect more data to arrive.
           consumeBytesOnExit = false;
+
           return;
         }
 
@@ -240,6 +241,18 @@ CommandServer::CommandServer(std::string name)
 
             // Extract the padding from the code.
             const auto padding = code & 7;
+
+            // The command is malformed, if the provided command data
+            // size is smaller or equal to the generated padding.
+            if (padding >= commandDataSize)
+            {
+              throw std::runtime_error(
+                std::format(
+                  "Malformed command: Bad command data size '{}', padding is {}.",
+                  magic.length,
+                  padding).c_str());
+            }
+
             const auto actualCommandDataSize = commandDataSize - padding;
 
             // Source stream of the command data.
