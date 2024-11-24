@@ -55,11 +55,16 @@ public:
     ClientId clientId, const
     LobbyCommandEnterRanch& requestEnterRanch);
 
+  //!
+  void HandleGetMessengerInfo(
+    ClientId clientId, const
+    LobbyCommandGetMessengerInfo& requestMessengerInfo);
+
 private:
   CommandServer& _lobbyServer;
 
   std::unordered_map<UserId, std::string> _userTokens;
-  std::unordered_map<UserId, ClientId> _clients;
+  std::unordered_map<ClientId, UserId> _clients;
 
   std::unordered_map<UserId, User> _users;
 };

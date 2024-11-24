@@ -47,7 +47,7 @@ int main()
   // Lobby thread.
   std::jthread lobbyThread([]()
   {
-    alicia::CommandServer lobbyServer;
+    alicia::CommandServer lobbyServer("Lobby");
     g_loginDirector = std::make_unique<alicia::LoginDirector>(lobbyServer);
 
     // Handlers
@@ -140,15 +140,22 @@ int main()
         g_loginDirector->HandleEnterRanch(clientId, enterRanch);
       });
 
+    lobbyServer.RegisterCommandHandler<alicia::LobbyCommandGetMessengerInfo>(
+      alicia::CommandId::LobbyGetMessengerInfo,
+      [](alicia::ClientId clientId, const auto& message)
+      {
+        g_loginDirector->HandleGetMessengerInfo(clientId, message);
+
+      });
+
     // Host
-    spdlog::debug("Lobby server hosted on 127.0.0.1:{}", 10030);
-    lobbyServer.Host("127.0.0.1", 10030);
+    lobbyServer.Host("0.0.0.0", 10030);
   });
 
   // Ranch thread.
   std::jthread ranchThread([]()
   {
-    alicia::CommandServer ranchServer;
+    alicia::CommandServer ranchServer("Ranch");
     g_ranchDirector = std::make_unique<alicia::RanchDirector>(ranchServer);
 
     ranchServer.RegisterCommandHandler(
@@ -161,8 +168,42 @@ int main()
         g_ranchDirector->HandleEnterRanch(clientId, enterRanch);
       });
 
-    spdlog::debug("Ranch server hosted on 127.0.0.1:{}", 10031);
-    ranchServer.Host("127.0.0.1", 10031);
+    ranchServer.RegisterCommandHandler(
+      alicia::CommandId::RanchSnapshot,
+      [](alicia::ClientId clientId, auto& buffer)
+      {
+        alicia::RanchCommandRanchSnapshot snapshot;
+        alicia::RanchCommandRanchSnapshot::Read(snapshot, buffer);
+
+        g_ranchDirector->HandleSnapshot(clientId, snapshot);
+      });
+
+    ranchServer.RegisterCommandHandler(
+      alicia::CommandId::RanchCmdAction,
+      [](alicia::ClientId clientId, auto& buffer)
+      {
+        alicia::RanchCommandRanchCmdAction cmdAction;
+        alicia::RanchCommandRanchCmdAction::Read(cmdAction, buffer);
+
+        g_ranchDirector->HandleCmdAction(clientId, cmdAction);
+      });
+
+    ranchServer.RegisterCommandHandler<alicia::RanchCommandRanchStuff>(
+      alicia::CommandId::RanchStuff,
+      [](alicia::ClientId clientId, auto& command)
+      {
+        g_ranchDirector->HandleRanchStuff(clientId, command);
+      });
+
+    ranchServer.Host("0.0.0.0", 10031);
+  });
+
+  // Messenger thread.
+  std::jthread messengerThread([]()
+  {
+    alicia::CommandServer messengerServer("Messenger");
+    // TODO: Messenger
+    messengerServer.Host("0.0.0.0", 10032);
   });
 
   return 0;

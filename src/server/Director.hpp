@@ -36,17 +36,19 @@ struct User
 
   std::vector<Item> characterEquipment;
 
-  HorseId mountedOn{};
+  HorseId mountUid{};
   std::unordered_map<HorseId, HorseData> horses{};
 
   std::chrono::system_clock::time_point lastHeartbeat;
+
+  RanchId ranchUid{};
 };
 
 struct Ranch
 {
   std::string ranchName;
   std::vector<HorseId> horses;
-  std::vector<UserId> players;
+  std::vector<UserId> users;
 };
 
 }

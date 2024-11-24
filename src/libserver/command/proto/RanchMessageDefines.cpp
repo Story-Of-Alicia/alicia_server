@@ -53,9 +53,17 @@ void WriteMountFamilyTreeItem(
     .Write(mountFamilyTreeItem.unk3);
 }
 
-void WriteRanchPlayer(SinkStream& buf, const RanchPlayer& ranchPlayer)
+void WriteRanchHorse(
+  SinkStream& buf, const RanchHorse& ranchHorse)
 {
-  buf.Write(ranchPlayer.id)
+  buf.Write(ranchHorse.ranchIndex);
+  WriteHorse(buf, ranchHorse.horse);
+}
+
+void WriteRanchPlayer(
+  SinkStream& buf, const RanchPlayer& ranchPlayer)
+{
+  buf.Write(ranchPlayer.userUid)
     .Write(ranchPlayer.name)
     .Write(ranchPlayer.gender)
     .Write(ranchPlayer.unk0)
@@ -64,6 +72,7 @@ void WriteRanchPlayer(SinkStream& buf, const RanchPlayer& ranchPlayer)
 
   WriteCharacter(buf, ranchPlayer.character);
   WriteHorse(buf, ranchPlayer.horse);
+
   buf.Write(static_cast<uint8_t>(
     ranchPlayer.characterEquipment.size()));
   for (const Item& item : ranchPlayer.characterEquipment)
@@ -87,7 +96,7 @@ void WriteRanchPlayer(SinkStream& buf, const RanchPlayer& ranchPlayer)
 
   // Struct6
   const auto& struct6 = ranchPlayer.anotherPlayerRelatedThing;
-  buf.Write(struct6.horseUId)
+  buf.Write(struct6.mountUid)
     .Write(struct6.val1)
     .Write(struct6.val2);
 
@@ -198,9 +207,9 @@ void RanchCommandEnterRanch::Write(
 void RanchCommandEnterRanch::Read(
   RanchCommandEnterRanch& command, SourceStream& buffer)
 {
-  buffer.Read(command.unk0)
-    .Read(command.unk1)
-    .Read(command.unk2);
+  buffer.Read(command.userUid)
+    .Read(command.code)
+    .Read(command.ranchUid);
 }
 
 void RanchCommandEnterRanchOK::Write(
@@ -213,13 +222,13 @@ void RanchCommandEnterRanchOK::Write(
   buffer.Write(static_cast<uint8_t>(command.horses.size()));
   for (auto& horse : command.horses)
   {
-    buffer.Write(horse);
+    WriteRanchHorse(buffer, horse);
   }
 
-  buffer.Write(static_cast<uint8_t>(command.players.size()));
-  for (auto& player : command.players)
+  buffer.Write(static_cast<uint8_t>(command.users.size()));
+  for (auto& player : command.users)
   {
-    buffer.Write(player);
+    WriteRanchPlayer(buffer, player);
   }
 
   buffer.Write(command.unk1)
@@ -240,7 +249,6 @@ void RanchCommandEnterRanchOK::Write(
     .Write(command.unk8)
     .Write(command.unk9);
 
-  // TODO: Figure out how to encode the length in unk7 bitset
   for (auto& unk : command.unk10)
   {
     buffer.Write(unk.horseTID)
@@ -297,9 +305,9 @@ void RanchCommandRanchSnapshot::Write(
 void RanchCommandRanchSnapshot::Read(
   RanchCommandRanchSnapshot& command, SourceStream& buffer)
 {
-  uint16_t snapshotLength;
-  buffer.Read(snapshotLength);
+  buffer.Read(command.unk0);
 
+  auto snapshotLength = buffer.Size() - buffer.GetCursor();
   command.snapshot.resize(snapshotLength);
   buffer.Read(command.snapshot.data(), snapshotLength);
 }
@@ -308,7 +316,7 @@ void RanchCommandRanchSnapshotNotify::Write(
   const RanchCommandRanchSnapshotNotify& command, SinkStream& buffer)
 {
   buffer.Write(command.ranchIndex);
-  buffer.Write(static_cast<uint16_t>(command.snapshot.size()));
+  buffer.Write(command.unk0);
   buffer.Write(command.snapshot.data(), command.snapshot.size());
 }
 
@@ -327,9 +335,9 @@ void RanchCommandRanchCmdAction::Write(
 void RanchCommandRanchCmdAction::Read(
   RanchCommandRanchCmdAction& command, SourceStream& buffer)
 {
-  uint16_t length;
-  buffer.Read(length);
+  buffer.Read(command.unk0);
 
+  auto length = buffer.Size() - buffer.GetCursor();
   command.snapshot.resize(length);
   buffer.Read(command.snapshot.data(), length);
 }
@@ -406,13 +414,44 @@ void RanchCommandLeaveRanchNotify::Read(
 }
 
 void RanchCommandHeartbeat::Write(
-  const RanchCommandHeartbeat& command, SinkStream& buffer)
+  const RanchCommandHeartbeat& command,
+  SinkStream& buffer)
 {
 }
 
 void RanchCommandHeartbeat::Read(
-  RanchCommandHeartbeat& command, SourceStream& buffer)
+  RanchCommandHeartbeat& command,
+  SourceStream& buffer) {}
+
+void RanchCommandRanchStuff::Write(
+  const RanchCommandRanchStuff& command,
+  SinkStream& buffer)
 {
+  throw std::logic_error("Not implemented.");
 }
 
+void RanchCommandRanchStuff::Read(
+  RanchCommandRanchStuff& command,
+  SourceStream& buffer)
+{
+  buffer.Read(command.eventId)
+    .Read(command.value);
 }
+
+void RanchCommandRanchStuffOK::Write(
+  const RanchCommandRanchStuffOK& command,
+  SinkStream& buffer)
+{
+  buffer.Write(command.eventId)
+    .Write(command.moneyIncrement)
+    .Write(command.totalMoney);
+}
+
+void RanchCommandRanchStuffOK::Read(
+  RanchCommandRanchStuffOK& command,
+  SourceStream& buffer)
+{
+  throw std::logic_error("Not implemented.");
+}
+
+} // namespace alicia

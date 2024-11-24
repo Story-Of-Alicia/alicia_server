@@ -159,9 +159,9 @@ struct RanchCommandMountFamilyTreeCancel
 //! Serverbound get messenger info command.
 struct RanchCommandEnterRanch
 {
-  uint32_t unk0; // character id? ranch id?
-  uint32_t unk1; // probably the auth token from LobbyCommandEnterRanchOK
-  uint32_t unk2; // char id again? ranch id?
+  uint32_t userUid;
+  uint32_t code; // probably the auth token from LobbyCommandEnterRanchOK
+  uint32_t ranchUid; // char id again? ranch id?
 
   //! Writes the command to a provided sink buffer.
   //! @param command Command.
@@ -188,7 +188,7 @@ struct RanchCommandEnterRanchOK
   // If the horse list takes indexes 0, 1 and 2
   // the player list must use indexes 3, 4 and 5.
   std::vector<RanchHorse> horses{};
-  std::vector<RanchPlayer> players{};
+  std::vector<RanchPlayer> users{};
 
   uint64_t unk1{};
   uint32_t unk2{};
@@ -224,8 +224,7 @@ struct RanchCommandEnterRanchOK
     uint32_t unk7{};
   };
   
-  // max length 3
-  std::vector<Unk10> unk10;
+  std::array<Unk10, 3> unk10;
 
   struct Unk11 {
     uint8_t unk0{};
@@ -285,7 +284,7 @@ struct RanchCommandEnterRanchNotify
 //! Serverbound get messenger info command.
 struct RanchCommandRanchSnapshot
 {
-  // Packet consists of short specifying length, and byte array with the contents
+  uint8_t unk0{};
   std::vector<uint8_t> snapshot{};
 
   //! Writes the command to a provided sink buffer.
@@ -305,7 +304,7 @@ struct RanchCommandRanchSnapshot
 struct RanchCommandRanchSnapshotNotify
 {
   uint16_t ranchIndex{};
-  // Packet consists of short specifying length, and byte array with the contents
+  uint8_t unk0{};
   std::vector<uint8_t> snapshot{};
 
   //! Writes the command to a provided sink buffer.
@@ -325,7 +324,7 @@ struct RanchCommandRanchSnapshotNotify
 //! Serverbound get messenger info command.
 struct RanchCommandRanchCmdAction
 {
-  // Packet consists of short specifying length, and byte array with the contents
+  uint16_t unk0{};
   std::vector<uint8_t> snapshot{};
 
   //! Writes the command to a provided sink buffer.
@@ -453,17 +452,56 @@ struct RanchCommandLeaveRanchNotify
 //! Serverbound heartbeat command.
 struct RanchCommandHeartbeat
 {
-  //! Writes the command to a provided sink buffer.
+  //! Writes the command to the provided sink stream.
   //! @param command Command.
   //! @param buffer Sink buffer.
   static void Write(
     const RanchCommandHeartbeat& command, SinkStream& buffer);
 
-  //! Reader a command from a provided source buffer.
+  //! Reads a command from the provided source stream.
   //! @param command Command.
   //! @param buffer Source buffer.
   static void Read(
     RanchCommandHeartbeat& command, SourceStream& buffer);
+};
+
+//! Serverbound RanchStuff command.
+struct RanchCommandRanchStuff
+{
+  uint32_t eventId{};
+  int32_t value{};
+
+  //! Writes the command to the provided sink stream.
+  //! @param command Command.
+  //! @param buffer Sink buffer.
+  static void Write(
+    const RanchCommandRanchStuff& command, SinkStream& buffer);
+
+  //! Reads a command from the provided source stream.
+  //! @param command Command.
+  //! @param buffer Source buffer.
+  static void Read(
+    RanchCommandRanchStuff& command, SourceStream& buffer);
+};
+
+// Clientbound RanchStuffOK command.
+struct RanchCommandRanchStuffOK
+{
+  uint32_t eventId{};
+  int32_t moneyIncrement{};
+  int32_t totalMoney{};
+
+  //! Writes the command to the provided sink stream.
+  //! @param command Command.
+  //! @param buffer Sink buffer.
+  static void Write(
+    const RanchCommandRanchStuffOK& command, SinkStream& buffer);
+
+  //! Reads a command from the provided source stream.
+  //! @param command Command.
+  //! @param buffer Source buffer.
+  static void Read(
+    RanchCommandRanchStuffOK& command, SourceStream& buffer);
 };
 
 // TODO Quest commands: RanchCommandUpdateDailyQuest, RanchCommandEmblemList, RanchCommandRequestNpcDressList, etc.

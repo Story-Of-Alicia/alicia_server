@@ -247,10 +247,14 @@ void LobbyCommandLoginOK::Write(
   buffer.Write(static_cast<uint8_t>(command.val5.size()));
   for (const auto& val : command.val5)
   {
-    buffer.Write(val.val0)
-      .Write(val.val1)
-      .Write(val.val2)
-      .Write(val.val3);
+    buffer.Write(val.val0);
+
+    buffer.Write(static_cast<uint8_t>(val.val1.size()));
+    for (const auto& nestedVal : val.val1)
+    {
+      buffer.Write(nestedVal.val1)
+            .Write(nestedVal.val2);
+    }
   }
 
   //
@@ -326,7 +330,7 @@ void LobbyCommandLoginOK::Write(
 
   // Struct6
   const auto& struct6 = command.val17;
-  buffer.Write(struct6.horseUId)
+  buffer.Write(struct6.mountUid)
     .Write(struct6.val1)
     .Write(struct6.val2);
 
@@ -650,8 +654,8 @@ void LobbyCommandEnterRanchOK::Write(
   const LobbyCommandEnterRanchOK& command,
   SinkStream& buffer)
 {
-  buffer.Write(command.unk0)
-    .Write(command.unk1)
+  buffer.Write(command.ranchUid)
+    .Write(command.code)
     .Write(command.ip)
     .Write(command.port);
 }

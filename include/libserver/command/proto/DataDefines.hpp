@@ -233,7 +233,7 @@ struct Struct5
 //!
 struct Struct6
 {
-  uint32_t horseUId{};
+  uint32_t mountUid{};
   uint32_t val1{};
   uint32_t val2{};
 };
@@ -256,7 +256,7 @@ struct RanchHorse {
 //!
 struct RanchPlayer
 {
-  uint32_t id{};
+  uint32_t userUid{};
   std::string name{};
   Gender gender{};
   uint8_t unk0{};
@@ -265,7 +265,7 @@ struct RanchPlayer
 
   Character character{};
   Horse horse{};
-  std::array<Item, 16> characterEquipment{};
+  std::vector<Item> characterEquipment{};
 
   Struct5 playerRelatedThing{};
 

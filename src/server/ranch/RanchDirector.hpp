@@ -20,10 +20,18 @@ public:
     ClientId clientId,
     const RanchCommandEnterRanch& enterRanch);
 
+  void HandleSnapshot(
+    ClientId clientId,
+    const RanchCommandRanchSnapshot& snapshot);
+
+  void HandleCmdAction(ClientId clientId, const RanchCommandRanchCmdAction& action);
+
+  void HandleRanchStuff(ClientId clientId, const RanchCommandRanchStuff& command);
+
 private:
   CommandServer& _ranchServer;
 
-  std::unordered_map<UserId, ClientId> _clients{};
+  std::unordered_map<ClientId, UserId> _clients{};
   std::unordered_map<UserId, User> _users{};
   std::unordered_map<RanchId, Ranch> _ranches{};
 };

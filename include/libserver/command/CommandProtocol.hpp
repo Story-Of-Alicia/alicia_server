@@ -108,10 +108,25 @@ enum class CommandId
   LobbyEnterRanchOK = 0xfd,
   LobbyEnterRanchCancel = 0xfe,
 
+  LobbyGetMessengerInfo = 0x186,
+  LobbyGetMessengerInfoOK = 0x187,
+  LobbyGetMessengerInfoCancel = 0x188,
+
   RanchEnterRanch = 0x12b,
   RanchEnterRanchCancel = 0x12d,
   RanchEnterRanchNotify = 0x12e,
   RanchEnterRanchOK = 0x12c,
+
+  RanchHeartbeat = 0x9e,
+
+  RanchSnapshot = 0x139,
+  RanchSnapshotNotify = 0x13a,
+
+  RanchCmdAction = 0x1c9,
+  RanchCmdActionNotify = 0x1ca,
+
+  RanchStuff = 0x1af,
+  RanchStuffOK = 0x1b0,
 
   Count = 0xFFFF
 };
