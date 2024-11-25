@@ -86,6 +86,6 @@ private:
   std::unordered_map<ClientId, DatumUid> _clientUsers;
 };
 
-} // namespace alicia
+}
 
 #endif //LOBBYDIRECTOR_HPP
