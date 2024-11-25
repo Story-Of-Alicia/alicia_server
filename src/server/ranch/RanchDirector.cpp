@@ -6,6 +6,8 @@
 
 #include "spdlog/spdlog.h"
 
+#include <algorithm>
+
 namespace  alicia
 {
 
@@ -22,16 +24,9 @@ RanchDirector::RanchDirector(CommandServer& ranchServer) noexcept
       Item{.uid = 100, .tid = 30035, .val = 0, .count = 1}
     },
     .mountUid = 2,
+    .horses = {2, 3},
     .ranchUid = 100
   };
-  _users[1].horses[2] = {
-    .tid = 0x4E21,
-    .name = "idontunderstand"
-  };  
-  _users[1].horses[3] = {
-    .tid = 0x4E21,
-    .name = "iunderstand"
-  };  
 
   _users[4] = {
     .nickName = "Laith",
@@ -42,21 +37,31 @@ RanchDirector::RanchDirector(CommandServer& ranchServer) noexcept
       Item{.uid = 100, .tid = 30035, .val = 0, .count = 1}
     },
     .mountUid = 5,
+    .horses = {5, 6},
     .ranchUid = 100
   };
-  _users[4].horses[5] = {
+  
+  _horses[2] = {
+    .tid = 0x4E21,
+    .name = "idontunderstand"
+  };  
+  _horses[3] = {
+    .tid = 0x4E21,
+    .name = "iunderstand"
+  };  
+  _horses[5] = {
     .tid = 0x4E21,
     .name = "youdontseemtounderstand"
   };
-  _users[4].horses[6] = {
+  _horses[6] = {
     .tid = 0x4E21,
     .name = "Ramon"
   };
 
   _ranches[100] = {
     .ranchName = "SoA ranch",
-    .horses = { 3 },
-    .users = { 1 }
+    .horses = { 3, 6 },
+    .users = {}
   };
 }
 
@@ -64,12 +69,14 @@ void RanchDirector::HandleEnterRanch(
     ClientId clientId,
     const RanchCommandEnterRanch& enterRanch)
 {
-  // TODO: Something better.
-  const RanchId ranchUid = enterRanch.ranchUid;
-  const auto& ranch = _ranches[ranchUid];
-  //ranch.players.push_back(userId);
-
   _clients[clientId] = enterRanch.userUid;
+
+  const UserId enteringUserId = _clients[clientId];
+  const RanchId ranchUid = enterRanch.ranchUid;
+  auto& ranch = _ranches[ranchUid];
+  ranch.users.push_back(enteringUserId);
+
+  RanchPlayer enteringRanchPlayer;
 
   _ranchServer.SetCode(clientId, {});
   _ranchServer.QueueCommand(
@@ -89,11 +96,9 @@ void RanchDirector::HandleEnterRanch(
 
       uint16_t ranchEntityIndex = 0;
 
-      // TODO: things right
-      auto& ranchOwner = _users[enterRanch.userUid];
       for (const HorseId horseId : ranch.horses)
       {
-        const auto& horse = ranchOwner.horses[horseId];
+        const auto& horse = _horses[horseId];
         response.horses.push_back({
           .ranchIndex = ++ranchEntityIndex,
           .horse = {
@@ -173,9 +178,9 @@ void RanchDirector::HandleEnterRanch(
       for (const UserId userId : ranch.users)
       {
         auto& user = _users[userId];
-        const auto& horse = user.horses[user.mountUid];
+        auto& horse = _horses[user.mountUid];
 
-        response.users.push_back({
+        RanchPlayer ranchPlayer = {
           .userUid = userId,
           .name = user.nickName,
           .gender = user.gender,
@@ -267,30 +272,75 @@ void RanchDirector::HandleEnterRanch(
           },
           .ranchIndex = ++ranchEntityIndex,
           .anotherPlayerRelatedThing = {.mountUid = user.mountUid, .val1 = 0x12}
-        });
+        };
+
+        if (enteringUserId == userId)
+        {
+          enteringRanchPlayer = ranchPlayer;
+        }
+
+        response.users.push_back(ranchPlayer);
       }
       
       RanchCommandEnterRanchOK::Write(response, sink);
     });
+
+    // Notify to all other players of the entering player.
+    RanchCommandEnterRanchNotify notification = {
+      .player = enteringRanchPlayer
+    };
+    for(const UserId userId : ranch.users)
+    {
+      if (userId != enteringUserId)
+      {
+        auto result = std::find_if(_clients.begin(), _clients.end(), [userId](const auto& pair){ return pair.second == userId; });
+        assert(result != _clients.end());
+        ClientId ranchUserClientId = result->first;
+
+        _ranchServer.QueueCommand(
+          ranchUserClientId, 
+          CommandId::RanchEnterRanchNotify, 
+          [&](auto& sink){
+            RanchCommandEnterRanchNotify::Write(notification, sink);
+          });
+      }
+    }
+
 }
 
 void RanchDirector::HandleSnapshot(
   ClientId clientId, 
   const RanchCommandRanchSnapshot& snapshot)
 {
-  // TODO: Actual implementation of it
-  _ranchServer.QueueCommand(
-    clientId, 
-    CommandId::RanchSnapshotNotify, 
-    [&](auto& sink)
+  UserId userId = _clients[clientId];
+  User& user = _users[userId];
+  auto& ranch = _ranches[user.ranchUid];
+  auto found = std::find(ranch.users.begin(), ranch.users.end(), userId);
+  uint16_t ranchIndex = ranch.horses.size() + (found - ranch.users.begin()) + 1;
+
+
+  RanchCommandRanchSnapshotNotify response{
+    .ranchIndex = ranchIndex,
+    .unk0 = snapshot.unk0,
+    .snapshot = snapshot.snapshot
+  };
+
+  for(auto& ranchUser : ranch.users)
+  {
+    if (ranchUser != userId)
     {
-      RanchCommandRanchSnapshotNotify response{
-        .ranchIndex = 3,
-        .unk0 = snapshot.unk0,
-        .snapshot = snapshot.snapshot
-      };
-      RanchCommandRanchSnapshotNotify::Write(response, sink);
-    });
+      auto result = std::find_if(_clients.begin(), _clients.end(), [ranchUser](const auto& pair){ return pair.second == ranchUser; });
+      assert(result != _clients.end());
+      ClientId ranchUserClientId = result->first;
+
+      _ranchServer.QueueCommand(
+        ranchUserClientId, 
+        CommandId::RanchSnapshotNotify, 
+        [&](auto& sink){
+          RanchCommandRanchSnapshotNotify::Write(response, sink);
+        });
+    }
+  }
 }
 
 void RanchDirector::HandleCmdAction(ClientId clientId, const RanchCommandRanchCmdAction& action)

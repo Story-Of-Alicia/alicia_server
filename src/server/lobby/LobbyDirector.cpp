@@ -28,16 +28,9 @@ LoginDirector::LoginDirector(CommandServer& lobbyServer) noexcept
       Item{.uid = 100, .tid = 30035, .val = 0, .count = 1}
     },
     .mountUid = 2,
+    .horses = {2, 3},
     .ranchUid = 100
   };
-  _users[1].horses[2] = {
-    .tid = 0x4E21,
-    .name = "idontunderstand"
-  };  
-  _users[1].horses[3] = {
-    .tid = 0x4E21,
-    .name = "iunderstand"
-  };  
 
   _userTokens[4] = "another test";
   _users[4] = {
@@ -49,13 +42,23 @@ LoginDirector::LoginDirector(CommandServer& lobbyServer) noexcept
       Item{.uid = 100, .tid = 30035, .val = 0, .count = 1}
     },
     .mountUid = 5,
+    .horses = {5, 6},
     .ranchUid = 100
   };
-  _users[4].horses[5] = {
+
+  _horses[2] = {
+    .tid = 0x4E21,
+    .name = "idontunderstand"
+  };  
+  _horses[3] = {
+    .tid = 0x4E21,
+    .name = "iunderstand"
+  };  
+  _horses[5] = {
     .tid = 0x4E21,
     .name = "youdontseemtounderstand"
   };
-  _users[4].horses[6] = {
+  _horses[6] = {
     .tid = 0x4E21,
     .name = "Ramon"
   };
@@ -115,7 +118,7 @@ void LoginDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
   _lobbyServer.QueueCommand(
     clientId,
     CommandId::LobbyLoginOK,
-    [&user, userId, scramblingConstant](SinkStream& sink)
+    [this, &user, userId, scramblingConstant](SinkStream& sink)
     {
       const WinFileTime time = UnixTimeToFileTime(std::chrono::system_clock::now());
 
@@ -180,8 +183,8 @@ void LoginDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
           },
         .horse =
           {.uid = user.mountUid,
-           .tid = user.horses[user.mountUid].tid,
-           .name = user.horses[user.mountUid].name,
+           .tid = this->_horses[user.mountUid].tid,
+           .name = this->_horses[user.mountUid].name,
            .parts = {.skinId = 0x2, .maneId = 0x3, .tailId = 0x3, .faceId = 0x3},
             .appearance =
               {.scale = 0x4,

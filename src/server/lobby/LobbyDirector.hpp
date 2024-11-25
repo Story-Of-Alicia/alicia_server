@@ -67,6 +67,7 @@ private:
   std::unordered_map<ClientId, UserId> _clients;
 
   std::unordered_map<UserId, User> _users;
+  std::unordered_map<HorseId, HorseData> _horses;
 };
 
 }
