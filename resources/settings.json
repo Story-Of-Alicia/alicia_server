@@ -1,5 +1,10 @@
 {
-  "Lobby": {
-
+  "lobby": {
+    "address": "localhost",
+    "port": 10030
+  },
+  "ranch": {
+    "address": "localhost",
+    "port": 10031
   }
 }
