@@ -77,4 +77,10 @@ link_directories(${LIBPQXX_LIBRARY_DIRS})
 # Make libpqxx available globally
 set(PROJECT_LIBRARIES ${PROJECT_LIBRARIES} ${LIBPQXX_LIBRARIES})
 
-
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    message(STATUS "Adding -fexperimental-library for Clang compiler")
+    target_compile_options(alicia-libserver
+        PRIVATE -fexperimental-library)
+    target_compile_options(alicia-server
+        PRIVATE -fexperimental-library)
+endif()
