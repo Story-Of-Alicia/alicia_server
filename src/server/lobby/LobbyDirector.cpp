@@ -1,67 +1,113 @@
 //
-// Created by rgnter on 10/11/2024.
+// Created by rgnter on 25/11/2024.
 //
+
+#include "server/lobby/LobbyDirector.hpp"
+#include "server/DataDirector.hpp"
 
 #include <random>
 
-#include "LobbyDirector.hpp"
-
-#include "spdlog/spdlog.h"
-
-namespace  alicia
+namespace
 {
 
 std::random_device rd;
 
-LoginDirector::LoginDirector(CommandServer& lobbyServer) noexcept
-    : _lobbyServer(lobbyServer)
+constexpr std::unordered_map<alicia::DatumUid, std::string> _userTokens {
+  {1, "test"},
+  {2, "another test"},
+};
+
+} // anon namespace
+
+namespace alicia
 {
 
-  // TODO: Dummy data
-  _userTokens[1] = "test";
-  _users[1] = {
-    .nickName = "rgnt",
-    .gender = alicia::Gender::Boy,
-    .level = 60,
-    .carrots = 5000,
-    .characterEquipment = {
-      Item{.uid = 100, .tid = 30035, .val = 0, .count = 1}
-    },
-    .mountUid = 2,
-    .ranchUid = 100
-  };
-  _users[1].horses[2] = {
-    .tid = 0x4E21,
-    .name = "idontunderstand"
-  };  
-  _users[1].horses[3] = {
-    .tid = 0x4E21,
-    .name = "iunderstand"
-  };  
+LobbyDirector::LobbyDirector(
+  DataDirector& dataDirector,
+  Settings settings)
+  : _settings(std::move(settings))
+  , _dataDirector(_dataDirector)
+  , _server("Lobby")
+{
+  // Handlers
 
-  _userTokens[4] = "another test";
-  _users[4] = {
-    .nickName = "Laith",
-    .gender = alicia::Gender::Unspecified,
-    .level = 1,
-    .carrots = 0,
-    .characterEquipment = {
-      Item{.uid = 100, .tid = 30035, .val = 0, .count = 1}
-    },
-    .mountUid = 5,
-    .ranchUid = 100
-  };
-  _users[4].horses[5] = {
-    .tid = 0x4E21,
-    .name = "youdontseemtounderstand"
-  };
-  _users[4].horses[6] = {
-    .tid = 0x4E21,
-    .name = "Ramon"
-  };
+  // Login handler
+  _server.RegisterCommandHandler<LobbyCommandLogin>(
+    CommandId::LobbyLogin,
+    [](ClientId clientId, const auto& message)
+    {
+      HandleUserLogin(clientId, message);
+    });
+
+  // Heartbeat handler
+  _server.RegisterCommandHandler<LobbyCommandHeartbeat>(
+    CommandId::LobbyHeartbeat,
+    [](ClientId clientId, const auto& message)
+    {
+      HandleHeartbeat(clientId, message);
+    });
+
+  // ShowInventory handler
+  _server.RegisterCommandHandler<LobbyCommandShowInventory>(
+    CommandId::LobbyShowInventory,
+    [](ClientId clientId, const auto& message)
+    {
+      HandleShowInventory(clientId, message);
+    });
+
+  // AchievementCompleteList handler
+  _server.RegisterCommandHandler<LobbyCommandAchievementCompleteList>(
+    CommandId::LobbyAchievementCompleteList,
+    [](ClientId clientId, const auto& message)
+    {
+      HandleAchievementCompleteList(clientId, message);
+    });
+
+  // RequestLeagueInfo
+  _server.RegisterCommandHandler<LobbyCommandRequestLeagueInfo>(
+    CommandId::LobbyRequestLeagueInfo,
+    [](ClientId clientId, const auto& message)
+    {
+      HandleRequestLeagueInfo(clientId, message);
+    });
+
+  // RequestQuestList handler
+  _server.RegisterCommandHandler<LobbyCommandRequestQuestList>(
+    CommandId::LobbyRequestQuestList,
+    [](ClientId clientId, const auto& message)
+    {
+      HandleRequestQuestList(clientId, message);
+    });
+
+  // RequestSpecialEventList
+  _server.RegisterCommandHandler<LobbyCommandRequestSpecialEventList>(
+    CommandId::LobbyRequestSpecialEventList,
+    [](ClientId clientId, const auto& message)
+    {
+      HandleRequestSpecialEventList(clientId, message);
+    });
+
+  // EnterRanch
+  _server.RegisterCommandHandler<LobbyCommandEnterRanch>(
+    CommandId::LobbyEnterRanch,
+    [](ClientId clientId, const auto& message)
+    {
+      HandleEnterRanch(clientId, message);
+    });
+
+  // GetMessengerInfo
+  _server.RegisterCommandHandler<LobbyCommandGetMessengerInfo>(
+    CommandId::LobbyGetMessengerInfo,
+    [](ClientId clientId, const auto& message)
+    {
+      HandleGetMessengerInfo(clientId, message);
+    });
+
+  // Host the server.
+  _server.Host(_settings.address, _settings.port);
 }
 
-void LoginDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& login)
+void LobbyDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& login)
 {
   assert(login.constant0 == 50);
   assert(login.constant1 == 281);
@@ -72,7 +118,7 @@ void LoginDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
   // Cancel the login if the user token doesn't exist.
   if (userTokenItr == _userTokens.cend() || login.authKey != userTokenItr->second)
   {
-    _lobbyServer.QueueCommand(
+    _server.QueueCommand(
       clientId,
       CommandId::LobbyLoginCancel,
       [](SinkStream& buffer)
@@ -85,11 +131,185 @@ void LoginDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
     return;
   }
 
-  // Cancel the login if the user doesn't exist.
-  const auto& userItr = _users.find(login.memberNo);
-  if (userItr == _users.cend())
+  try
   {
-    _lobbyServer.QueueCommand(
+    const DatumUid userId = login.memberNo;
+
+    _dataDirector.GetUser(
+      login.memberNo,
+      [this, clientId, userId](const User& user)
+      {
+        _clientUsers[clientId] = userId;
+        // Set XOR scrambler code
+        uint32_t scramblingConstant = rd(); // TODO: Use something more secure
+        XorCode code;
+        *((uint32_t*) code.data()) = scramblingConstant;
+        _server.SetCode(clientId, code);
+
+        _server.QueueCommand(
+          clientId,
+          CommandId::LobbyLoginOK,
+          [&user, userId, scramblingConstant](SinkStream& sink)
+          {
+            const WinFileTime time = UnixTimeToFileTime(std::chrono::system_clock::now());
+
+            const LobbyCommandLoginOK command{
+              .lobbyTime =
+                {.dwLowDateTime = static_cast<uint32_t>(time.dwLowDateTime),
+                 .dwHighDateTime = static_cast<uint32_t>(time.dwHighDateTime)},
+              .val0 = 0xCA794,
+
+              .selfUid = userId,
+              .nickName = user.nickName,
+              .motd = "Welcome to Story Of Alicia!",
+              .profileGender = user.gender,
+              .status = "Mentally unstable",
+
+              //.characterEquipment = user.characterEquipment,
+              .horseEquipment = {},
+
+              .level = user.level,
+              .carrots = user.carrots,
+              .val1 = 0x6130,
+              .val2 = 0xFF,
+              .val3 = 0xFF,
+
+              .optionType = OptionType::Value,
+              .valueOptions = 0x64,
+
+              .ageGroup = AgeGroup::Adult,
+              .val4 = 0,
+
+              .val5 =
+                {{0x18, {{2, 1}}},
+                 {0x1F, {{2, 1}}},
+                 {0x23, {{2, 1}}},
+                 {0x29, {{2, 1}}},
+                 {0x2A, {{2, 1}}},
+                 {0x2B, {{2, 1}}},
+                 {0x2E, {{2, 1}}}},
+
+              .val6 = "val6",
+
+              // TODO: Move somewhere configurable
+              .address = 2130706433, // 127.0.0.1
+              .port = 10031,         // 10031
+
+              .scramblingConstant = scramblingConstant,
+
+              .character =
+                {
+                .parts = {
+                  .charId = 10,
+                  .mouthSerialId = 0,
+                  .faceSerialId = 0,
+                  .val0 = 255},
+                 .appearance = {
+                    .val0 = 0xFFFF,
+                    .headSize = 1,
+                    .height = 2,
+                    .thighVolume = 2,
+                    .legVolume = 2,
+                    .val1 = 0xFF}
+                },
+              .horse =
+                {.uid = user.mountUid,
+                 .tid = user.horses[user.mountUid].tid,
+                 .name = user.horses[user.mountUid].name,
+                 .parts = {.skinId = 0x2, .maneId = 0x3, .tailId = 0x3, .faceId = 0x3},
+                  .appearance =
+                    {.scale = 0x4,
+                      .legLength = 0x4,
+                      .legVolume = 0x5,
+                      .bodyLength = 0x3,
+                      .bodyVolume = 0x4},
+                  .stats =
+                    {
+                      .agility = 9,
+                      .spirit = 9,
+                      .speed = 9,
+                      .strength = 9,
+                      .ambition = 0x13
+                    },
+                  .rating = 0,
+                  .clazz = 0x15,
+                  .val0 = 1,
+                  .grade = 5,
+                  .growthPoints = 2,
+                  .vals0 =
+                    {
+                      .stamina = 0x7d0,
+                      .attractiveness = 0x3c,
+                      .hunger = 0x21c,
+                      .val0 = 0x00,
+                      .val1 = 0x03E8,
+                      .val2 = 0x00,
+                      .val3 = 0x00,
+                      .val4 = 0x00,
+                      .val5 = 0x03E8,
+                      .val6 = 0x1E,
+                      .val7 = 0x0A,
+                      .val8 = 0x0A,
+                      .val9 = 0x0A,
+                      .val10 = 0x00,
+                    },
+                  .vals1 =
+                    {
+                      .val0 = 0x00,
+                      .val1 = 0x00,
+                      .val2 = 0xb8a167e4,
+                      .val3 = 0x02,
+                      .val4 = 0x00,
+                      .classProgression = 0x32e7d,
+                      .val5 = 0x00,
+                      .val6 = 0x00,
+                      .val7 = 0x00,
+                      .val8 = 0x00,
+                      .val9 = 0x00,
+                      .val10 = 0x04,
+                      .val11 = 0x00,
+                      .val12 = 0x00,
+                      .val13 = 0x00,
+                      .val14 = 0x00,
+                      .val15 = 0x01
+                    },
+                  .mastery =
+                    {
+                      .magic = 0x1fe,
+                      .jumping = 0x421,
+                      .sliding = 0x5f8,
+                      .gliding = 0xcfa4,
+                    },
+                  .val16 = 0xb8a167e4,
+                  .val17 = 0},
+              .val7 =
+                {.values =
+                   {{0x6, 0x0},
+                    {0xF, 0x4},
+                    {0x1B, 0x2},
+                    {0x1E, 0x0},
+                    {0x1F, 0x0},
+                    {0x25, 0x7530},
+                    {0x35, 0x4},
+                    {0x42, 0x2},
+                    {0x43, 0x4},
+                    {0x45, 0x0}}},
+              .val8 = 0xE06,
+              .val11 = {4, 0x2B, 4},
+              .val14 = 0xca1b87db,
+              .val15 = {.val1 = 1},
+              .val16 = 4,
+              .val17 = {.mountUid = user.mountUid, .val1 = 0x12, .val2 = 0x16e67e4},
+              .val18 = 0x3a,
+              .val19 = 0x38e,
+              .val20 = 0x1c6};
+
+            LobbyCommandLoginOK::Write(command, sink);
+          });
+      });
+  } catch (std::exception& x)
+  {
+    _server.QueueCommand(
       clientId,
       CommandId::LobbyLoginCancel,
       [](SinkStream& buffer)
@@ -98,183 +318,10 @@ void LoginDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
 
         LobbyCommandLoginCancel::Write(command, buffer);
       });
-
-    return;
   }
-
-  auto& [userId, user] = *userItr;
-  // Login succeeded, assign the active user to client.
-  _clients[clientId] = userId;
-
-  // Set XOR scrambler code
-  uint32_t scramblingConstant = rd(); // TODO: Use something more secure
-  XorCode code;
-  *((uint32_t*) code.data()) = scramblingConstant;
-  _lobbyServer.SetCode(clientId, code);
-
-  _lobbyServer.QueueCommand(
-    clientId,
-    CommandId::LobbyLoginOK,
-    [&user, userId, scramblingConstant](SinkStream& sink)
-    {
-      const WinFileTime time = UnixTimeToFileTime(std::chrono::system_clock::now());
-
-      const LobbyCommandLoginOK command{
-        .lobbyTime =
-          {.dwLowDateTime = static_cast<uint32_t>(time.dwLowDateTime),
-           .dwHighDateTime = static_cast<uint32_t>(time.dwHighDateTime)},
-        .val0 = 0xCA794,
-
-        .selfUid = userId,
-        .nickName = user.nickName,
-        .motd = "Welcome to SoA!",
-        .profileGender = user.gender,
-        .status = "Mentally unstable",
-
-        //.characterEquipment = user.characterEquipment,
-        .horseEquipment = {},
-
-        .level = user.level,
-        .carrots = user.carrots,
-        .val1 = 0x6130,
-        .val2 = 0xFF,
-        .val3 = 0xFF,
-
-        .optionType = OptionType::Value,
-        .valueOptions = 0x64,
-
-        .ageGroup = AgeGroup::Adult,
-        .val4 = 0,
-
-        .val5 =
-          {{0x18, {{2, 1}}},
-           {0x1F, {{2, 1}}},
-           {0x23, {{2, 1}}},
-           {0x29, {{2, 1}}},
-           {0x2A, {{2, 1}}},
-           {0x2B, {{2, 1}}},
-           {0x2E, {{2, 1}}}},
-
-        .val6 = "val6",
-
-        // TODO: Move somewhere configurable
-        .address = 2130706433, // 127.0.0.1
-        .port = 10031,         // 10031
-
-        .scramblingConstant = scramblingConstant,
-
-        .character =
-          {
-          .parts = {
-            .charId = 10,
-            .mouthSerialId = 0,
-            .faceSerialId = 0,
-            .val0 = 255},
-           .appearance = {
-              .val0 = 0xFFFF,
-              .headSize = 1,
-              .height = 2,
-              .thighVolume = 2,
-              .legVolume = 2,
-              .val1 = 0xFF}
-          },
-        .horse =
-          {.uid = user.mountUid,
-           .tid = user.horses[user.mountUid].tid,
-           .name = user.horses[user.mountUid].name,
-           .parts = {.skinId = 0x2, .maneId = 0x3, .tailId = 0x3, .faceId = 0x3},
-            .appearance =
-              {.scale = 0x4,
-                .legLength = 0x4,
-                .legVolume = 0x5,
-                .bodyLength = 0x3,
-                .bodyVolume = 0x4},
-            .stats = 
-              {
-                .agility = 9,
-                .spirit = 9,
-                .speed = 9,
-                .strength = 9,
-                .ambition = 0x13
-              },
-            .rating = 0,
-            .clazz = 0x15,
-            .val0 = 1,
-            .grade = 5,
-            .growthPoints = 2,
-            .vals0 =
-              {
-                .stamina = 0x7d0,
-                .attractiveness = 0x3c,
-                .hunger = 0x21c,
-                .val0 = 0x00,
-                .val1 = 0x03E8,
-                .val2 = 0x00,
-                .val3 = 0x00,
-                .val4 = 0x00,
-                .val5 = 0x03E8,
-                .val6 = 0x1E,
-                .val7 = 0x0A,
-                .val8 = 0x0A,
-                .val9 = 0x0A,
-                .val10 = 0x00,
-              },
-            .vals1 = 
-              {
-                .val0 = 0x00,
-                .val1 = 0x00,
-                .val2 = 0xb8a167e4,
-                .val3 = 0x02,
-                .val4 = 0x00,
-                .classProgression = 0x32e7d,
-                .val5 = 0x00,
-                .val6 = 0x00,
-                .val7 = 0x00,
-                .val8 = 0x00,
-                .val9 = 0x00,
-                .val10 = 0x04,
-                .val11 = 0x00,
-                .val12 = 0x00,
-                .val13 = 0x00,
-                .val14 = 0x00,
-                .val15 = 0x01
-              },
-            .mastery = 
-              {
-                .magic = 0x1fe,
-                .jumping = 0x421,
-                .sliding = 0x5f8,
-                .gliding = 0xcfa4,
-              },
-            .val16 = 0xb8a167e4,
-            .val17 = 0},
-        .val7 =
-          {.values =
-             {{0x6, 0x0},
-              {0xF, 0x4},
-              {0x1B, 0x2},
-              {0x1E, 0x0},
-              {0x1F, 0x0},
-              {0x25, 0x7530},
-              {0x35, 0x4},
-              {0x42, 0x2},
-              {0x43, 0x4},
-              {0x45, 0x0}}},
-        .val8 = 0xE06,
-        .val11 = {4, 0x2B, 4},
-        .val14 = 0xca1b87db,
-        .val15 = {.val1 = 1},
-        .val16 = 4,
-        .val17 = {.mountUid = user.mountUid, .val1 = 0x12, .val2 = 0x16e67e4},
-        .val18 = 0x3a,
-        .val19 = 0x38e,
-        .val20 = 0x1c6};
-
-      LobbyCommandLoginOK::Write(command, sink);
-    });
 }
 
-void LoginDirector::HandleHeartbeat(
+void LobbyDirector::HandleHeartbeat(
   ClientId clientId,
   const LobbyCommandHeartbeat& heartbeat)
 {
@@ -288,7 +335,7 @@ void LoginDirector::HandleHeartbeat(
   user.lastHeartbeat = std::chrono::system_clock::now();
 }
 
-void LoginDirector::HandleShowInventory(
+void LobbyDirector::HandleShowInventory(
   ClientId clientId,
   const LobbyCommandShowInventory& showInventory)
 {
@@ -300,7 +347,7 @@ void LoginDirector::HandleShowInventory(
 
   auto& [userId, user] = *_users.find(userItr->second);
 
-  _lobbyServer.QueueCommand(
+  _server.QueueCommand(
     clientId,
     CommandId::LobbyShowInventoryOK,
     [&](auto& sink)
@@ -310,7 +357,7 @@ void LoginDirector::HandleShowInventory(
     });
 }
 
-void LoginDirector::HandleAchievementCompleteList(
+void LobbyDirector::HandleAchievementCompleteList(
   ClientId clientId,
   const LobbyCommandAchievementCompleteList& achievementCompleteList)
 {
@@ -321,7 +368,7 @@ void LoginDirector::HandleAchievementCompleteList(
   }
 
   auto& [userId, user] = *_users.find(userItr->second);
-  _lobbyServer.QueueCommand(
+  _server.QueueCommand(
     clientId,
     CommandId::LobbyAchievementCompleteListOK,
     [&](auto& sink)
@@ -331,7 +378,7 @@ void LoginDirector::HandleAchievementCompleteList(
     });
 }
 
-void LoginDirector::HandleRequestLeagueInfo(
+void LobbyDirector::HandleRequestLeagueInfo(
   ClientId clientId,
   const LobbyCommandRequestLeagueInfo& requestLeagueInfo)
 {
@@ -342,7 +389,7 @@ void LoginDirector::HandleRequestLeagueInfo(
   }
 
   auto& [userId, user] = *_users.find(userItr->second);
-  _lobbyServer.QueueCommand(
+  _server.QueueCommand(
     clientId,
     CommandId::LobbyRequestLeagueInfoOK,
     [&](auto& sink)
@@ -352,7 +399,7 @@ void LoginDirector::HandleRequestLeagueInfo(
     });
 }
 
-void LoginDirector::HandleRequestQuestList(
+void LobbyDirector::HandleRequestQuestList(
   ClientId clientId,
   const LobbyCommandRequestQuestList& requestQuestList)
 {
@@ -363,7 +410,7 @@ void LoginDirector::HandleRequestQuestList(
   }
 
   auto& [userId, user] = *_users.find(userItr->second);
-  _lobbyServer.QueueCommand(
+  _server.QueueCommand(
     clientId,
     CommandId::LobbyRequestQuestListOK,
     [&](auto& sink)
@@ -373,13 +420,13 @@ void LoginDirector::HandleRequestQuestList(
     });
 }
 
-void LoginDirector::HandleRequestSpecialEventList(
+void LobbyDirector::HandleRequestSpecialEventList(
   ClientId clientId,
   const LobbyCommandRequestSpecialEventList& requestSpecialEventList)
 {
-  _lobbyServer.QueueCommand(
-    clientId, 
-    CommandId::LobbyRequestSpecialEventListOK, 
+  _server.QueueCommand(
+    clientId,
+    CommandId::LobbyRequestSpecialEventListOK,
     [&](auto& sink)
     {
       LobbyCommandRequestSpecialEventListOK response{
@@ -389,15 +436,15 @@ void LoginDirector::HandleRequestSpecialEventList(
     });
 }
 
-void LoginDirector::HandleEnterRanch(
-  ClientId clientId, 
+void LobbyDirector::HandleEnterRanch(
+  ClientId clientId,
   const LobbyCommandEnterRanch& enterRanch)
 {
   const auto [_, userId] = *_clients.find(clientId);
 
-  _lobbyServer.QueueCommand(
-    clientId, 
-    CommandId::LobbyEnterRanchOK, 
+  _server.QueueCommand(
+    clientId,
+    CommandId::LobbyEnterRanchOK,
      [userId, this](auto& sink)
      {
       auto& [_, user] = *_users.find(userId);
@@ -417,13 +464,13 @@ void LoginDirector::HandleEnterRanch(
      });
 }
 
-void LoginDirector::HandleGetMessengerInfo(
-  ClientId clientId, 
+void LobbyDirector::HandleGetMessengerInfo(
+  ClientId clientId,
   const LobbyCommandGetMessengerInfo& getMessengerInfo)
 {
-  _lobbyServer.QueueCommand(
-    clientId, 
-    CommandId::LobbyGetMessengerInfoOK, 
+  _server.QueueCommand(
+    clientId,
+    CommandId::LobbyGetMessengerInfoOK,
     [&](auto& sink)
     {
       // TODO: Move somewhere configurable
@@ -432,13 +479,12 @@ void LoginDirector::HandleGetMessengerInfo(
       uint16_t port = 10032;
 
       LobbyCommandGetMessengerInfoOK response{
-        .unk0 = 0, // TODO: Generate and store in the messenger server instance
+        .code = 0xDEAD, // TODO: Generate and store in the messenger server instance
         .ip = (uint32_t) addr.s_addr,
         .port = port
       };
       LobbyCommandGetMessengerInfoOK::Write(response, sink);
     });
 }
-
 
 } // namespace alicia

@@ -1,20 +1,35 @@
 //
-// Created by rgnter on 10/11/2024.
+// Created by rgnter on 25/11/2024.
 //
 
 #ifndef LOBBYDIRECTOR_HPP
 #define LOBBYDIRECTOR_HPP
 
-#include "../Director.hpp"
+#include "server/DataDirector.hpp"
+
+#include "libserver/command/CommandServer.hpp"
 
 namespace alicia
 {
 
-class LoginDirector
+class LobbyDirector
 {
 public:
-  explicit LoginDirector(CommandServer& lobbyServer) noexcept;
+  //!
+  struct Settings
+  {
+    std::string address = "127.0.0.1";
+    uint16_t port = 10030;
 
+    std::string motd = "Welcome to Story of Alicia!";
+  };
+
+  //!
+  explicit LobbyDirector(
+    DataDirector& dataDirector,
+    Settings settings = {});
+
+private:
   //!
   void HandleUserLogin(
     ClientId clientId,
@@ -60,15 +75,17 @@ public:
     ClientId clientId, const
     LobbyCommandGetMessengerInfo& requestMessengerInfo);
 
-private:
-  CommandServer& _lobbyServer;
+  //!
+  Settings _settings;
+  //!
+  DataDirector& _dataDirector;
+  //!
+  CommandServer _server;
 
-  std::unordered_map<UserId, std::string> _userTokens;
-  std::unordered_map<ClientId, UserId> _clients;
-
-  std::unordered_map<UserId, User> _users;
+  //!
+  std::unordered_map<ClientId, DatumUid> _clientUsers;
 };
 
-}
+} // namespace alicia
 
 #endif //LOBBYDIRECTOR_HPP

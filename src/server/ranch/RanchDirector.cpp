@@ -2,62 +2,56 @@
 // Created by alborrajo on 16/11/2024.
 //
 
-#include "RanchDirector.hpp"
+#include "server/ranch/RanchDirector.hpp"
 
 #include "spdlog/spdlog.h"
 
-namespace  alicia
+namespace alicia
 {
 
-RanchDirector::RanchDirector(CommandServer& ranchServer) noexcept
-    : _ranchServer(ranchServer)
+RanchDirector::RanchDirector(
+  DataDirector& dataDirector,
+  Settings settings)
+  : _settings(std::move(settings))
+  , _dataDirector(_dataDirector)
+  , _server("Ranch")
 {
-  // TODO: Dummy data
-  _users[1] = {
-    .nickName = "rgnt",
-    .gender = alicia::Gender::Boy,
-    .level = 60,
-    .carrots = 5000,
-    .characterEquipment = {
-      Item{.uid = 100, .tid = 30035, .val = 0, .count = 1}
-    },
-    .mountUid = 2,
-    .ranchUid = 100
-  };
-  _users[1].horses[2] = {
-    .tid = 0x4E21,
-    .name = "idontunderstand"
-  };  
-  _users[1].horses[3] = {
-    .tid = 0x4E21,
-    .name = "iunderstand"
-  };  
+  // Handlers
 
-  _users[4] = {
-    .nickName = "Laith",
-    .gender = alicia::Gender::Unspecified,
-    .level = 1,
-    .carrots = 0,
-    .characterEquipment = {
-      Item{.uid = 100, .tid = 30035, .val = 0, .count = 1}
-    },
-    .mountUid = 5,
-    .ranchUid = 100
-  };
-  _users[4].horses[5] = {
-    .tid = 0x4E21,
-    .name = "youdontseemtounderstand"
-  };
-  _users[4].horses[6] = {
-    .tid = 0x4E21,
-    .name = "Ramon"
-  };
+  // EnterRanch handler
+  _server.RegisterCommandHandler<RanchCommandEnterRanch>(
+    CommandId::RanchEnterRanch,
+    [](ClientId clientId, const auto& message)
+    {
+      HandleEnterRanch(clientId, message);
+    });
 
-  _ranches[100] = {
-    .ranchName = "SoA ranch",
-    .horses = { 3 },
-    .users = { 1 }
-  };
+  // Snapshot handler
+  _server.RegisterCommandHandler<RanchCommandRanchSnapshot>(
+    CommandId::RanchSnapshot,
+    [](ClientId clientId, const auto& message)
+    {
+      HandleSnapshot(clientId, message);
+    });
+
+  // RanchCmdAction handler
+  _server.RegisterCommandHandler<RanchCommandRanchCmdAction>(
+    CommandId::RanchCmdAction,
+    [](ClientId clientId, const auto& message)
+    {
+      HandleCmdAction(clientId, message);
+    });
+
+  // RanchStuff handler
+  _server.RegisterCommandHandler<RanchCommandRanchStuff>(
+    CommandId::RanchStuff,
+    [](ClientId clientId, const auto& message)
+    {
+      HandleRanchStuff(clientId, message);
+    });
+
+  // Host the server.
+  _server.Host(_settings.address, _settings.port);
 }
 
 void RanchDirector::HandleEnterRanch(
@@ -71,8 +65,8 @@ void RanchDirector::HandleEnterRanch(
 
   _clients[clientId] = enterRanch.userUid;
 
-  _ranchServer.SetCode(clientId, {});
-  _ranchServer.QueueCommand(
+  _server.SetCode(clientId, {});
+  _server.QueueCommand(
     clientId,
     CommandId::RanchEnterRanchOK,
     [&](auto& sink)
@@ -279,7 +273,7 @@ void RanchDirector::HandleSnapshot(
   const RanchCommandRanchSnapshot& snapshot)
 {
   // TODO: Actual implementation of it
-  _ranchServer.QueueCommand(
+  _server.QueueCommand(
     clientId, 
     CommandId::RanchSnapshotNotify, 
     [&](auto& sink)
@@ -296,7 +290,7 @@ void RanchDirector::HandleSnapshot(
 void RanchDirector::HandleCmdAction(ClientId clientId, const RanchCommandRanchCmdAction& action)
 {
   // TODO: Actual implementation of it
-  _ranchServer.QueueCommand(
+  _server.QueueCommand(
     clientId,
     CommandId::RanchCmdActionNotify,
     [action](auto& sink)
@@ -322,7 +316,7 @@ void RanchDirector::HandleRanchStuff(ClientId clientId, const RanchCommandRanchS
   // todo: needs validation
   user.carrots += command.value;
 
-  _ranchServer.QueueCommand(
+  _server.QueueCommand(
     clientId,
     CommandId::RanchStuffOK,
     [command, &user](auto& sink)
