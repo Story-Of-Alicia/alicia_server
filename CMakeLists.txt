@@ -45,6 +45,7 @@ configure_file(
 target_sources(alicia-server PRIVATE
         src/server/main.cpp
         src/server/lobby/LobbyDirector.cpp
+        src/server/lobby/LoginHandler.cpp
         src/server/ranch/RanchDirector.cpp
 
         src/server/DataDirector.cpp)

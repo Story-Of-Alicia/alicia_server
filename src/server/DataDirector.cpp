@@ -48,7 +48,9 @@ void ProvideLockedMutableDatumAccess(
 namespace alicia
 {
 
-void DataDirector::GetUser(DatumUid userUid, DatumConsumer<const User&> consumer)
+void DataDirector::GetUser(
+  DatumUid userUid,
+  DatumConsumer<const User&> consumer)
 {
   const auto userItr = _users.find(userUid);
   if (userItr == _users.cend())

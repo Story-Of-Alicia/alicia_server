@@ -33,6 +33,9 @@ struct User
   Gender gender = Gender::Unspecified;
   uint16_t level{};
   int32_t carrots{};
+  AgeGroup ageGroup = AgeGroup::Kid;
+
+  std::string status;
 
   std::vector<Item> characterEquipment;
   std::vector<Item> horseEquipment;
@@ -65,7 +68,6 @@ public:
   void GetUser(
     DatumUid userUid,
     DatumConsumer<const User&> consumer);
-
   //!
   void GetUserMutable(
     DatumUid userUid,

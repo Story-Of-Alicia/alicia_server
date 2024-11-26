@@ -5,9 +5,12 @@
 #ifndef LOBBYDIRECTOR_HPP
 #define LOBBYDIRECTOR_HPP
 
+#include "LoginHandler.hpp"
 #include "server/DataDirector.hpp"
 
 #include "libserver/command/CommandServer.hpp"
+
+#include <variant>
 
 namespace alicia
 {
@@ -77,11 +80,14 @@ private:
 
   //!
   Settings _settings;
+
   //!
   DataDirector& _dataDirector;
   //!
-  CommandServer _server;
+  LoginHandler _loginHandler;
 
+  //!
+  CommandServer _server;
   //!
   std::unordered_map<ClientId, DatumUid> _clientUsers;
 };
