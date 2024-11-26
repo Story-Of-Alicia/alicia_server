@@ -1,17 +1,18 @@
-#include <string>
 #include <filesystem>
 #include <nlohmann/json.hpp>
+#include <string>
 
 class Settings
 {
 public:
-
-  struct LobbySettings {
-    std::string address;  // IP address or hostname
-    uint16_t port = 10030;  // Default port if not specified
+  struct LobbySettings
+  {
+    std::string address;   // IP address or hostname
+    uint16_t port = 10030; // Default port if not specified
   } _lobbySettings;
 
-  struct RanchSettings {
+  struct RanchSettings
+  {
     std::string address;
     uint16_t port = 10031;
   } _ranchSettings;

@@ -1,25 +1,25 @@
 /**
-* Alicia Server - dedicated server software
-* Copyright (C) 2024 Story Of Alicia
-*
-* This program is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
-* (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License along
-* with this program; if not, write to the Free Software Foundation, Inc.,
-* 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-**/
+ * Alicia Server - dedicated server software
+ * Copyright (C) 2024 Story Of Alicia
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ **/
 
 #include "libserver/Util.hpp"
 
-#define Int32x32To64(a, b)  ((uint16_t)(((uint64_t)((long)(a))) * ((long)(b))))
+#define Int32x32To64(a, b) ((uint16_t)(((uint64_t)((long)(a))) * ((long)(b))))
 
 namespace
 {
@@ -52,10 +52,10 @@ void ReadCString(std::string& value, alicia::SourceStream& buffer)
     {
       value += read;
     }
-  } while(readNext);
+  } while (readNext);
 }
 
-} // namespace anon
+} // namespace
 
 namespace alicia
 {
@@ -63,50 +63,49 @@ namespace alicia
 // Sources:
 //  https://learn.microsoft.com/en-us/windows/win32/api/winnt/nf-winnt-int32x32to64
 //  https://gist.github.com/JamesMenetrey/d3f494262bcab48af1d617c3d39f34cf#file-winnt-h-L944
-WinFileTime UnixTimeToFileTime(
-  const std::chrono::system_clock::time_point& timePoint)
+WinFileTime UnixTimeToFileTime(const std::chrono::system_clock::time_point& timePoint)
 {
   const uint64_t unixTime = timePoint.time_since_epoch().count();
   const uint64_t convertedUnixTime = Int32x32To64(unixTime, 10000000) + 116444736000000000;
-  return WinFileTime {
+  return WinFileTime{
     .dwLowDateTime = static_cast<uint32_t>(convertedUnixTime),
-    .dwHighDateTime = convertedUnixTime >> 32
-  };
+    .dwHighDateTime = convertedUnixTime >> 32};
 }
 
-asio::ip::address ResolveAddress(const std::string& host, const std::string& port) {
-    
-    asio::io_context ioContext;
-    asio::ip::tcp::resolver resolver(ioContext);
+asio::ip::address ResolveAddress(const std::string& host, const std::string& port)
+{
 
-    // Resolve the host and port to endpoints
-    auto endpoints = resolver.resolve(host, port);
+  asio::io_context ioContext;
+  asio::ip::tcp::resolver resolver(ioContext);
 
-    for(const auto& endpoint: endpoints)
+  // Resolve the host and port to endpoints
+  auto endpoints = resolver.resolve(host, port);
+
+  for (const auto& endpoint : endpoints)
+  {
+    const auto& addr = endpoint.endpoint().address();
+    if (addr.is_v4())
     {
-        const auto& addr = endpoint.endpoint().address();
-        if (addr.is_v4())
-        {
-          return addr.to_v4();
-        }
+      return addr.to_v4();
     }
+  }
   return asio::ip::address();
 }
 
 DEFINE_WRITER_READER(std::string, WriteCString, ReadCString)
 
 SourceStream::SourceStream(Storage buffer)
-  : StreamBase(buffer)
+    : StreamBase(buffer)
 {
 }
 
 SourceStream::SourceStream(nullptr_t)
-  : StreamBase(nullptr)
+    : StreamBase(nullptr)
 {
 }
 
 SourceStream::SourceStream(SourceStream&& rhs) noexcept
-  : StreamBase(rhs._storage)
+    : StreamBase(rhs._storage)
 {
   _cursor = rhs._cursor;
 }
@@ -119,7 +118,7 @@ SourceStream& SourceStream::operator=(SourceStream&& rhs) noexcept
 }
 
 SinkStream::SinkStream(Storage buffer) noexcept
-  : StreamBase(buffer)
+    : StreamBase(buffer)
 {
 }
 
@@ -145,12 +144,11 @@ void SinkStream::Write(const void* data, std::size_t size)
 {
   if (_cursor + size > _storage.size())
   {
-    throw std::overflow_error(
-      std::format(
-        "Couldn't write {} bytes to the buffer (cursor: {}, available: {}). Not enough space.",
-        size,
-        _cursor,
-        _storage.size()));
+    throw std::overflow_error(std::format(
+      "Couldn't write {} bytes to the buffer (cursor: {}, available: {}). Not enough space.",
+      size,
+      _cursor,
+      _storage.size()));
   }
 
   // Write the bytes.
@@ -164,12 +162,11 @@ void SourceStream::Read(void* data, std::size_t size)
 {
   if (_cursor + size > _storage.size())
   {
-    throw std::overflow_error(
-      std::format(
-        "Couldn't read {} bytes to the buffer (cursor: {}, available: {}). Not enough space.",
-        size,
-        _cursor,
-        _storage.size()));
+    throw std::overflow_error(std::format(
+      "Couldn't read {} bytes to the buffer (cursor: {}, available: {}). Not enough space.",
+      size,
+      _cursor,
+      _storage.size()));
   }
 
   // Read the bytes.
@@ -180,4 +177,3 @@ void SourceStream::Read(void* data, std::size_t size)
 }
 
 } // namespace alicia
-
