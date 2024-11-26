@@ -2,6 +2,9 @@
 #include <nlohmann/json.hpp>
 #include <string>
 
+namespace alicia
+{
+
 class Settings
 {
 public:
@@ -19,3 +22,5 @@ public:
 
   void LoadFromFile(const std::filesystem::path& filePath);
 };
+
+} // namespace alicia

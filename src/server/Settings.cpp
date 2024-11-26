@@ -2,6 +2,9 @@
 #include <iostream>
 #include <server/Settings.hpp>
 
+namespace alicia
+{
+
 void Settings::LoadFromFile(const std::filesystem::path& filePath)
 {
   std::ifstream file(filePath);
@@ -31,3 +34,5 @@ void Settings::LoadFromFile(const std::filesystem::path& filePath)
     _ranchSettings.port = lobby.value("port", 10031);             // Default to 10031
   }
 }
+
+} // namespace alicia

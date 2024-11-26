@@ -74,11 +74,8 @@ WinFileTime UnixTimeToFileTime(const std::chrono::system_clock::time_point& time
 
 asio::ip::address ResolveAddress(const std::string& host, const std::string& port)
 {
-
   asio::io_context ioContext;
   asio::ip::tcp::resolver resolver(ioContext);
-
-  // Resolve the host and port to endpoints
   auto endpoints = resolver.resolve(host, port);
 
   for (const auto& endpoint : endpoints)

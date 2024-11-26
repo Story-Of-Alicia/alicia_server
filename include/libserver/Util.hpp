@@ -61,13 +61,13 @@ struct WinFileTime
   uint32_t dwHighDateTime = 0;
 };
 
+namespace asio = boost::asio;
+
 //! Converts a time point to the Windows file time.
 //! @param timePoint Point in time.
 //! @return Windows file time representing specified point in time.
 WinFileTime UnixTimeToFileTime(const std::chrono::system_clock::time_point& timePoint);
 
-//! Resolve hostname to address
-namespace asio = boost::asio;
 asio::ip::address ResolveAddress(const std::string& host, const std::string& port);
 
 template <typename StorageType> class StreamBase
