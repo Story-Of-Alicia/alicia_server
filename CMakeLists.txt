@@ -1,10 +1,4 @@
 cmake_minimum_required(VERSION 3.20)
-# suppress warning
-cmake_policy(SET CMP0167 NEW)
-
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
 
 project(alicia-server
         VERSION 1.0.0)
@@ -67,15 +61,6 @@ if (BUILD_TESTS)
         enable_testing()
         add_subdirectory(tests)
 endif()
-
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(LIBPQXX REQUIRED libpqxx)
-
-include_directories(${LIBPQXX_INCLUDE_DIRS})
-link_directories(${LIBPQXX_LIBRARY_DIRS})
-
-# Make libpqxx available globally
-set(PROJECT_LIBRARIES ${PROJECT_LIBRARIES} ${LIBPQXX_LIBRARIES})
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     message(STATUS "Adding -fexperimental-library for Clang compiler")
