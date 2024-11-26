@@ -14,8 +14,6 @@
 #include <memory>
 #include <thread>
 
-#include <iostream>
-
 namespace
 {
 

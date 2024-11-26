@@ -17,7 +17,6 @@ public:
     uint16_t port = 10031;
   } _ranchSettings;
 
-  // Function to load settings from a JSON file
   void LoadFromFile(const std::filesystem::path& filePath);
   asio::ip::tcp::endpoint ResolveAddress(const std::string& host, const std::string& port);
 };
