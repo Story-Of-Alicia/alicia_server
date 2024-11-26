@@ -55,6 +55,7 @@ DEFINE_WRITER_READER(x, x::Write, x::Read)
 #include <format>
 #include <functional>
 #include <span>
+#include <boost/asio.hpp>
 
 namespace alicia
 {
@@ -70,6 +71,10 @@ struct WinFileTime {
 //! @return Windows file time representing specified point in time.
 WinFileTime UnixTimeToFileTime(
   const std::chrono::system_clock::time_point& timePoint);
+
+//! Resolve hostname to address
+namespace asio = boost::asio;
+asio::ip::address ResolveAddress(const std::string& host, const std::string& port);
 
 template <typename StorageType>
 class StreamBase

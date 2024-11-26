@@ -33,8 +33,6 @@ target_link_libraries(alicia-libserver
 # Alicia server executable
 add_executable(alicia-server)
 
-target_compile_definitions(alicia-server PRIVATE PROJECT_ROOT="${CMAKE_SOURCE_DIR}")
-
 # Version variables
 set(AliciaServerBuildName alpha)
 set(AliciaServerBuildVersionMajor ${CMAKE_PROJECT_VERSION_MAJOR})

@@ -24,7 +24,6 @@ std::unique_ptr<alicia::RanchDirector> g_ranchDirector;
 
 int main()
 {
-
   // Daily file sink.
   const auto fileSink = std::make_shared<spdlog::sinks::daily_file_sink_mt>(
     "logs/log.log",

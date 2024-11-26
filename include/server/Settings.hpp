@@ -1,6 +1,5 @@
 #include <string>
 #include <filesystem>
-#include <asio.hpp>  
 #include <server/json.hpp>
 
 class Settings
@@ -18,5 +17,4 @@ public:
   } _ranchSettings;
 
   void LoadFromFile(const std::filesystem::path& filePath);
-  asio::ip::tcp::endpoint ResolveAddress(const std::string& host, const std::string& port);
 };

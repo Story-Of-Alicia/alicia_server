@@ -74,6 +74,25 @@ WinFileTime UnixTimeToFileTime(
   };
 }
 
+asio::ip::address ResolveAddress(const std::string& host, const std::string& port) {
+    
+    asio::io_context ioContext;
+    asio::ip::tcp::resolver resolver(ioContext);
+
+    // Resolve the host and port to endpoints
+    auto endpoints = resolver.resolve(host, port);
+
+    for(const auto& endpoint: endpoints)
+    {
+        const auto& addr = endpoint.endpoint().address();
+        if (addr.is_v4())
+        {
+          return addr.to_v4();
+        }
+    }
+  return asio::ip::address();
+}
+
 DEFINE_WRITER_READER(std::string, WriteCString, ReadCString)
 
 SourceStream::SourceStream(Storage buffer)
