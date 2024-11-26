@@ -8,7 +8,6 @@ find_package(Boost REQUIRED)
 
 add_subdirectory(3rd-party)
 
-include_directories(3rd-party/asio/asio/include)
 # Project properties interface library
 add_library(project-properties INTERFACE)
 target_compile_features(project-properties
@@ -28,7 +27,7 @@ add_library(alicia-libserver STATIC
 target_include_directories(alicia-libserver
         PUBLIC include/)
 target_link_libraries(alicia-libserver
-        PUBLIC project-properties Boost::headers spdlog::spdlog)
+        PUBLIC project-properties Boost::headers spdlog::spdlog nlohmann_json::nlohmann_json)
 
 # Alicia server executable
 add_executable(alicia-server)

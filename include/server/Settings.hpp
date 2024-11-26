@@ -1,6 +1,6 @@
 #include <string>
 #include <filesystem>
-#include <server/json.hpp>
+#include <nlohmann/json.hpp>
 
 class Settings
 {
