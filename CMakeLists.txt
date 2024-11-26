@@ -8,6 +8,7 @@ find_package(Boost REQUIRED)
 
 add_subdirectory(3rd-party)
 
+include_directories(3rd-party/asio/asio/include)
 # Project properties interface library
 add_library(project-properties INTERFACE)
 target_compile_features(project-properties
@@ -17,6 +18,7 @@ target_compile_features(project-properties
 add_library(alicia-libserver STATIC
         src/libserver/Alicia.cpp
         src/libserver/Util.cpp
+        src/server/Settings.cpp
         src/libserver/base/Server.cpp
         src/libserver/command/CommandProtocol.cpp
         src/libserver/command/CommandServer.cpp
@@ -30,6 +32,8 @@ target_link_libraries(alicia-libserver
 
 # Alicia server executable
 add_executable(alicia-server)
+
+target_compile_definitions(alicia-server PRIVATE PROJECT_ROOT="${CMAKE_SOURCE_DIR}")
 
 # Version variables
 set(AliciaServerBuildName alpha)
@@ -48,6 +52,7 @@ target_sources(alicia-server PRIVATE
         src/server/ranch/RanchDirector.cpp)
 target_link_libraries(alicia-server
         PRIVATE project-properties alicia-libserver)
+
 target_include_directories(alicia-server PUBLIC
         "${PROJECT_BINARY_DIR}/generated")
 

@@ -5,7 +5,6 @@
 
 #include <libserver/base/Server.hpp>
 #include <libserver/command/CommandServer.hpp>
-
 #include <server/Settings.hpp>
 
 #include <spdlog/spdlog.h>
@@ -27,28 +26,12 @@ std::unique_ptr<alicia::RanchDirector> g_ranchDirector;
 
 int main()
 {
-  //TESTING
-  Settings settings;
-
-    // Load the settings from a JSON file (e.g., config.json)
-    std::filesystem::path filePath = std::filesystem::path(PROJECT_ROOT) / "resources" / "settings.json";
-    std::cout << filePath << std::endl;
-    settings.LoadFromFile(filePath);
-
-    // Output the loaded lobby settings
-    std::cout << "Lobby Address: " << settings._lobbySettings.address << std::endl;
-    std::cout << "Lobby Port: " << settings._lobbySettings.port << std::endl;
-
-    // Resolve the server address (using the settings loaded above)
-    auto endpoint = settings.ResolveAddress(settings._lobbySettings.address, std::to_string(settings._lobbySettings.port));
-
-    std::cout << "Resolved IP: " << endpoint.address() << std::endl;
-    std::cout << "Resolved Port: " << endpoint.port() << std::endl;
 
   // Daily file sink.
   const auto fileSink = std::make_shared<spdlog::sinks::daily_file_sink_mt>(
     "logs/log.log",
     0, 0);
+
   // Console sink.
   const auto consoleSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
 
