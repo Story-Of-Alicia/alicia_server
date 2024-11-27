@@ -1,11 +1,17 @@
 cmake_minimum_required(VERSION 3.20)
 
+# Suppresses warning only if ENABLE_CMP0167 is passed in the command (cmake -DENABLE_CMP0167=ON ..)
+if (ENABLE_CMP0167) 
+    cmake_policy(SET CMP0167 NEW)
+endif()
+
 project(alicia-server
         VERSION 1.0.0)
 
 option(BUILD_TESTS "Build tests" ON)
 
 find_package(Boost REQUIRED)
+find_package(libpqxx REQUIRED)
 
 add_subdirectory(3rd-party)
 
@@ -27,7 +33,7 @@ add_library(alicia-libserver STATIC
 target_include_directories(alicia-libserver
         PUBLIC include/)
 target_link_libraries(alicia-libserver
-        PUBLIC project-properties Boost::headers spdlog::spdlog)
+        PUBLIC project-properties Boost::headers spdlog::spdlog pqxx)
 
 # Alicia server executable
 add_executable(alicia-server)
