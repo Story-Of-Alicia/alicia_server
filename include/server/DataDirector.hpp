@@ -26,39 +26,45 @@ constexpr DatumUid InvalidDatumUid = 0;
 template<typename T>
 using DatumConsumer = std::function<void(T value)>;
 
-//! User
+//! User.
 struct User
 {
-  std::string nickName;
-  Gender gender = Gender::Unspecified;
-  uint16_t level{};
-  int32_t carrots{};
-  AgeGroup ageGroup = AgeGroup::Kid;
+  std::string _token;
 
-  std::string status;
+  DatumUid _characterUid;
 
-  std::vector<Item> characterEquipment;
-  std::vector<Item> horseEquipment;
+  //! Character.
+  struct Character
+  {
+    std::string nickName;
+    Gender gender = Gender::Unspecified;
+    uint16_t level{};
+    int32_t carrots{};
+    AgeGroup ageGroup = AgeGroup::Kid;
 
-  DatumUid mountUid{};
-  DatumUid ranchUid{};
+    std::string status;
 
-  std::chrono::system_clock::time_point lastHeartbeat;
-};
+    std::vector<Item> characterEquipment;
+    std::vector<Item> horseEquipment;
 
-//! Mount
-struct Mount
-{
-  uint32_t tid{};
-  std::string name;
-};
+    DatumUid mountUid{};
+    DatumUid ranchUid{};
+  };
 
-//! Ranch
-struct Ranch
-{
-  std::string ranchName;
-  std::vector<DatumUid> horses;
-  std::vector<DatumUid> users;
+  //! Mount.
+  struct Mount
+  {
+    uint32_t tid{};
+    std::string name;
+  };
+
+  //! Ranch
+  struct Ranch
+  {
+    std::string ranchName;
+    std::vector<DatumUid> horses;
+    std::vector<DatumUid> users;
+  };
 };
 
 class DataDirector
@@ -76,20 +82,20 @@ public:
   //!
   void GetMount(
     DatumUid mountUid,
-    DatumConsumer<const Mount&> consumer);
+    DatumConsumer<const UserMount&> consumer);
   //!
   void GetMountMutable(
     DatumUid mountUid,
-    DatumConsumer<Mount&> consumer);
+    DatumConsumer<UserMount&> consumer);
 
   //!
   void GetRanch(
     DatumUid ranchUid,
-    DatumConsumer<const Ranch&> consumer);
+    DatumConsumer<const UserRanch&> consumer);
   //!
   void GetRanchMutable(
     DatumUid mountUid,
-    DatumConsumer<Ranch&> consumer);
+    DatumConsumer<UserRanch&> consumer);
 
 private:
   //!
@@ -100,12 +106,13 @@ private:
     std::mutex lock;
   };
 
+  std::unordered_map<std::string, Datum<User>> _users;
   //!
-  std::unordered_map<DatumUid, Datum<User>> _users;
+  std::unordered_map<DatumUid, Datum<UserCharacter>> _characters;
   //!
-  std::unordered_map<DatumUid, Datum<Mount>> _mounts;
+  std::unordered_map<DatumUid, Datum<UserMount>> _mounts;
   //!
-  std::unordered_map<DatumUid, Datum<Ranch>> _ranches;
+  std::unordered_map<DatumUid, Datum<UserRanch>> _ranches;
 };
 
 }

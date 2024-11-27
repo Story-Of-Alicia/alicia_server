@@ -50,10 +50,10 @@ namespace alicia
 
 void DataDirector::GetUser(
   DatumUid userUid,
-  DatumConsumer<const User&> consumer)
+  DatumConsumer<const UserCharacter&> consumer)
 {
-  const auto userItr = _users.find(userUid);
-  if (userItr == _users.cend())
+  const auto userItr = _characters.find(userUid);
+  if (userItr == _characters.cend())
   {
     throw std::runtime_error("User doesn't exist");
   }
@@ -63,10 +63,10 @@ void DataDirector::GetUser(
 
 void DataDirector::GetUserMutable(
   DatumUid userUid,
-  DatumConsumer<User&> consumer)
+  DatumConsumer<UserCharacter&> consumer)
 {
-  const auto userItr = _users.find(userUid);
-  if (userItr == _users.cend())
+  const auto userItr = _characters.find(userUid);
+  if (userItr == _characters.cend())
   {
     return;
   }
@@ -76,28 +76,28 @@ void DataDirector::GetUserMutable(
 
 void DataDirector::GetMount(
   DatumUid mountUid,
-  DatumConsumer<const Mount&> consumer)
+  DatumConsumer<const UserMount&> consumer)
 {
   ProvideLockedDatumAccess(_mounts[mountUid], consumer);
 }
 
 void DataDirector::GetMountMutable(
   DatumUid mountUid,
-  DatumConsumer<Mount&> consumer)
+  DatumConsumer<UserMount&> consumer)
 {
   ProvideLockedMutableDatumAccess(_mounts[mountUid], consumer);
 }
 
 void DataDirector::GetRanch(
   DatumUid ranchUid,
-  DatumConsumer<const Ranch&> consumer)
+  DatumConsumer<const UserRanch&> consumer)
 {
   ProvideLockedDatumAccess(_ranches[ranchUid], consumer);
 }
 
 void DataDirector::GetRanchMutable(
   DatumUid ranchUid,
-  DatumConsumer<Ranch&> consumer)
+  DatumConsumer<UserRanch&> consumer)
 {
   ProvideLockedMutableDatumAccess(_ranches[ranchUid], consumer);
 }

@@ -120,9 +120,10 @@ void LobbyDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
   }
 
   // Authenticate the user.
-  if (_loginHandler.Authenticate(login.loginId, login.authKey))
+  if (!_loginHandler.Authenticate(login.loginId, login.authKey))
   {
     // The user has failed authentication.
+    // Cancel the login.
     _server.QueueCommand(
       clientId,
       CommandId::LobbyLoginCancel,
@@ -133,8 +134,14 @@ void LobbyDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
         LobbyCommandLoginCancel::Write(command, buffer);
       });
 
+    spdlog::info("User '{}' failed to authenticate.", login.loginId);
+
     return;
   }
+
+  _dataDirector.GetUser();
+
+  spdlog::info("User '{}' ({}) authenticated", login.loginId, login.memberNo);
 
   // Set XOR scrambler code
   uint32_t scramblingConstant = rd(); // TODO: Use something more secure
@@ -204,7 +211,7 @@ void LobbyDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
     _dataDirector.GetUser(
       login.memberNo,
       [this, &loginCtx](
-        const User& user)
+        const UserCharacter& user)
       {
         auto& response = loginCtx.response;
 
@@ -244,7 +251,7 @@ void LobbyDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
         _dataDirector.GetMount(
           user.mountUid,
           [&loginCtx, mountUid = user.mountUid](
-            const Mount& mount)
+            const UserMount& mount)
           {
             auto& response = loginCtx.response;
 

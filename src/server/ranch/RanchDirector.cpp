@@ -302,7 +302,7 @@ void RanchDirector::HandleSnapshot(
   const RanchCommandRanchSnapshot& snapshot)
 {
   UserId userId = _clients[clientId];
-  User& user = _users[userId];
+  UserCharacter& user = _users[userId];
   auto& ranch = _ranches[user.ranchUid];
   auto found = std::find(ranch.users.begin(), ranch.users.end(), userId);
   uint16_t ranchIndex = ranch.horses.size() + (found - ranch.users.begin()) + 1;
