@@ -1,5 +1,6 @@
 #include <fstream>
 #include <iostream>
+#include <libserver/Util.hpp>
 #include <server/Settings.hpp>
 
 namespace alicia
@@ -103,12 +104,12 @@ void Settings::LoadFromFile(const std::filesystem::path& filePath)
   catch (const nlohmann::json::parse_error& e)
   {
     std::cerr << "JSON parse error: " << e.what() << std::endl;
-    abort();
+    throw e;
   }
   catch (const std::exception& e)
   {
     std::cerr << "Unexpected error: " << e.what() << std::endl;
-    abort();
+    throw e;
   }
 }
 
@@ -121,6 +122,7 @@ std::pair<std::string, uint16_t> Settings::ParseAddressAndPort(const nlohmann::j
     {
       std::string address = jsonObject.at("address").get<std::string>();
       uint16_t port = jsonObject.at("port").get<uint16_t>();
+      address = alicia::ResolveAddress(address, std::to_string(port));
       return std::make_pair(address, port);
     }
     catch (const std::exception& e)

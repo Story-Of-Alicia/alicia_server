@@ -143,9 +143,7 @@ int main()
         { g_loginDirector->HandleGetMessengerInfo(clientId, message); });
 
       // Host
-      auto resolvedAddress = alicia::ResolveAddress(
-        settings._lobbySettings.address, std::to_string(settings._lobbySettings.port));
-      lobbyServer.Host(resolvedAddress, settings._lobbySettings.port);
+      lobbyServer.Host(settings._lobbySettings.address, settings._lobbySettings.port);
     });
 
   // Ranch thread.
@@ -190,9 +188,8 @@ int main()
         [](alicia::ClientId clientId, auto& command)
         { g_ranchDirector->HandleRanchStuff(clientId, command); });
 
-      auto resolvedAddress = alicia::ResolveAddress(
-        settings._ranchSettings.address, std::to_string(settings._ranchSettings.port));
-      ranchServer.Host(resolvedAddress, settings._ranchSettings.port);
+      // Host
+      ranchServer.Host(settings._ranchSettings.address, settings._ranchSettings.port);
     });
 
   // Messenger thread.
