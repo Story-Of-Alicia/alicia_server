@@ -68,7 +68,7 @@ namespace asio = boost::asio;
 //! @return Windows file time representing specified point in time.
 WinFileTime UnixTimeToFileTime(const std::chrono::system_clock::time_point& timePoint);
 
-asio::ip::address ResolveAddress(const std::string& host, const std::string& port);
+std::string ResolveAddress(const std::string& host, const std::string& port);
 
 template <typename StorageType> class StreamBase
 {

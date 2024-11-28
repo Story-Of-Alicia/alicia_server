@@ -72,7 +72,7 @@ WinFileTime UnixTimeToFileTime(const std::chrono::system_clock::time_point& time
     .dwHighDateTime = convertedUnixTime >> 32};
 }
 
-asio::ip::address ResolveAddress(const std::string& host, const std::string& port)
+std::string ResolveAddress(const std::string& host, const std::string& port)
 {
   asio::io_context ioContext;
   asio::ip::tcp::resolver resolver(ioContext);
@@ -83,10 +83,10 @@ asio::ip::address ResolveAddress(const std::string& host, const std::string& por
     const auto& addr = endpoint.endpoint().address();
     if (addr.is_v4())
     {
-      return addr.to_v4();
+      return addr.to_v4().to_string();
     }
   }
-  return asio::ip::address();
+  return asio::ip::address().to_string();
 }
 
 DEFINE_WRITER_READER(std::string, WriteCString, ReadCString)

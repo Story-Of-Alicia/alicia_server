@@ -5,6 +5,7 @@
 
 #include <libserver/base/Server.hpp>
 #include <libserver/command/CommandServer.hpp>
+#include <libserver/Util.hpp>
 #include <server/Settings.hpp>
 
 #include <spdlog/sinks/daily_file_sink.h>
@@ -14,6 +15,7 @@
 #include <memory>
 #include <thread>
 
+#include <iostream>
 namespace
 {
 
@@ -41,9 +43,29 @@ int main()
 
   spdlog::info("Running Alicia server v{}.", alicia::BuildVersion);
 
+  // Parsing settings file
+  alicia::Settings settings;
+  settings.LoadFromFile("../../resources/settings.json");
+
+  std::cout << "Lobby Bind" << std::endl;
+  std::cout << settings._lobbySettings.address << std::endl;
+  std::cout << settings._lobbySettings.port << std::endl;
+  std::cout << "Lobby Ranch Adv" << std::endl;
+  std::cout << settings._lobbySettings.ranchAdvAddress << std::endl;
+  std::cout << settings._lobbySettings.ranchAdvPort << std::endl;
+  std::cout << "Lobby Mess Adv" << std::endl;
+  std::cout << settings._lobbySettings.messengerAdvAddress << std::endl;
+  std::cout << settings._lobbySettings.messengerAdvPort << std::endl;
+  std::cout << "Ranch Bind" << std::endl;
+  std::cout << settings._ranchSettings.address << std::endl;
+  std::cout << settings._ranchSettings.port << std::endl;
+  std::cout << "Messenger Bind" << std::endl;
+  std::cout << settings._messengerSettings.address << std::endl;
+  std::cout << settings._messengerSettings.port << std::endl;
+
   // Lobby thread.
   std::jthread lobbyThread(
-    []()
+    [settings]()
     {
       alicia::CommandServer lobbyServer("Lobby");
       g_loginDirector = std::make_unique<alicia::LoginDirector>(lobbyServer);
@@ -134,12 +156,12 @@ int main()
       lobbyServer.RegisterCommandHandler<alicia::LobbyCommandGetMessengerInfo>(
         alicia::CommandId::LobbyGetMessengerInfo,
         [](alicia::ClientId clientId, const auto& message)
-        {
-          g_loginDirector->HandleGetMessengerInfo(clientId, message);
-        });
+        { g_loginDirector->HandleGetMessengerInfo(clientId, message); });
 
       // Host
-      lobbyServer.Host("0.0.0.0", 10030);
+      auto resolvedAddress = alicia::ResolveAddress(
+        settings._lobbySettings.address, std::to_string(settings._lobbySettings.port));
+      lobbyServer.Host(resolvedAddress, settings._lobbySettings.port);
     });
 
   // Ranch thread.
