@@ -1,3 +1,6 @@
+#ifndef SETTINGS_HPP
+#define SETTINGS_HPP
+
 #include <filesystem>
 #include <nlohmann/json.hpp>
 #include <string>
@@ -44,3 +47,5 @@ public:
 };
 
 } // namespace alicia
+
+#endif // SETTINGS_HPP

@@ -47,28 +47,12 @@ int main()
   alicia::Settings settings;
   settings.LoadFromFile("../../resources/settings.json");
 
-  std::cout << "Lobby Bind" << std::endl;
-  std::cout << settings._lobbySettings.address << std::endl;
-  std::cout << settings._lobbySettings.port << std::endl;
-  std::cout << "Lobby Ranch Adv" << std::endl;
-  std::cout << settings._lobbySettings.ranchAdvAddress << std::endl;
-  std::cout << settings._lobbySettings.ranchAdvPort << std::endl;
-  std::cout << "Lobby Mess Adv" << std::endl;
-  std::cout << settings._lobbySettings.messengerAdvAddress << std::endl;
-  std::cout << settings._lobbySettings.messengerAdvPort << std::endl;
-  std::cout << "Ranch Bind" << std::endl;
-  std::cout << settings._ranchSettings.address << std::endl;
-  std::cout << settings._ranchSettings.port << std::endl;
-  std::cout << "Messenger Bind" << std::endl;
-  std::cout << settings._messengerSettings.address << std::endl;
-  std::cout << settings._messengerSettings.port << std::endl;
-
   // Lobby thread.
   std::jthread lobbyThread(
-    [settings]()
+    [&settings]()
     {
       alicia::CommandServer lobbyServer("Lobby");
-      g_loginDirector = std::make_unique<alicia::LoginDirector>(lobbyServer);
+      g_loginDirector = std::make_unique<alicia::LoginDirector>(lobbyServer, settings);
 
       // Handlers
 
@@ -166,10 +150,10 @@ int main()
 
   // Ranch thread.
   std::jthread ranchThread(
-    []()
+    [&settings]()
     {
       alicia::CommandServer ranchServer("Ranch");
-      g_ranchDirector = std::make_unique<alicia::RanchDirector>(ranchServer);
+      g_ranchDirector = std::make_unique<alicia::RanchDirector>(ranchServer, settings);
 
       ranchServer.RegisterCommandHandler(
         alicia::CommandId::RanchEnterRanch,
@@ -206,12 +190,14 @@ int main()
         [](alicia::ClientId clientId, auto& command)
         { g_ranchDirector->HandleRanchStuff(clientId, command); });
 
-      ranchServer.Host("0.0.0.0", 10031);
+      auto resolvedAddress = alicia::ResolveAddress(
+        settings._ranchSettings.address, std::to_string(settings._ranchSettings.port));
+      ranchServer.Host(resolvedAddress, settings._ranchSettings.port);
     });
 
   // Messenger thread.
   std::jthread messengerThread(
-    []()
+    [&settings]()
     {
       alicia::CommandServer messengerServer("Messenger");
       // TODO: Messenger

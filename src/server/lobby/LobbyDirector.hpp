@@ -6,6 +6,7 @@
 #define LOBBYDIRECTOR_HPP
 
 #include "../Director.hpp"
+#include <server/Settings.hpp>
 
 namespace alicia
 {
@@ -13,22 +14,16 @@ namespace alicia
 class LoginDirector
 {
 public:
-  explicit LoginDirector(CommandServer& lobbyServer) noexcept;
+  explicit LoginDirector(CommandServer& lobbyServer, Settings settings) noexcept;
 
   //!
-  void HandleUserLogin(
-    ClientId clientId,
-    const LobbyCommandLogin& login);
+  void HandleUserLogin(ClientId clientId, const LobbyCommandLogin& login);
 
   //!
-  void HandleHeartbeat(
-    ClientId clientId,
-    const LobbyCommandHeartbeat& heartbeat);
+  void HandleHeartbeat(ClientId clientId, const LobbyCommandHeartbeat& heartbeat);
 
   //!
-  void HandleShowInventory(
-    ClientId clientId,
-    const LobbyCommandShowInventory& showInventory);
+  void HandleShowInventory(ClientId clientId, const LobbyCommandShowInventory& showInventory);
 
   //!
   void HandleAchievementCompleteList(
@@ -41,27 +36,25 @@ public:
     const LobbyCommandRequestLeagueInfo& requestLeagueInfo);
 
   //!
-  void HandleRequestQuestList(
-    ClientId clientId, const
-    LobbyCommandRequestQuestList& requestQuestList);
+  void
+  HandleRequestQuestList(ClientId clientId, const LobbyCommandRequestQuestList& requestQuestList);
 
   //!
   void HandleRequestSpecialEventList(
-    ClientId clientId, const
-    LobbyCommandRequestSpecialEventList& requestQuestList);
+    ClientId clientId,
+    const LobbyCommandRequestSpecialEventList& requestQuestList);
 
   //!
-  void HandleEnterRanch(
-    ClientId clientId, const
-    LobbyCommandEnterRanch& requestEnterRanch);
+  void HandleEnterRanch(ClientId clientId, const LobbyCommandEnterRanch& requestEnterRanch);
 
   //!
   void HandleGetMessengerInfo(
-    ClientId clientId, const
-    LobbyCommandGetMessengerInfo& requestMessengerInfo);
+    ClientId clientId,
+    const LobbyCommandGetMessengerInfo& requestMessengerInfo);
 
 private:
   CommandServer& _lobbyServer;
+  Settings _settings;
 
   std::unordered_map<UserId, std::string> _userTokens;
   std::unordered_map<ClientId, UserId> _clients;
@@ -70,6 +63,6 @@ private:
   std::unordered_map<HorseId, HorseData> _horses;
 };
 
-}
+} // namespace alicia
 
-#endif //LOBBYDIRECTOR_HPP
+#endif // LOBBYDIRECTOR_HPP
