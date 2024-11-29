@@ -1,10 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
 
-# Suppresses warning only if ENABLE_CMP0167 is passed in the command (cmake -DENABLE_CMP0167=ON ..)
-if (ENABLE_CMP0167) 
-    cmake_policy(SET CMP0167 NEW)
-endif()
-
 project(alicia-server
         VERSION 1.0.0)
 
