@@ -10,8 +10,6 @@
 
 #include "libserver/command/CommandServer.hpp"
 
-#include <variant>
-
 namespace alicia
 {
 
@@ -90,6 +88,18 @@ private:
   CommandServer _server;
   //!
   std::unordered_map<ClientId, DatumUid> _clientUsers;
+
+  //!
+  struct ClientLoginContext
+  {
+    std::string userName;
+
+    DatumUid characterUid{InvalidDatumUid};
+    LobbyCommandLoginOK response{};
+  };
+
+  //!
+  std::unordered_map<ClientId, ClientLoginContext> _queuedClientLogins;
 };
 
 }

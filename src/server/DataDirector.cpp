@@ -49,57 +49,59 @@ namespace alicia
 {
 
 void DataDirector::GetUser(
-  DatumUid userUid,
-  DatumConsumer<const UserCharacter&> consumer)
+  const std::string& name,
+  DatumConsumer<const User&> consumer)
 {
-  const auto userItr = _characters.find(userUid);
-  if (userItr == _characters.cend())
-  {
-    throw std::runtime_error("User doesn't exist");
-  }
-
-  ProvideLockedDatumAccess(userItr->second, consumer);
+  consumer(_users[name].value);
 }
 
 void DataDirector::GetUserMutable(
-  DatumUid userUid,
-  DatumConsumer<UserCharacter&> consumer)
+  const std::string& name,
+  DatumConsumer<User&> consumer)
 {
-  const auto userItr = _characters.find(userUid);
-  if (userItr == _characters.cend())
-  {
-    return;
-  }
+  throw std::runtime_error("not implemented");
+}
 
-  ProvideLockedMutableDatumAccess(userItr->second, consumer);
+void DataDirector::GetCharacter(
+  DatumUid characterUid,
+  DatumConsumer<const User::Character&> consumer)
+{
+  ProvideLockedDatumAccess(_characters[characterUid], consumer);
+}
+
+void DataDirector::GetCharacterMutable(
+  DatumUid characterUid,
+  DatumConsumer<User::Character&> consumer)
+{
+  ProvideLockedMutableDatumAccess(_characters[characterUid], consumer);
 }
 
 void DataDirector::GetMount(
   DatumUid mountUid,
-  DatumConsumer<const UserMount&> consumer)
+  DatumConsumer<const User::Mount&> consumer)
 {
   ProvideLockedDatumAccess(_mounts[mountUid], consumer);
 }
 
 void DataDirector::GetMountMutable(
   DatumUid mountUid,
-  DatumConsumer<UserMount&> consumer)
+  DatumConsumer<User::Mount&> consumer)
 {
-  ProvideLockedMutableDatumAccess(_mounts[mountUid], consumer);
+  throw std::runtime_error("not implemented");
 }
 
 void DataDirector::GetRanch(
   DatumUid ranchUid,
-  DatumConsumer<const UserRanch&> consumer)
+  DatumConsumer<const User::Ranch&> consumer)
 {
   ProvideLockedDatumAccess(_ranches[ranchUid], consumer);
 }
 
 void DataDirector::GetRanchMutable(
-  DatumUid ranchUid,
-  DatumConsumer<UserRanch&> consumer)
+  DatumUid mountUid,
+  DatumConsumer<User::Ranch&> consumer)
 {
-  ProvideLockedMutableDatumAccess(_ranches[ranchUid], consumer);
+  throw std::runtime_error("not implemented");
 }
 
 } // namespace alicia

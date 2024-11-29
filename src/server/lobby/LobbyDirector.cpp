@@ -139,8 +139,6 @@ void LobbyDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
     return;
   }
 
-  _dataDirector.GetUser();
-
   spdlog::info("User '{}' ({}) authenticated", login.loginId, login.memberNo);
 
   // Set XOR scrambler code
@@ -151,13 +149,11 @@ void LobbyDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
 
   // Queue the client login.
   auto& [loginContextItr, emplaced] = _queuedClientLogins.emplace(
-    clientId,
-    ClientLoginContext{
-      .userUid = login.memberNo,
-      .userName = login.loginId});
+    clientId, ClientLoginContext{});
   assert(emplaced == false);
 
   auto& loginContext = loginContextItr->second;
+
 
   const WinFileTime time = UnixTimeToFileTime(
     std::chrono::system_clock::now());
@@ -207,122 +203,131 @@ void LobbyDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
 
   try
   {
-    // Get the user data and fill the login context.
+    // Get the user.
     _dataDirector.GetUser(
-      login.memberNo,
-      [this, &loginCtx](
-        const UserCharacter& user)
+      login.loginId,
+      [this, &loginContext, clientId](const User& user)
       {
-        auto& response = loginCtx.response;
+        const auto characterUid = user.characterUid;
+        _clientUsers[clientId] = characterUid;
 
-        response.selfUid = loginCtx.userUid;
-        response.nickName = user.nickName;
-        response.profileGender = user.gender;
-        response.status = user.status;
-
-        response.level = user.level;
-        response.carrots = user.carrots;
-        // .val1 = 0x6130;
-        // .val2 = 0xFF;
-        // .val3 = 0xFF;
-        // .val4 = 0;
-
-        response.characterEquipment = user.characterEquipment;
-        response.horseEquipment = user.horseEquipment;
-
-        response.ageGroup = user.ageGroup;
-
-        response.character = {
-          .parts = {
-            .charId = 10,
-            .mouthSerialId = 0,
-            .faceSerialId = 0,
-            .val0 = 255},
-           .appearance = {
-              .val0 = 0xFFFF,
-              .headSize = 1,
-              .height = 2,
-              .thighVolume = 2,
-              .legVolume = 2,
-              .val1 = 0xFF}
-          };
-
-        // Get the mount data and fill the login context.
-        _dataDirector.GetMount(
-          user.mountUid,
-          [&loginCtx, mountUid = user.mountUid](
-            const UserMount& mount)
+        _dataDirector.GetCharacter(
+          characterUid,
+          [this, &loginContext, characterUid](
+            const User::Character& character)
           {
-            auto& response = loginCtx.response;
+            const auto mountUid = character.mountUid;
+            auto& response = loginContext.response;
 
-            response.horse = {
-              .uid = mountUid,
-              .tid = mount.tid,
-              .name = mount.name,
+            response.selfUid = characterUid;
+            response.nickName = character.nickName;
+            response.profileGender = character.gender;
+            response.status = character.status;
+
+            response.level = character.level;
+            response.carrots = character.carrots;
+            // .val1 = 0x6130;
+            // .val2 = 0xFF;
+            // .val3 = 0xFF;
+            // .val4 = 0;
+
+            response.characterEquipment = character.characterEquipment;
+            response.horseEquipment = character.horseEquipment;
+
+            response.ageGroup = character.ageGroup;
+
+            response.character = {
               .parts = {
-                .skinId = 0x2,
-                .maneId = 0x3,
-                .tailId = 0x3,
-                .faceId = 0x3},
-              .appearance = {
-                .scale = 0x4,
-                .legLength = 0x4,
-                .legVolume = 0x5,
-                .bodyLength = 0x3,
-                .bodyVolume = 0x4},
-              .stats = {
-                .agility = 9,
-                .spirit = 9,
-                .speed = 9,
-                .strength = 9,
-                .ambition = 0x13},
-              .rating = 0,
-              .clazz = 0x15,
-              .val0 = 1,
-              .grade = 5,
-              .growthPoints = 2,
-              .vals0 = {
-                .stamina = 0x7d0,
-                .attractiveness = 0x3c,
-                .hunger = 0x21c,
-                .val0 = 0x00,
-                .val1 = 0x03E8,
-                .val2 = 0x00,
-                .val3 = 0x00,
-                .val4 = 0x00,
-                .val5 = 0x03E8,
-                .val6 = 0x1E,
-                .val7 = 0x0A,
-                .val8 = 0x0A,
-                .val9 = 0x0A,
-                .val10 = 0x00},
-                .vals1 = {
+                .charId = 10,
+                .mouthSerialId = 0,
+                .faceSerialId = 0,
+                .val0 = 255},
+               .appearance = {
+                  .val0 = 0xFFFF,
+                  .headSize = 1,
+                  .height = 2,
+                  .thighVolume = 2,
+                  .legVolume = 2,
+                  .val1 = 0xFF}
+              };
+
+            // Get the mount data and fill the login context.
+            _dataDirector.GetMount(
+              character.mountUid,
+              [&loginContext](
+                const User::Mount& mount)
+              {
+                auto& response = loginContext.response;
+
+                response.horse = {
+                  .uid = mountUid,
+                  .tid = mount.tid,
+                  .name = mount.name,
+                  .parts = {
+                    .skinId = 0x2,
+                    .maneId = 0x3,
+                    .tailId = 0x3,
+                    .faceId = 0x3},
+                  .appearance = {
+                    .scale = 0x4,
+                    .legLength = 0x4,
+                    .legVolume = 0x5,
+                    .bodyLength = 0x3,
+                    .bodyVolume = 0x4},
+                  .stats = {
+                    .agility = 9,
+                    .spirit = 9,
+                    .speed = 9,
+                    .strength = 9,
+                    .ambition = 0x13},
+                  .rating = 0,
+                  .clazz = 0x15,
+                  .val0 = 1,
+                  .grade = 5,
+                  .growthPoints = 2,
+                  .vals0 = {
+                    .stamina = 0x7d0,
+                    .attractiveness = 0x3c,
+                    .hunger = 0x21c,
                     .val0 = 0x00,
-                    .val1 = 0x00,
-                    .val2 = 0xb8a167e4,
-                    .val3 = 0x02,
+                    .val1 = 0x03E8,
+                    .val2 = 0x00,
+                    .val3 = 0x00,
                     .val4 = 0x00,
-                    .classProgression = 0x32e7d,
-                    .val5 = 0x00,
-                    .val6 = 0x00,
-                    .val7 = 0x00,
-                    .val8 = 0x00,
-                    .val9 = 0x00,
-                    .val10 = 0x04,
-                    .val11 = 0x00,
-                    .val12 = 0x00,
-                    .val13 = 0x00,
-                    .val14 = 0x00,
-                    .val15 = 0x01
-                },
-                .mastery = {
-                  .magic = 0x1fe,
-                  .jumping = 0x421,
-                  .sliding = 0x5f8,
-                  .gliding = 0xcfa4,
-                },
-                .val16 = 0xb8a167e4,
-                .val17 = 0};
+                    .val5 = 0x03E8,
+                    .val6 = 0x1E,
+                    .val7 = 0x0A,
+                    .val8 = 0x0A,
+                    .val9 = 0x0A,
+                    .val10 = 0x00},
+                    .vals1 = {
+                        .val0 = 0x00,
+                        .val1 = 0x00,
+                        .val2 = 0xb8a167e4,
+                        .val3 = 0x02,
+                        .val4 = 0x00,
+                        .classProgression = 0x32e7d,
+                        .val5 = 0x00,
+                        .val6 = 0x00,
+                        .val7 = 0x00,
+                        .val8 = 0x00,
+                        .val9 = 0x00,
+                        .val10 = 0x04,
+                        .val11 = 0x00,
+                        .val12 = 0x00,
+                        .val13 = 0x00,
+                        .val14 = 0x00,
+                        .val15 = 0x01
+                    },
+                    .mastery = {
+                      .magic = 0x1fe,
+                      .jumping = 0x421,
+                      .sliding = 0x5f8,
+                      .gliding = 0xcfa4,
+                    },
+                    .val16 = 0xb8a167e4,
+                    .val17 = 0};
+              });
           });
       });
   }
@@ -344,27 +349,28 @@ void LobbyDirector::HandleHeartbeat(
   ClientId clientId,
   const LobbyCommandHeartbeat& heartbeat)
 {
-  auto userItr = _clients.find(clientId);
-  if (userItr == _clients.cend())
-  {
-    return;
-  }
-
-  auto& [userId, user] = *_users.find(userItr->second);
-  user.lastHeartbeat = std::chrono::system_clock::now();
+  // Todo
+  // auto userItr = _clientUsers.find(clientId);
+  // if (userItr == _clientUsers.cend())
+  // {
+  //   return;
+  // }
+  //
+  // auto& [userId, user] = *_users.find(userItr->second);
+  // user.lastHeartbeat = std::chrono::system_clock::now();
 }
 
 void LobbyDirector::HandleShowInventory(
   ClientId clientId,
   const LobbyCommandShowInventory& showInventory)
 {
-  auto userItr = _clients.find(clientId);
-  if (userItr == _clients.cend())
+  auto userItr = _clientUsers.find(clientId);
+  if (userItr == _clientUsers.cend())
   {
     return;
   }
 
-  auto& [userId, user] = *_users.find(userItr->second);
+  auto& [userId, user] = *_clientUsers.find(userItr->second);
 
   _server.QueueCommand(
     clientId,
@@ -380,13 +386,13 @@ void LobbyDirector::HandleAchievementCompleteList(
   ClientId clientId,
   const LobbyCommandAchievementCompleteList& achievementCompleteList)
 {
-  auto userItr = _clients.find(clientId);
-  if (userItr == _clients.cend())
+  auto userItr = _clientUsers.find(clientId);
+  if (userItr == _clientUsers.cend())
   {
     return;
   }
 
-  auto& [userId, user] = *_users.find(userItr->second);
+  auto& [userId, user] = *_clientUsers.find(userItr->second);
   _server.QueueCommand(
     clientId,
     CommandId::LobbyAchievementCompleteListOK,
@@ -401,13 +407,13 @@ void LobbyDirector::HandleRequestLeagueInfo(
   ClientId clientId,
   const LobbyCommandRequestLeagueInfo& requestLeagueInfo)
 {
-  auto userItr = _clients.find(clientId);
-  if (userItr == _clients.cend())
+  auto userItr = _clientUsers.find(clientId);
+  if (userItr == _clientUsers.cend())
   {
     return;
   }
 
-  auto& [userId, user] = *_users.find(userItr->second);
+  auto& [userId, user] = *_clientUsers.find(userItr->second);
   _server.QueueCommand(
     clientId,
     CommandId::LobbyRequestLeagueInfoOK,
@@ -422,13 +428,13 @@ void LobbyDirector::HandleRequestQuestList(
   ClientId clientId,
   const LobbyCommandRequestQuestList& requestQuestList)
 {
-  auto userItr = _clients.find(clientId);
-  if (userItr == _clients.cend())
+  auto userItr = _clientUsers.find(clientId);
+  if (userItr == _clientUsers.cend())
   {
     return;
   }
 
-  auto& [userId, user] = *_users.find(userItr->second);
+  auto& [userId, user] = *_clientUsers.find(userItr->second);
   _server.QueueCommand(
     clientId,
     CommandId::LobbyRequestQuestListOK,
@@ -459,14 +465,15 @@ void LobbyDirector::HandleEnterRanch(
   ClientId clientId,
   const LobbyCommandEnterRanch& enterRanch)
 {
-  const auto [_, userId] = *_clients.find(clientId);
+  const auto [_, userId] = *_clientUsers.find(clientId);
 
   _server.QueueCommand(
     clientId,
     CommandId::LobbyEnterRanchOK,
-     [userId, this](auto& sink)
-     {
-      auto& [_, user] = *_users.find(userId);
+    [userId, this](auto& sink)
+    {
+      auto& [_, user] = *_clientUsers.find(userId);
+
 
       // TODO: Move somewhere configurable
       struct in_addr addr;
@@ -474,13 +481,13 @@ void LobbyDirector::HandleEnterRanch(
       uint16_t port = 10031;
 
       LobbyCommandEnterRanchOK response{
-        .ranchUid = user.ranchUid,
-        .code = 0x44332211, // TODO: Generate and store in the ranch server instance
-        .ip = (uint32_t) addr.s_addr,
-        .port = port
+      .ranchUid = user.ranchUid,
+      .code = 0x44332211, // TODO: Generate and store in the ranch server instance
+      .ip = (uint32_t) addr.s_addr,
+      .port = port
       };
       LobbyCommandEnterRanchOK::Write(response, sink);
-     });
+    });
 }
 
 void LobbyDirector::HandleGetMessengerInfo(

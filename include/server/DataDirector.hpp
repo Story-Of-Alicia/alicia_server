@@ -31,7 +31,7 @@ struct User
 {
   std::string _token;
 
-  DatumUid _characterUid;
+  DatumUid characterUid;
 
   //! Character.
   struct Character
@@ -72,30 +72,39 @@ class DataDirector
 public:
   //!
   void GetUser(
-    DatumUid userUid,
+    const std::string& name,
     DatumConsumer<const User&> consumer);
   //!
   void GetUserMutable(
-    DatumUid userUid,
+    const std::string& name,
     DatumConsumer<User&> consumer);
+
+  //!
+  void GetCharacter(
+    DatumUid characterUid,
+    DatumConsumer<const User::Character&> consumer);
+  //!
+  void GetCharacterMutable(
+    DatumUid characterUid,
+    DatumConsumer<User::Character&> consumer);
 
   //!
   void GetMount(
     DatumUid mountUid,
-    DatumConsumer<const UserMount&> consumer);
+    DatumConsumer<const User::Mount&> consumer);
   //!
   void GetMountMutable(
     DatumUid mountUid,
-    DatumConsumer<UserMount&> consumer);
+    DatumConsumer<User::Mount&> consumer);
 
   //!
   void GetRanch(
     DatumUid ranchUid,
-    DatumConsumer<const UserRanch&> consumer);
+    DatumConsumer<const User::Ranch&> consumer);
   //!
   void GetRanchMutable(
     DatumUid mountUid,
-    DatumConsumer<UserRanch&> consumer);
+    DatumConsumer<User::Ranch&> consumer);
 
 private:
   //!
@@ -108,11 +117,11 @@ private:
 
   std::unordered_map<std::string, Datum<User>> _users;
   //!
-  std::unordered_map<DatumUid, Datum<UserCharacter>> _characters;
+  std::unordered_map<DatumUid, Datum<User::Character>> _characters;
   //!
-  std::unordered_map<DatumUid, Datum<UserMount>> _mounts;
+  std::unordered_map<DatumUid, Datum<User::Mount>> _mounts;
   //!
-  std::unordered_map<DatumUid, Datum<UserRanch>> _ranches;
+  std::unordered_map<DatumUid, Datum<User::Ranch>> _ranches;
 };
 
 }
