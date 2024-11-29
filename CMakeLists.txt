@@ -1,10 +1,12 @@
 cmake_minimum_required(VERSION 3.20)
+
 project(alicia-server
         VERSION 1.0.0)
 
 option(BUILD_TESTS "Build tests" ON)
 
 find_package(Boost REQUIRED)
+find_package(libpqxx REQUIRED)
 
 add_subdirectory(3rd-party)
 
@@ -27,7 +29,7 @@ add_library(alicia-libserver STATIC
 target_include_directories(alicia-libserver
         PUBLIC include/)
 target_link_libraries(alicia-libserver
-        PUBLIC project-properties Boost::headers spdlog::spdlog nlohmann_json::nlohmann_json)
+        PUBLIC project-properties Boost::headers spdlog::spdlog spdlog::spdlog pqxx nlohmann_json::nlohmann_json)
 
 # Alicia server executable
 add_executable(alicia-server)
@@ -61,4 +63,12 @@ endif ()
 if (BUILD_TESTS) 
         enable_testing()
         add_subdirectory(tests)
+endif()
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    message(STATUS "Adding -fexperimental-library for Clang compiler")
+    target_compile_options(alicia-libserver
+        PRIVATE -fexperimental-library)
+    target_compile_options(alicia-server
+        PRIVATE -fexperimental-library)
 endif()

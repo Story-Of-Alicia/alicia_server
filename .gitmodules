@@ -4,3 +4,6 @@
 [submodule "3rd-party/json"]
 	path = 3rd-party/json
 	url = https://github.com/nlohmann/json.git
+[submodule "3rd-party/libpqxx"]
+	path = 3rd-party/libpqxx
+	url = https://github.com/jtv/libpqxx.git

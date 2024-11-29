@@ -69,7 +69,7 @@ WinFileTime UnixTimeToFileTime(const std::chrono::system_clock::time_point& time
   const uint64_t convertedUnixTime = Int32x32To64(unixTime, 10000000) + 116444736000000000;
   return WinFileTime{
     .dwLowDateTime = static_cast<uint32_t>(convertedUnixTime),
-    .dwHighDateTime = convertedUnixTime >> 32};
+    .dwHighDateTime = static_cast<uint32_t>(convertedUnixTime >> 32)};
 }
 
 std::string ResolveAddress(const std::string& host, const std::string& port)
