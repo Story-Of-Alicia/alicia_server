@@ -368,14 +368,13 @@ void LoginDirector::HandleEnterRanch(ClientId clientId, const LobbyCommandEnterR
 
       // TODO: Move somewhere configurable
       struct in_addr addr;
-      inet_pton(AF_INET, "127.0.0.1", &addr);
-      uint16_t port = 10031;
+      inet_pton(AF_INET, _settings._lobbySettings.ranchAdvAddress.c_str(), &addr);
 
       LobbyCommandEnterRanchOK response{
         .ranchUid = user.ranchUid,
         .code = 0x44332211, // TODO: Generate and store in the ranch server instance
         .ip = (uint32_t)addr.s_addr,
-        .port = port};
+        .port = _settings._lobbySettings.ranchAdvPort};
       LobbyCommandEnterRanchOK::Write(response, sink);
     });
 }
@@ -391,13 +390,12 @@ void LoginDirector::HandleGetMessengerInfo(
     {
       // TODO: Move somewhere configurable
       struct in_addr addr;
-      inet_pton(AF_INET, "127.0.0.1", &addr);
-      uint16_t port = 10032;
+      inet_pton(AF_INET, _settings._lobbySettings.messengerAdvAddress.c_str(), &addr);
 
       LobbyCommandGetMessengerInfoOK response{
         .unk0 = 0, // TODO: Generate and store in the messenger server instance
         .ip = (uint32_t)addr.s_addr,
-        .port = port};
+        .port = _settings._lobbySettings.messengerAdvPort};
       LobbyCommandGetMessengerInfoOK::Write(response, sink);
     });
 }
