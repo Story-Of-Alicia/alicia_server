@@ -6,7 +6,6 @@ project(alicia-server
 option(BUILD_TESTS "Build tests" ON)
 
 find_package(Boost REQUIRED)
-find_package(libpqxx REQUIRED)
 
 add_subdirectory(3rd-party SYSTEM)
 
