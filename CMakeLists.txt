@@ -8,7 +8,7 @@ option(BUILD_TESTS "Build tests" ON)
 find_package(Boost REQUIRED)
 find_package(libpqxx REQUIRED)
 
-add_subdirectory(3rd-party)
+add_subdirectory(3rd-party SYSTEM)
 
 # Project properties interface library
 add_library(project-properties INTERFACE)
