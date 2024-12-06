@@ -1,55 +1,50 @@
 /**
-* Alicia Server - dedicated server software
-* Copyright (C) 2024 Story Of Alicia
-*
-* This program is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
-* (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License along
-* with this program; if not, write to the Free Software Foundation, Inc.,
-* 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-**/
+ * Alicia Server - dedicated server software
+ * Copyright (C) 2024 Story Of Alicia
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ **/
 
 #ifndef UTIL_HPP
 #define UTIL_HPP
 
-#define DECLARE_WRITER_READER(x) \
-template <> \
-struct StreamWriter<x> \
-{ \
-  void operator()( \
-    const x& value, SinkStream& buffer) const; \
-}; \
-template<> \
-struct StreamReader<x> \
-{ \
-  void operator()( \
-    x& value, SourceStream& buffer) const; \
-};
+#define DECLARE_WRITER_READER(x)                                                                   \
+  template <> struct StreamWriter<x>                                                               \
+  {                                                                                                \
+    void operator()(const x& value, SinkStream& buffer) const;                                     \
+  };                                                                                               \
+  template <> struct StreamReader<x>                                                               \
+  {                                                                                                \
+    void operator()(x& value, SourceStream& buffer) const;                                         \
+  };
 
-#define DEFINE_WRITER_READER(x, writer, reader) \
-void StreamWriter<x>::operator()( \
-  const x& value, SinkStream& buffer) const \
-{ \
-  return writer(value, buffer); \
-} \
-void StreamReader<x>::operator()( \
-  x& value, SourceStream& buffer) const \
-{ \
-  return reader(value, buffer); \
-}
+#define DEFINE_WRITER_READER(x, writer, reader)                                                    \
+  void StreamWriter<x>::operator()(const x& value, SinkStream& buffer) const                       \
+  {                                                                                                \
+    return writer(value, buffer);                                                                  \
+  }                                                                                                \
+  void StreamReader<x>::operator()(x& value, SourceStream& buffer) const                           \
+  {                                                                                                \
+    return reader(value, buffer);                                                                  \
+  }
 
-#define COMMAND_WRITER_READER(x) \
-DECLARE_WRITER_READER(x) \
-DEFINE_WRITER_READER(x, x::Write, x::Read)
+#define COMMAND_WRITER_READER(x)                                                                   \
+  DECLARE_WRITER_READER(x)                                                                         \
+  DEFINE_WRITER_READER(x, x::Write, x::Read)
 
+#include <boost/asio.hpp>
 #include <chrono>
 #include <cstdint>
 #include <format>
@@ -60,19 +55,22 @@ namespace alicia
 {
 
 //! Windows file-time represents number of 100 nanosecond intervals since January 1, 1601 (UTC).
-struct WinFileTime {
+struct WinFileTime
+{
   uint32_t dwLowDateTime = 0;
   uint32_t dwHighDateTime = 0;
 };
 
+namespace asio = boost::asio;
+
 //! Converts a time point to the Windows file time.
 //! @param timePoint Point in time.
 //! @return Windows file time representing specified point in time.
-WinFileTime UnixTimeToFileTime(
-  const std::chrono::system_clock::time_point& timePoint);
+WinFileTime UnixTimeToFileTime(const std::chrono::system_clock::time_point& timePoint);
 
-template <typename StorageType>
-class StreamBase
+std::string ResolveAddress(const std::string& host, const std::string& port);
+
+template <typename StorageType> class StreamBase
 {
 public:
   //! Storage type.
@@ -80,11 +78,11 @@ public:
 
   //! Default constructor.
   explicit StreamBase(Storage storage) noexcept
-      : _storage(storage){};
+      : _storage(storage) {};
 
   //! Empty constructor.
   explicit StreamBase(nullptr_t) noexcept
-      : _storage(){};
+      : _storage() {};
 
   //! Virtual destructor.
   virtual ~StreamBase() = default;
@@ -115,12 +113,10 @@ protected:
 };
 
 //! Forward declaration of a stream writer.
-template <typename T>
-struct StreamWriter;
+template <typename T> struct StreamWriter;
 
 //! Buffered stream sink.
-class SinkStream final
-  : public StreamBase<std::span<std::byte>>
+class SinkStream final : public StreamBase<std::span<std::byte>>
 {
 public:
   //! Default constructor
@@ -163,27 +159,22 @@ public:
 //! Writes a little-endian byte sequence to the provided sink buffer.
 //!
 //! @tparam T Type of value.
-template <typename T>
-struct StreamWriter
+template <typename T> struct StreamWriter
 {
   void operator()(const T& value, SinkStream& buffer)
   {
     const auto requiredByteCount = sizeof(value);
 
     // Write the value to the buffer.
-    buffer.Write(
-      reinterpret_cast<const void*>(&value),
-      requiredByteCount);
+    buffer.Write(reinterpret_cast<const void*>(&value), requiredByteCount);
   }
 };
 
 //! Forward declaration of a reader.
-template <typename T>
-struct StreamReader;
+template <typename T> struct StreamReader;
 
 //! Buffered stream source.
-class SourceStream final
-  : public StreamBase<std::span<const std::byte>>
+class SourceStream final : public StreamBase<std::span<const std::byte>>
 {
 public:
   //! Default constructor
@@ -202,7 +193,6 @@ public:
   SourceStream(const SourceStream&) = delete;
   //! Deleted copy assignement.
   void operator=(const SourceStream&) = delete;
-
 
   //! Read from the buffer storage.
   //! Fails if the operation can't be completed wholly.
@@ -232,9 +222,7 @@ template <typename T> struct StreamReader
   void operator()(T& value, SourceStream& buffer)
   {
     const auto byteCount = sizeof(value);
-    buffer.Read(
-      reinterpret_cast<void*>(&value),
-      byteCount);
+    buffer.Read(reinterpret_cast<void*>(&value), byteCount);
   }
 };
 
@@ -249,7 +237,7 @@ struct Deferred final
   //! Construct deferred call that invokes
   //! the provided function on destruction of this object.
   explicit Deferred(Fnc func) noexcept
-    : _func(std::move(func)) {};
+      : _func(std::move(func)) {};
 
   //! Deleted copy constructor.
   Deferred(const Deferred&) noexcept = delete;
@@ -257,16 +245,13 @@ struct Deferred final
   Deferred(Deferred&&) noexcept = delete;
 
   //! Destructor.
-  ~Deferred()
-  {
-    _func();
-  }
+  ~Deferred() { _func(); }
 
 private:
   //! A function to invoke on destruction.
   Fnc _func;
 };
 
-} // namespace alicia::proto
+} // namespace alicia
 
 #endif // UTIL_HPP

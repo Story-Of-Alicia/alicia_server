@@ -6,6 +6,7 @@
 #define RANCHDIRECTOR_HPP
 
 #include "../Director.hpp"
+#include <server/Settings.hpp>
 
 namespace alicia
 {
@@ -13,16 +14,12 @@ namespace alicia
 class RanchDirector
 {
 public:
-  explicit RanchDirector(CommandServer& ranchServer) noexcept;
+  explicit RanchDirector(CommandServer& ranchServer, Settings settings) noexcept;
 
   //!
-  void HandleEnterRanch(
-    ClientId clientId,
-    const RanchCommandEnterRanch& enterRanch);
+  void HandleEnterRanch(ClientId clientId, const RanchCommandEnterRanch& enterRanch);
 
-  void HandleSnapshot(
-    ClientId clientId,
-    const RanchCommandRanchSnapshot& snapshot);
+  void HandleSnapshot(ClientId clientId, const RanchCommandRanchSnapshot& snapshot);
 
   void HandleCmdAction(ClientId clientId, const RanchCommandRanchCmdAction& action);
 
@@ -30,14 +27,14 @@ public:
 
 private:
   CommandServer& _ranchServer;
-
+  Settings _settings;
   std::unordered_map<ClientId, UserId> _clients{};
-  
+
   std::unordered_map<UserId, User> _users{};
   std::unordered_map<HorseId, HorseData> _horses{};
   std::unordered_map<RanchId, Ranch> _ranches{};
 };
 
-}
+} // namespace alicia
 
-#endif //RANCHDIRECTOR_HPP
+#endif // RANCHDIRECTOR_HPP

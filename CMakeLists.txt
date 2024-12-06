@@ -6,7 +6,6 @@ project(alicia-server
 option(BUILD_TESTS "Build tests" ON)
 
 find_package(Boost REQUIRED)
-find_package(libpqxx REQUIRED)
 
 add_subdirectory(3rd-party)
 
@@ -19,6 +18,7 @@ target_compile_features(project-properties
 add_library(alicia-libserver STATIC
         src/libserver/Alicia.cpp
         src/libserver/Util.cpp
+        src/server/Settings.cpp
         src/libserver/base/Server.cpp
         src/libserver/command/CommandProtocol.cpp
         src/libserver/command/CommandServer.cpp
@@ -28,7 +28,7 @@ add_library(alicia-libserver STATIC
 target_include_directories(alicia-libserver
         PUBLIC include/)
 target_link_libraries(alicia-libserver
-        PUBLIC project-properties Boost::headers spdlog::spdlog pqxx)
+        PUBLIC project-properties Boost::headers spdlog::spdlog nlohmann_json::nlohmann_json pqxx)
 
 # Alicia server executable
 add_executable(alicia-server)
@@ -50,6 +50,7 @@ target_sources(alicia-server PRIVATE
         src/server/ranch/RanchDirector.cpp)
 target_link_libraries(alicia-server
         PRIVATE project-properties alicia-libserver)
+
 target_include_directories(alicia-server PUBLIC
         "${PROJECT_BINARY_DIR}/generated")
 
