@@ -104,6 +104,9 @@ void LoginDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
     {
       const WinFileTime time = UnixTimeToFileTime(std::chrono::system_clock::now());
 
+      struct in_addr addr;
+      inet_pton(AF_INET, _settings._lobbySettings.ranchAdvAddress.c_str(), &addr);
+
       const LobbyCommandLoginOK command{
         .lobbyTime =
           {.dwLowDateTime = static_cast<uint32_t>(time.dwLowDateTime),
@@ -142,9 +145,8 @@ void LoginDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
 
         .val6 = "val6",
 
-        // TODO: Move somewhere configurable
-        .address = 2130706433, // 127.0.0.1
-        .port = 10031,         // 10031
+        .address = (uint32_t) addr.s_addr,
+        .port = _settings._lobbySettings.ranchAdvPort,
 
         .scramblingConstant = scramblingConstant,
 
@@ -366,7 +368,6 @@ void LoginDirector::HandleEnterRanch(ClientId clientId, const LobbyCommandEnterR
     {
       auto& [_, user] = *_users.find(userId);
 
-      // TODO: Move somewhere configurable
       struct in_addr addr;
       inet_pton(AF_INET, _settings._lobbySettings.ranchAdvAddress.c_str(), &addr);
 
@@ -388,7 +389,6 @@ void LoginDirector::HandleGetMessengerInfo(
     CommandId::LobbyGetMessengerInfoOK,
     [&](auto& sink)
     {
-      // TODO: Move somewhere configurable
       struct in_addr addr;
       inet_pton(AF_INET, _settings._lobbySettings.messengerAdvAddress.c_str(), &addr);
 

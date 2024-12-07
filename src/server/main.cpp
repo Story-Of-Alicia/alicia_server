@@ -45,7 +45,7 @@ int main()
 
   // Parsing settings file
   alicia::Settings settings;
-  settings.LoadFromFile("../../resources/settings.json");
+  settings.LoadFromFile("resources/settings.json");
 
   // Lobby thread.
   std::jthread lobbyThread(
