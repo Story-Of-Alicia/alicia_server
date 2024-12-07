@@ -71,3 +71,9 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     target_compile_options(alicia-server
         PRIVATE -fexperimental-library)
 endif()
+
+add_custom_command(
+        TARGET alicia-server POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+                ${CMAKE_SOURCE_DIR}/resources
+                ${CMAKE_CURRENT_BINARY_DIR}/resources)
