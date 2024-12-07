@@ -52,6 +52,48 @@ RanchDirector::RanchDirector(
       HandleRanchStuff(clientId, message);
     });
 
+  _server.RegisterCommandHandler<RanchCommandUpdateBusyState>(
+    CommandId::RanchUpdateBusyState,
+    [](ClientId clientId, auto& command)
+    {
+      HandleUpdateBusyState(clientId, command); 
+    });
+  
+  _server.RegisterCommandHandler<RanchCommandSearchStallion>(
+    CommandId::RanchSearchStallion,
+    [](ClientId clientId, auto& command)
+    {
+      HandleSearchStallion(clientId, command); 
+    });
+
+  _server.RegisterCommandHandler<RanchCommandEnterBreedingMarket>(
+    CommandId::RanchEnterBreedingMarket,
+    [](ClientId clientId, auto& command)
+    {
+      HandleEnterBreedingMarket(clientId, command); 
+    });
+
+  _server.RegisterCommandHandler<RanchCommandTryBreeding>(
+    CommandId::RanchTryBreeding,
+    [](ClientId clientId, auto& command)
+    {
+      HandleTryBreeding(clientId, command); 
+    });
+
+  _server.RegisterCommandHandler<RanchCommandBreedingWishlist>(
+    CommandId::RanchBreedingWishlist,
+    [](ClientId clientId, auto& command)
+    {
+      HandleBreedingWishlist(clientId, command); 
+    });
+
+  _server.RegisterCommandHandler<RanchCommandUpdateMountNickname>(
+    CommandId::RanchUpdateMountNickname,
+    [](ClientId clientId, auto& command)
+    {
+      HandleUpdateMountNickname(clientId, command); 
+    });
+
   // Host the server.
   _server.Host(_settings.address, _settings.port);
 }
@@ -387,6 +429,193 @@ void RanchDirector::HandleRanchStuff(ClientId clientId, const RanchCommandRanchS
         totalCarrots};
 
       RanchCommandRanchStuffOK::Write(response, sink);
+    });
+}
+
+void RanchDirector::HandleUpdateBusyState(ClientId clientId, const RanchCommandUpdateBusyState& command)
+{
+  const DatumUid characterUid = _clientCharacters[clientId];
+  auto character = _dataDirector.GetCharacter(characterUid);
+  auto& ranchInstance = _ranches[character->ranchUid];
+
+  // TODO: Store the busy state in the character instance
+
+  RanchCommandUpdateBusyStateNotify response {.characterId = characterUid, .busyState = command.busyState};
+
+  for (auto [clientId, clientCharacterUid] : _clientCharacters)
+  {
+    if (ranchInstance._worldTracker.GetCharacterId(clientCharacterUid) == InvalidEntityId)
+    {
+      continue;
+    }
+    
+    _server.QueueCommand(
+      clientId,
+      CommandId::RanchSnapshotNotify,
+      [&](auto& sink) { RanchCommandUpdateBusyStateNotify::Write(response, sink); });
+  }
+}
+
+void RanchDirector::HandleSearchStallion(ClientId clientId, const RanchCommandSearchStallion& command)
+{
+  _server.QueueCommand(
+    clientId,
+    CommandId::RanchSearchStallionOK,
+    [command](auto& sink)
+    {
+      // TODO: Fetch data from DB according to the filters in the request
+      RanchCommandSearchStallionOK response
+      {
+        .unk0 = 0,
+        .unk1 = 0,
+        .stallions = {
+          RanchCommandSearchStallionOK::Stallion {
+            .unk0 = "test",
+            .unk1 = 0x3004e21,
+            .unk2 = 0x4e21,
+            .name = "Juan",
+            .grade = 4,
+            .chance = 0,
+            .price = 1,
+            .unk7 = 0xFFFFFFFF,
+            .unk8 = 0xFFFFFFFF,
+            .stats = {
+              .agility = 9,
+              .spirit = 9,
+              .speed = 9,
+              .strength = 9,
+              .ambition = 9
+            },
+            .parts = {
+              .skinId = 1,
+              .maneId = 4,
+              .tailId = 4,
+              .faceId = 5,
+            },
+            .appearance = {
+              .scale = 4,
+              .legLength = 4,
+              .legVolume = 5,
+              .bodyLength = 3,
+              .bodyVolume = 4
+            },
+            .unk11 = 5,
+            .coatBonus = 0
+          }
+        }
+      };
+
+      RanchCommandSearchStallionOK::Write(response, sink);
+    });
+}
+
+void RanchDirector::HandleEnterBreedingMarket(ClientId clientId, const RanchCommandEnterBreedingMarket& command)
+{
+  const DatumUid characterUid = _clientCharacters[clientId];
+  auto character = _dataDirector.GetCharacter(characterUid);
+  _server.QueueCommand(
+    clientId,
+    CommandId::RanchEnterBreedingMarketOK,
+    [&](auto& sink)
+    {
+      RanchCommandEnterBreedingMarketOK response;
+      for(HorseId horseId : character.horses)
+      {
+        auto& horse = _horses[horseId];
+        RanchCommandEnterBreedingMarketOK::AvailableHorse availableHorse
+        {
+          .uid = horseId,
+          .tid = horse.tid,
+          .unk0 = 0,
+          .unk1 = 0,
+          .unk2 = 0,
+          .unk3 = 0
+        };
+        response.availableHorses.push_back(availableHorse);
+      }
+      RanchCommandEnterBreedingMarketOK::Write(response, sink);
+    });
+}
+
+void RanchDirector::HandleTryBreeding(ClientId clientId, const RanchCommandTryBreeding& command)
+{
+  // TODO: Actually do something
+  _server.QueueCommand(
+    clientId,
+    CommandId::RanchTryBreedingOK,
+    [&](auto& sink)
+    {
+      RanchCommandTryBreedingOK response
+      {
+        .uid = command.unk0, // wild guess
+        .tid = command.unk1, // lmao
+        .val = 0,
+        .count = 0,
+        .unk0 = 0,
+        .parts = {
+          .skinId = 1,
+          .maneId = 4,
+          .tailId = 4,
+          .faceId = 5
+        },
+        .appearance = {
+          .scale = 4,
+          .legLength = 4,
+          .legVolume = 5,
+          .bodyLength = 3,
+          .bodyVolume = 4
+        },
+        .stats = {
+          .agility = 9,
+          .spirit = 9,
+          .speed = 9,
+          .strength = 9,
+          .ambition = 9
+        },
+        .unk1 = 0,
+        .unk2 = 0,
+        .unk3 = 0,
+        .unk4 = 0,
+        .unk5 = 0,
+        .unk6 = 0,
+        .unk7 = 0,
+        .unk8 = 0,
+        .unk9 = 0,
+        .unk10 = 0,
+      };
+      RanchCommandTryBreedingOK::Write(response, sink);
+    });
+}
+
+void RanchDirector::HandleBreedingWishlist(ClientId clientId, const RanchCommandBreedingWishlist& command)
+{
+  // TODO: Actually do something
+  _server.QueueCommand(
+    clientId,
+    CommandId::RanchBreedingWishlistOK,
+    [&](auto& sink)
+    {
+      RanchCommandBreedingWishlistOK response{};
+      RanchCommandBreedingWishlistOK::Write(response, sink);
+    });
+}
+
+void RanchDirector::HandleUpdateMountNickname(ClientId clientId, const RanchCommandUpdateMountNickname& command)
+{
+  // TODO: Actually do something
+  _server.QueueCommand(
+    clientId,
+    CommandId::RanchUpdateMountNicknameOK,
+    [&](auto& sink)
+    {
+      RanchCommandUpdateMountNicknameOK response
+      {
+        .unk0 = command.unk0,
+        .nickname = command.nickname,
+        .unk1 = command.unk1,
+        .unk2 = 0
+      };
+      RanchCommandUpdateMountNicknameOK::Write(response, sink);
     });
 }
 
