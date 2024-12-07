@@ -198,9 +198,9 @@ int main()
         alicia::CommandId::LobbyGetMessengerInfo,
         [](alicia::ClientId clientId, const auto& message)
         {
-        EnqueueTask([clientId, message]() {
-            g_loginDirector->HandleGetMessengerInfo(clientId, message);
-          });
+            EnqueueTask([clientId, message]() {
+                g_loginDirector->HandleGetMessengerInfo(clientId, message);
+            });
         });
 
       // Host
@@ -221,7 +221,9 @@ int main()
           alicia::RanchCommandEnterRanch enterRanch;
           alicia::RanchCommandEnterRanch::Read(enterRanch, buffer);
 
-          g_ranchDirector->HandleEnterRanch(clientId, enterRanch);
+          EnqueueTask([clientId, enterRanch]() {
+            g_ranchDirector->HandleEnterRanch(clientId, enterRanch);
+          });
         });
 
       ranchServer.RegisterCommandHandler(
@@ -231,7 +233,9 @@ int main()
           alicia::RanchCommandRanchSnapshot snapshot;
           alicia::RanchCommandRanchSnapshot::Read(snapshot, buffer);
 
-          g_ranchDirector->HandleSnapshot(clientId, snapshot);
+          EnqueueTask([clientId, snapshot]() {
+            g_ranchDirector->HandleSnapshot(clientId, snapshot);
+          });
         });
 
       ranchServer.RegisterCommandHandler(
@@ -241,13 +245,20 @@ int main()
           alicia::RanchCommandRanchCmdAction cmdAction;
           alicia::RanchCommandRanchCmdAction::Read(cmdAction, buffer);
 
-          g_ranchDirector->HandleCmdAction(clientId, cmdAction);
+          EnqueueTask([clientId, cmdAction]() {
+            g_ranchDirector->HandleCmdAction(clientId, cmdAction);
+          });
         });
 
       ranchServer.RegisterCommandHandler<alicia::RanchCommandRanchStuff>(
         alicia::CommandId::RanchStuff,
         [](alicia::ClientId clientId, auto& command)
-        { g_ranchDirector->HandleRanchStuff(clientId, command); });
+        
+        {
+          EnqueueTask([clientId, command]() {
+            g_ranchDirector->HandleRanchStuff(clientId, command); 
+          });
+        });
 
       // Host
       ranchServer.Host(settings._ranchSettings.address, settings._ranchSettings.port);
