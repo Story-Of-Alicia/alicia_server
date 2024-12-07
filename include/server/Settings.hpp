@@ -15,27 +15,27 @@ public:
   struct LobbySettings
   {
     // Bind address and port of the lobby host (default values)
-    std::string address = "localhost";
+    std::string address = "127.0.0.1";
     uint16_t port = 10030;
     // Advertised address and port of the ranch host (default values)
-    std::string ranchAdvAddress = "localhost";
+    std::string ranchAdvAddress = "127.0.0.1";
     uint16_t ranchAdvPort = 10031;
     // Advertised address and port of the messenger host (default values)
-    std::string messengerAdvAddress = "localhost";
+    std::string messengerAdvAddress = "127.0.0.1";
     uint16_t messengerAdvPort = 10032;
   } _lobbySettings;
 
   // Bind address and port of the ranch host (default values)
   struct RanchSettings
   {
-    std::string address = "localhost";
+    std::string address = "127.0.0.1";
     uint16_t port = 10031;
   } _ranchSettings;
 
   // Bind address and port of the messenger host (default values)
   struct MessengerSettings
   {
-    std::string address = "localhost";
+    std::string address = "127.0.0.1";
     uint16_t port = 10032;
   } _messengerSettings;
 
