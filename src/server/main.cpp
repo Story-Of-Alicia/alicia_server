@@ -14,6 +14,9 @@
 
 #include <memory>
 #include <thread>
+#include <queue> 
+#include <mutex> 
+#include <condition_variable>
 
 #include <iostream>
 namespace
@@ -21,8 +24,43 @@ namespace
 
 std::unique_ptr<alicia::LoginDirector> g_loginDirector;
 std::unique_ptr<alicia::RanchDirector> g_ranchDirector;
+std::queue<std::function<void()>> g_taskQueue; // Task queue to hold lambdas.
+std::mutex g_queueMutex;                      // Mutex for queue access.
+std::condition_variable g_queueCondition;     // For notifying the server thread.
 
 } // namespace
+
+// Adds task to queue
+void EnqueueTask(std::function<void()> task)
+{
+    {
+        std::lock_guard<std::mutex> lock(g_queueMutex);
+        g_taskQueue.push(std::move(task));
+    }
+    g_queueCondition.notify_one();
+}
+
+// Processes tasks
+void ProcessTasks()
+{
+    while (true) 
+    {
+        std::function<void()> task;
+
+        {
+            std::unique_lock<std::mutex> lock(g_queueMutex);
+            g_queueCondition.wait_for(lock, std::chrono::milliseconds(50), [] { return !g_taskQueue.empty(); });
+
+            if (g_taskQueue.empty())
+                continue;
+
+            task = std::move(g_taskQueue.front());
+            g_taskQueue.pop();
+        }
+
+        task();
+    }
+}
 
 int main()
 {
@@ -60,7 +98,12 @@ int main()
       lobbyServer.RegisterCommandHandler<alicia::LobbyCommandLogin>(
         alicia::CommandId::LobbyLogin,
         [](alicia::ClientId clientId, const auto& message)
-        { g_loginDirector->HandleUserLogin(clientId, message); });
+        
+        {
+          EnqueueTask([clientId, message]() {
+            g_loginDirector->HandleUserLogin(clientId, message);
+          });
+        });
 
       // Heartbeat handler
       lobbyServer.RegisterCommandHandler(
@@ -70,7 +113,9 @@ int main()
           alicia::LobbyCommandHeartbeat heartbeat;
           alicia::LobbyCommandHeartbeat::Read(heartbeat, buffer);
 
-          g_loginDirector->HandleHeartbeat(clientId, heartbeat);
+          EnqueueTask([clientId, heartbeat]() {
+            g_loginDirector->HandleHeartbeat(clientId, heartbeat);
+          });
         });
 
       // ShowInventory handler
@@ -81,7 +126,9 @@ int main()
           alicia::LobbyCommandShowInventory showInventoryCommand;
           alicia::LobbyCommandShowInventory::Read(showInventoryCommand, buffer);
 
-          g_loginDirector->HandleShowInventory(clientId, showInventoryCommand);
+          EnqueueTask([clientId, showInventoryCommand]() {
+            g_loginDirector->HandleShowInventory(clientId, showInventoryCommand);
+          });
         });
 
       // AchievementCompleteList handler
@@ -92,7 +139,9 @@ int main()
           alicia::LobbyCommandAchievementCompleteList achievementCompleteList;
           alicia::LobbyCommandAchievementCompleteList::Read(achievementCompleteList, buffer);
 
-          g_loginDirector->HandleAchievementCompleteList(clientId, achievementCompleteList);
+          EnqueueTask([clientId, achievementCompleteList]() {
+            g_loginDirector->HandleAchievementCompleteList(clientId, achievementCompleteList);
+          });
         });
 
       // RequestLeagueInfo
@@ -103,7 +152,9 @@ int main()
           alicia::LobbyCommandRequestLeagueInfo requestLeagueInfo;
           alicia::LobbyCommandRequestLeagueInfo::Read(requestLeagueInfo, buffer);
 
-          g_loginDirector->HandleRequestLeagueInfo(clientId, requestLeagueInfo);
+          EnqueueTask([clientId, requestLeagueInfo]() {
+            g_loginDirector->HandleRequestLeagueInfo(clientId, requestLeagueInfo);
+          });
         });
 
       // RequestQuestList handler
@@ -113,8 +164,10 @@ int main()
         {
           alicia::LobbyCommandRequestQuestList requestDailyQuestList;
           alicia::LobbyCommandRequestQuestList::Read(requestDailyQuestList, buffer);
-
-          g_loginDirector->HandleRequestQuestList(clientId, requestDailyQuestList);
+          
+          EnqueueTask([clientId, requestDailyQuestList]() {
+            g_loginDirector->HandleRequestQuestList(clientId, requestDailyQuestList);
+          });
         });
 
       lobbyServer.RegisterCommandHandler(
@@ -124,7 +177,9 @@ int main()
           alicia::LobbyCommandRequestSpecialEventList requestSpecialEventList;
           alicia::LobbyCommandRequestSpecialEventList::Read(requestSpecialEventList, buffer);
 
-          g_loginDirector->HandleRequestSpecialEventList(clientId, requestSpecialEventList);
+          EnqueueTask([clientId, requestSpecialEventList]() {
+            g_loginDirector->HandleRequestSpecialEventList(clientId, requestSpecialEventList);
+          });
         });
 
       lobbyServer.RegisterCommandHandler(
@@ -134,13 +189,19 @@ int main()
           alicia::LobbyCommandEnterRanch enterRanch;
           alicia::LobbyCommandEnterRanch::Read(enterRanch, buffer);
 
-          g_loginDirector->HandleEnterRanch(clientId, enterRanch);
+          EnqueueTask([clientId, enterRanch]() {
+            g_loginDirector->HandleEnterRanch(clientId, enterRanch);
+          });
         });
 
       lobbyServer.RegisterCommandHandler<alicia::LobbyCommandGetMessengerInfo>(
         alicia::CommandId::LobbyGetMessengerInfo,
         [](alicia::ClientId clientId, const auto& message)
-        { g_loginDirector->HandleGetMessengerInfo(clientId, message); });
+        {
+        EnqueueTask([clientId, message]() {
+            g_loginDirector->HandleGetMessengerInfo(clientId, message);
+          });
+        });
 
       // Host
       lobbyServer.Host(settings._lobbySettings.address, settings._lobbySettings.port);
