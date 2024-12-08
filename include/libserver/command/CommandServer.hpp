@@ -61,7 +61,7 @@ public:
   //! Runs the processing loop and blocks until exception or stopped.
   //! @param interface Interface address.
   //! @param port Port.
-  void Host(const std::string& interface, uint16_t port);
+  void Host(const asio::ip::address& address, uint16_t port);
 
   //! Registers a command handler.
   //!

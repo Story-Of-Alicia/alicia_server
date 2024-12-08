@@ -138,11 +138,9 @@ Server::Server() noexcept
 {
 }
 
-void Server::Host(const std::string_view& interface, uint16_t port)
+void Server::Host(const asio::ip::address& address, uint16_t port)
 {
-  const asio::ip::tcp::endpoint server_endpoint(
-    asio::ip::make_address(interface.data()),
-    port);
+  const asio::ip::tcp::endpoint server_endpoint(address, port);
 
   _acceptor.open(server_endpoint.protocol());
   _acceptor.bind(server_endpoint);

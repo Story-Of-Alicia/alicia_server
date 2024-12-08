@@ -21,7 +21,7 @@ RanchDirector::RanchDirector(
   // EnterRanch handler
   _server.RegisterCommandHandler<RanchCommandEnterRanch>(
     CommandId::RanchEnterRanch,
-    [](ClientId clientId, const auto& message)
+    [this](ClientId clientId, const auto& message)
     {
       HandleEnterRanch(clientId, message);
     });
@@ -29,7 +29,7 @@ RanchDirector::RanchDirector(
   // Snapshot handler
   _server.RegisterCommandHandler<RanchCommandRanchSnapshot>(
     CommandId::RanchSnapshot,
-    [](ClientId clientId, const auto& message)
+    [this](ClientId clientId, const auto& message)
     {
       HandleSnapshot(clientId, message);
     });
@@ -37,7 +37,7 @@ RanchDirector::RanchDirector(
   // RanchCmdAction handler
   _server.RegisterCommandHandler<RanchCommandRanchCmdAction>(
     CommandId::RanchCmdAction,
-    [](ClientId clientId, const auto& message)
+    [this](ClientId clientId, const auto& message)
     {
       HandleCmdAction(clientId, message);
     });
@@ -45,7 +45,7 @@ RanchDirector::RanchDirector(
   // RanchStuff handler
   _server.RegisterCommandHandler<RanchCommandRanchStuff>(
     CommandId::RanchStuff,
-    [](ClientId clientId, const auto& message)
+    [this](ClientId clientId, const auto& message)
     {
       HandleRanchStuff(clientId, message);
     });
@@ -62,7 +62,7 @@ void RanchDirector::HandleEnterRanch(
 
   auto character = _dataDirector.GetCharacter(enterRanch.userUid);
   auto ranch = _dataDirector.GetRanch(enterRanch.ranchUid);
-  ranch->characters.push_back(enterRanch.userUid);
+  ranch->characters.emplace(enterRanch.userUid);
 
   RanchPlayer newRanchPlayer;
   RanchCommandEnterRanchOK response{
@@ -360,25 +360,22 @@ void RanchDirector::HandleCmdAction(ClientId clientId, const RanchCommandRanchCm
 
 void RanchDirector::HandleRanchStuff(ClientId clientId, const RanchCommandRanchStuff& command)
 {
-  const auto userIdItr = _clients.find(clientId);
-  if (userIdItr == _clients.cend())
-  {
-    return;
-  }
+  const DatumUid characterUid = _clientUsers[clientId];
+  auto character = _dataDirector.GetCharacter(characterUid);
 
-  auto& user = _users[userIdItr->second];
   // todo: needs validation
-  user.carrots += command.value;
+  character->carrots += command.value;
+  const auto totalCarrots = character->carrots;
 
   _server.QueueCommand(
     clientId,
     CommandId::RanchStuffOK,
-    [command, &user](auto& sink)
+    [command, totalCarrots](auto& sink)
     {
       RanchCommandRanchStuffOK response{
         command.eventId,
         command.value,
-        user.carrots};
+        totalCarrots};
 
       RanchCommandRanchStuffOK::Write(response, sink);
     });

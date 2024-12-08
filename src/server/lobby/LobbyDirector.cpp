@@ -194,8 +194,8 @@ void LobbyDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
 
     .val6 = "val6",
 
-    .address = (uint32_t) addr.s_addr,
-    .port = _settings._lobbySettings.ranchAdvPort,
+    .address = _settings.ranchAdvAddress.to_uint(),
+    .port = _settings.ranchAdvPort,
 
     .scramblingConstant = scramblingConstant,
 

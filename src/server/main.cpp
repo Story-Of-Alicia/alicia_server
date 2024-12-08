@@ -19,6 +19,7 @@
 namespace
 {
 
+std::unique_ptr<alicia::DataDirector> g_dataDirector;
 std::unique_ptr<alicia::LobbyDirector> g_loginDirector;
 std::unique_ptr<alicia::RanchDirector> g_ranchDirector;
 
@@ -33,8 +34,10 @@ int main()
   const auto consoleSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
 
   // Initialize the application logger with file sink and console sink.
-  auto applicationLogger =
-    std::make_shared<spdlog::logger>("abc", spdlog::sinks_init_list{fileSink, consoleSink});
+  auto applicationLogger = std::make_shared<spdlog::logger>(
+    "abc",
+    spdlog::sinks_init_list{fileSink, consoleSink});
+
   applicationLogger->set_level(spdlog::level::debug);
   applicationLogger->set_pattern("%H:%M:%S:%e [%^%l%$] [Thread %t] %v");
 
@@ -47,58 +50,24 @@ int main()
   alicia::Settings settings;
   settings.LoadFromFile("resources/settings.json");
 
-  // Lobby thread.
+  g_dataDirector = std::make_unique<alicia::DataDirector>();
+
+  // Lobby director thread.
   std::jthread lobbyThread(
     [&settings]()
     {
-      alicia::CommandServer lobbyServer("Lobby");
-      g_loginDirector = std::make_unique<alicia::LobbyDirector>(lobbyServer, settings);
+      g_loginDirector = std::make_unique<alicia::LobbyDirector>(
+        *g_dataDirector,
+        settings._lobbySettings);
     });
 
-  // Ranch thread.
+  // Ranch director thread.
   std::jthread ranchThread(
     [&settings]()
     {
-      alicia::CommandServer ranchServer("Ranch");
-      g_ranchDirector = std::make_unique<alicia::RanchDirector>(ranchServer, settings);
-
-      ranchServer.RegisterCommandHandler(
-        alicia::CommandId::RanchEnterRanch,
-        [](alicia::ClientId clientId, auto& buffer)
-        {
-          alicia::RanchCommandEnterRanch enterRanch;
-          alicia::RanchCommandEnterRanch::Read(enterRanch, buffer);
-
-          g_ranchDirector->HandleEnterRanch(clientId, enterRanch);
-        });
-
-      ranchServer.RegisterCommandHandler(
-        alicia::CommandId::RanchSnapshot,
-        [](alicia::ClientId clientId, auto& buffer)
-        {
-          alicia::RanchCommandRanchSnapshot snapshot;
-          alicia::RanchCommandRanchSnapshot::Read(snapshot, buffer);
-
-          g_ranchDirector->HandleSnapshot(clientId, snapshot);
-        });
-
-      ranchServer.RegisterCommandHandler(
-        alicia::CommandId::RanchCmdAction,
-        [](alicia::ClientId clientId, auto& buffer)
-        {
-          alicia::RanchCommandRanchCmdAction cmdAction;
-          alicia::RanchCommandRanchCmdAction::Read(cmdAction, buffer);
-
-          g_ranchDirector->HandleCmdAction(clientId, cmdAction);
-        });
-
-      ranchServer.RegisterCommandHandler<alicia::RanchCommandRanchStuff>(
-        alicia::CommandId::RanchStuff,
-        [](alicia::ClientId clientId, auto& command)
-        { g_ranchDirector->HandleRanchStuff(clientId, command); });
-
-      // Host
-      ranchServer.Host(settings._ranchSettings.address, settings._ranchSettings.port);
+      g_ranchDirector = std::make_unique<alicia::RanchDirector>(
+        *g_dataDirector,
+        settings._ranchSettings);
     });
 
   // Messenger thread.
