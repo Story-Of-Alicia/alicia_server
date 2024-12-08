@@ -1,7 +1,7 @@
 #include "Version.hpp"
 
-#include "lobby/LobbyDirector.hpp"
-#include "ranch/RanchDirector.hpp"
+#include "server/lobby/LobbyDirector.hpp"
+#include "server/ranch/RanchDirector.hpp"
 
 #include <libserver/base/Server.hpp>
 #include <libserver/command/CommandServer.hpp>
@@ -19,7 +19,7 @@
 namespace
 {
 
-std::unique_ptr<alicia::LoginDirector> g_loginDirector;
+std::unique_ptr<alicia::LobbyDirector> g_loginDirector;
 std::unique_ptr<alicia::RanchDirector> g_ranchDirector;
 
 } // namespace
@@ -52,98 +52,7 @@ int main()
     [&settings]()
     {
       alicia::CommandServer lobbyServer("Lobby");
-      g_loginDirector = std::make_unique<alicia::LoginDirector>(lobbyServer, settings);
-
-      // Handlers
-
-      //! Login handler
-      lobbyServer.RegisterCommandHandler<alicia::LobbyCommandLogin>(
-        alicia::CommandId::LobbyLogin,
-        [](alicia::ClientId clientId, const auto& message)
-        { g_loginDirector->HandleUserLogin(clientId, message); });
-
-      // Heartbeat handler
-      lobbyServer.RegisterCommandHandler(
-        alicia::CommandId::LobbyHeartbeat,
-        [](alicia::ClientId clientId, auto& buffer)
-        {
-          alicia::LobbyCommandHeartbeat heartbeat;
-          alicia::LobbyCommandHeartbeat::Read(heartbeat, buffer);
-
-          g_loginDirector->HandleHeartbeat(clientId, heartbeat);
-        });
-
-      // ShowInventory handler
-      lobbyServer.RegisterCommandHandler(
-        alicia::CommandId::LobbyShowInventory,
-        [](alicia::ClientId clientId, auto& buffer)
-        {
-          alicia::LobbyCommandShowInventory showInventoryCommand;
-          alicia::LobbyCommandShowInventory::Read(showInventoryCommand, buffer);
-
-          g_loginDirector->HandleShowInventory(clientId, showInventoryCommand);
-        });
-
-      // AchievementCompleteList handler
-      lobbyServer.RegisterCommandHandler(
-        alicia::CommandId::LobbyAchievementCompleteList,
-        [](alicia::ClientId clientId, auto& buffer)
-        {
-          alicia::LobbyCommandAchievementCompleteList achievementCompleteList;
-          alicia::LobbyCommandAchievementCompleteList::Read(achievementCompleteList, buffer);
-
-          g_loginDirector->HandleAchievementCompleteList(clientId, achievementCompleteList);
-        });
-
-      // RequestLeagueInfo
-      lobbyServer.RegisterCommandHandler(
-        alicia::CommandId::LobbyRequestLeagueInfo,
-        [](alicia::ClientId clientId, auto& buffer)
-        {
-          alicia::LobbyCommandRequestLeagueInfo requestLeagueInfo;
-          alicia::LobbyCommandRequestLeagueInfo::Read(requestLeagueInfo, buffer);
-
-          g_loginDirector->HandleRequestLeagueInfo(clientId, requestLeagueInfo);
-        });
-
-      // RequestQuestList handler
-      lobbyServer.RegisterCommandHandler(
-        alicia::CommandId::LobbyRequestQuestList,
-        [](alicia::ClientId clientId, auto& buffer)
-        {
-          alicia::LobbyCommandRequestQuestList requestDailyQuestList;
-          alicia::LobbyCommandRequestQuestList::Read(requestDailyQuestList, buffer);
-
-          g_loginDirector->HandleRequestQuestList(clientId, requestDailyQuestList);
-        });
-
-      lobbyServer.RegisterCommandHandler(
-        alicia::CommandId::LobbyRequestSpecialEventList,
-        [](alicia::ClientId clientId, auto& buffer)
-        {
-          alicia::LobbyCommandRequestSpecialEventList requestSpecialEventList;
-          alicia::LobbyCommandRequestSpecialEventList::Read(requestSpecialEventList, buffer);
-
-          g_loginDirector->HandleRequestSpecialEventList(clientId, requestSpecialEventList);
-        });
-
-      lobbyServer.RegisterCommandHandler(
-        alicia::CommandId::LobbyEnterRanch,
-        [](alicia::ClientId clientId, auto& buffer)
-        {
-          alicia::LobbyCommandEnterRanch enterRanch;
-          alicia::LobbyCommandEnterRanch::Read(enterRanch, buffer);
-
-          g_loginDirector->HandleEnterRanch(clientId, enterRanch);
-        });
-
-      lobbyServer.RegisterCommandHandler<alicia::LobbyCommandGetMessengerInfo>(
-        alicia::CommandId::LobbyGetMessengerInfo,
-        [](alicia::ClientId clientId, const auto& message)
-        { g_loginDirector->HandleGetMessengerInfo(clientId, message); });
-
-      // Host
-      lobbyServer.Host(settings._lobbySettings.address, settings._lobbySettings.port);
+      g_loginDirector = std::make_unique<alicia::LobbyDirector>(lobbyServer, settings);
     });
 
   // Ranch thread.
