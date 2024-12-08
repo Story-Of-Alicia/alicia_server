@@ -697,7 +697,7 @@ void LobbyCommandGetMessengerInfoOK::Write(
   const LobbyCommandGetMessengerInfoOK& command,
   SinkStream& buffer)
 {
-  buffer.Write(command.unk0)
+  buffer.Write(command.code)
     .Write(command.ip)
     .Write(command.port);
 }
