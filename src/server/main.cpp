@@ -188,6 +188,36 @@ int main()
         [](alicia::ClientId clientId, auto& command)
         { g_ranchDirector->HandleRanchStuff(clientId, command); });
 
+      ranchServer.RegisterCommandHandler<alicia::RanchCommandUpdateBusyState>(
+        alicia::CommandId::RanchUpdateBusyState,
+        [](alicia::ClientId clientId, auto& command)
+        { g_ranchDirector->HandleUpdateBusyState(clientId, command); });
+      
+      ranchServer.RegisterCommandHandler<alicia::RanchCommandSearchStallion>(
+        alicia::CommandId::RanchSearchStallion,
+        [](alicia::ClientId clientId, auto& command)
+        { g_ranchDirector->HandleSearchStallion(clientId, command); });
+
+      ranchServer.RegisterCommandHandler<alicia::RanchCommandEnterBreedingMarket>(
+        alicia::CommandId::RanchEnterBreedingMarket,
+        [](alicia::ClientId clientId, auto& command)
+        { g_ranchDirector->HandleEnterBreedingMarket(clientId, command); });
+
+      ranchServer.RegisterCommandHandler<alicia::RanchCommandTryBreeding>(
+        alicia::CommandId::RanchTryBreeding,
+        [](alicia::ClientId clientId, auto& command)
+        { g_ranchDirector->HandleTryBreeding(clientId, command); });
+
+      ranchServer.RegisterCommandHandler<alicia::RanchCommandBreedingWishlist>(
+        alicia::CommandId::RanchBreedingWishlist,
+        [](alicia::ClientId clientId, auto& command)
+        { g_ranchDirector->HandleBreedingWishlist(clientId, command); });
+
+      ranchServer.RegisterCommandHandler<alicia::RanchCommandUpdateMountNickname>(
+        alicia::CommandId::RanchUpdateMountNickname,
+        [](alicia::ClientId clientId, auto& command)
+        { g_ranchDirector->HandleUpdateMountNickname(clientId, command); });
+
       // Host
       ranchServer.Host(settings._ranchSettings.address, settings._ranchSettings.port);
     });
