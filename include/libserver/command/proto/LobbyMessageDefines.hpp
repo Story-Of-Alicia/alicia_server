@@ -640,7 +640,7 @@ struct LobbyCommandGetMessengerInfo
 //! Clientbound get messenger info response.
 struct LobbyCommandGetMessengerInfoOK
 {
-  uint32_t unk0;
+  uint32_t code;
   uint32_t ip;
   uint16_t port;
 
