@@ -10,6 +10,8 @@
 
 #include "libserver/command/CommandServer.hpp"
 
+#include <server/tracker/WorldTracker.hpp>
+
 namespace alicia
 {
 
@@ -48,8 +50,15 @@ private:
   DataDirector& _dataDirector;
   //!
   CommandServer _server;
+
   //!
-  std::unordered_map<ClientId, DatumUid> _clientUsers;
+  std::unordered_map<ClientId, DatumUid> _clientCharacters;
+
+  struct RanchInstance
+  {
+    WorldTracker _worldTracker;
+  };
+  std::unordered_map<DatumUid, RanchInstance> _ranches;
 };
 
 }

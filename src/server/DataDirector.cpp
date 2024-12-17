@@ -26,17 +26,21 @@ void ProvideLockedDatumAccess(
   }
 }
 
-
 } // anon namespace
 
 namespace alicia
 {
 
-void DataDirector::GetUser(
-  const std::string& name,
-  DatumConsumer<User&> consumer)
+void DataDirector::GetUser(const std::string& name, DatumConsumer<User&> consumer)
 {
   consumer(_users[name].value);
+}
+
+DataDirector::DatumAccess<User> DataDirector::GetUser(
+  const std::string& name)
+{
+  auto& datum = _users[name];
+  return DatumAccess(datum);
 }
 
 void DataDirector::GetCharacter(
@@ -46,13 +50,25 @@ void DataDirector::GetCharacter(
   ProvideLockedDatumAccess(_characters[characterUid], consumer);
 }
 
-
+DataDirector::DatumAccess<User::Character> DataDirector::GetCharacter(
+  DatumUid characterUid)
+{
+  auto& datum = _characters[characterUid];
+  return DatumAccess(datum);
+}
 
 void DataDirector::GetMount(
   DatumUid mountUid,
   DatumConsumer<User::Mount&> consumer)
 {
   ProvideLockedDatumAccess(_mounts[mountUid], consumer);
+}
+
+DataDirector::DatumAccess<User::Mount> DataDirector::GetMount(
+  DatumUid mountUid)
+{
+  auto& datum = _mounts[mountUid];
+  return DatumAccess(datum);
 }
 
 void DataDirector::GetRanch(
@@ -62,5 +78,11 @@ void DataDirector::GetRanch(
   ProvideLockedDatumAccess(_ranches[ranchUid], consumer);
 }
 
+DataDirector::DatumAccess<User::Ranch> DataDirector::GetRanch(
+  DatumUid ranchUid)
+{
+  auto& datum = _ranches[ranchUid];
+  return DatumAccess(datum);
+}
 
 } // namespace alicia

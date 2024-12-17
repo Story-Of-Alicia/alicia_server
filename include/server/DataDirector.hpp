@@ -63,8 +63,6 @@ struct User
   struct Ranch
   {
     std::string ranchName;
-    std::vector<DatumUid> horses;
-    std::unordered_set<DatumUid> characters;
   };
 };
 

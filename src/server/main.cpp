@@ -76,7 +76,7 @@ int main()
     {
       alicia::CommandServer messengerServer("Messenger");
       // TODO: Messenger
-      messengerServer.Host("0.0.0.0", 10032);
+      messengerServer.Host(boost::asio::ip::address_v4::any(), 10032);
     });
 
   return 0;
