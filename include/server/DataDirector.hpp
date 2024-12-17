@@ -112,6 +112,8 @@ public:
     std::unique_lock<std::mutex> _datumLock;
   };
 
+  DataDirector();
+
   //!
   void GetUser(
     const std::string& name,

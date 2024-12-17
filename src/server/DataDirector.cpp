@@ -31,6 +31,43 @@ void ProvideLockedDatumAccess(
 namespace alicia
 {
 
+DataDirector::DataDirector()
+{
+  _users["rgnt"].value = {
+    .characterUid = 1
+  };
+  _users["laith"].value = {
+    .characterUid = 2
+  };
+
+  _characters[1].value = {
+    .nickName = "rgnt",
+    .gender = Gender::Boy,
+    .level = 60,
+    .carrots = 5000,
+    .characterEquipment = {Item{.uid = 100, .tid = 30035, .val = 0, .count = 1}},
+    .mountUid = 3,
+    .ranchUid = 100
+  };
+  _characters[2].value = {
+    .nickName = "laith",
+    .gender = Gender::Boy,
+    .level = 60,
+    .carrots = 5000,
+    .characterEquipment = {Item{.uid = 100, .tid = 30035, .val = 0, .count = 1}},
+    .mountUid = 4,
+    .ranchUid = 100
+  };
+
+  _mounts[3].value = {
+    .tid = 0x4E21, .name = "idontunderstand"
+  };
+  _mounts[4].value = {
+    .tid = 0x4E21, .name = "Ramon"
+  };
+}
+
+
 void DataDirector::GetUser(const std::string& name, DatumConsumer<User&> consumer)
 {
   consumer(_users[name].value);

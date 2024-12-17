@@ -23,8 +23,8 @@ LobbyDirector::LobbyDirector(
   DataDirector& dataDirector,
   Settings::LobbySettings settings)
   : _settings(std::move(settings))
-  , _dataDirector(_dataDirector)
-  , _loginHandler(_dataDirector)
+  , _dataDirector(dataDirector)
+  , _loginHandler(dataDirector)
   , _server("Lobby")
 {
   // Handlers
@@ -180,6 +180,7 @@ void LobbyDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
     .val2 = 0xFF,
     .val3 = 0xFF,
 
+
     .ageGroup = AgeGroup::Adult,
     .val4 = 0,
 
@@ -291,6 +292,10 @@ void LobbyDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
     .val19 = 0x38e,
     .val20 = 0x1c6};
 
+  _server.QueueCommand(clientId, CommandId::LobbyLoginOK, [command](SinkStream& sink)
+  {
+    LobbyCommandLoginOK::Write(command, sink);
+  });
 }
 
 void LobbyDirector::HandleHeartbeat(

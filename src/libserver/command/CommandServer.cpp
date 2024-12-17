@@ -407,7 +407,7 @@ void CommandServer::QueueCommand(
           client,
           GetCommandName(command),
           magic.id,
-          streamOrigin);
+          payloadSize);
         LogBytes({ (std::byte *) mutableBuffer.data() + 4, payloadSize });
       }
     });
