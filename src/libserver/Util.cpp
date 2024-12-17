@@ -74,6 +74,12 @@ WinFileTime UnixTimeToFileTime(const std::chrono::system_clock::time_point& time
 
 asio::ip::address_v4 ResolveHostName(const std::string& host)
 {
+  const auto address = asio::ip::make_address(host);
+  if (!address.is_unspecified() && address.is_v4())
+  {
+    return address.to_v4();
+  }
+
   asio::io_context ioContext;
   asio::ip::tcp::resolver resolver(ioContext);
   auto endpoints = resolver.resolve(host);

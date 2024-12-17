@@ -113,7 +113,7 @@ void LobbyDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
   if (_queuedClientLogins.contains(clientId))
   {
     spdlog::warn(
-      "Login from Client Id {} already queued, but received another attempt."
+      "Login from Client Id {} already queued, but received another attempt. "
       "Certainly not a vanilla behaviour!",
       clientId);
     return;
@@ -134,12 +134,13 @@ void LobbyDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
         LobbyCommandLoginCancel::Write(command, buffer);
       });
 
-    spdlog::info("User '{}' failed to authenticate.", login.loginId);
+    spdlog::info("User '{}' failed to authenticate", login.loginId);
 
     return;
   }
 
   spdlog::info("User '{}' ({}) authenticated", login.loginId, login.memberNo);
+
 
   // Set XOR scrambler code
   uint32_t scramblingConstant = rd(); // TODO: Use something more secure
@@ -156,6 +157,8 @@ void LobbyDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
   const auto mount = _dataDirector.GetMount(
     character->mountUid);
 
+  _clientCharacters[clientId] = user->characterUid;
+
   const WinFileTime time = UnixTimeToFileTime(
     std::chrono::system_clock::now());
 
@@ -171,8 +174,8 @@ void LobbyDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
     .profileGender = character->gender,
     .status = character->status,
 
-    .characterEquipment = character->characterEquipment,
-    .horseEquipment = character->horseEquipment,
+    // .characterEquipment = character->characterEquipment,
+    // .horseEquipment = character->horseEquipment,
 
     .level = character->level,
     .carrots = character->carrots,
@@ -180,6 +183,8 @@ void LobbyDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
     .val2 = 0xFF,
     .val3 = 0xFF,
 
+    .optionType = OptionType::Value,
+    .valueOptions = 0x64,
 
     .ageGroup = AgeGroup::Adult,
     .val4 = 0,
@@ -200,97 +205,110 @@ void LobbyDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
 
     .scramblingConstant = scramblingConstant,
 
-    .character =
-      {.parts = {.charId = 10, .mouthSerialId = 0, .faceSerialId = 0, .val0 = 255},
-       .appearance =
-         {.val0 = 0xFFFF,
-          .headSize = 1,
-          .height = 2,
-          .thighVolume = 2,
-          .legVolume = 2,
-          .val1 = 0xFF}},
-    .horse =
-      {.uid = character->mountUid,
-       .tid = mount->tid,
-       .name = mount->name,
-       .parts = {.skinId = 0x2, .maneId = 0x3, .tailId = 0x3, .faceId = 0x3},
-       .appearance =
-         {.scale = 0x4,
-          .legLength = 0x4,
-          .legVolume = 0x5,
-          .bodyLength = 0x3,
-          .bodyVolume = 0x4},
-       .stats = {.agility = 9, .spirit = 9, .speed = 9, .strength = 9, .ambition = 0x13},
-       .rating = 0,
-       .clazz = 0x15,
-       .val0 = 1,
-       .grade = 5,
-       .growthPoints = 2,
-       .vals0 =
-         {
-           .stamina = 0x7d0,
-           .attractiveness = 0x3c,
-           .hunger = 0x21c,
-           .val0 = 0x00,
-           .val1 = 0x03E8,
-           .val2 = 0x00,
-           .val3 = 0x00,
-           .val4 = 0x00,
-           .val5 = 0x03E8,
-           .val6 = 0x1E,
-           .val7 = 0x0A,
-           .val8 = 0x0A,
-           .val9 = 0x0A,
-           .val10 = 0x00,
-         },
-       .vals1 =
-         {.val0 = 0x00,
-          .val1 = 0x00,
-          .val2 = 0xb8a167e4,
-          .val3 = 0x02,
-          .val4 = 0x00,
-          .classProgression = 0x32e7d,
-          .val5 = 0x00,
-          .val6 = 0x00,
-          .val7 = 0x00,
-          .val8 = 0x00,
-          .val9 = 0x00,
-          .val10 = 0x04,
-          .val11 = 0x00,
-          .val12 = 0x00,
-          .val13 = 0x00,
-          .val14 = 0x00,
-          .val15 = 0x01},
-       .mastery =
-         {
-           .magic = 0x1fe,
-           .jumping = 0x421,
-           .sliding = 0x5f8,
-           .gliding = 0xcfa4,
-         },
-       .val16 = 0xb8a167e4,
-       .val17 = 0},
-    .val7 =
-      {.values =
-         {{0x6, 0x0},
-          {0xF, 0x4},
-          {0x1B, 0x2},
-          {0x1E, 0x0},
-          {0x1F, 0x0},
-          {0x25, 0x7530},
-          {0x35, 0x4},
-          {0x42, 0x2},
-          {0x43, 0x4},
-          {0x45, 0x0}}},
-    .val8 = 0xE06,
-    .val11 = {4, 0x2B, 4},
-    .val14 = 0xca1b87db,
-    .val15 = {.val1 = 1},
-    .val16 = 4,
-    .val17 = {.mountUid = character->mountUid, .val1 = 0x12, .val2 = 0x16e67e4},
-    .val18 = 0x3a,
-    .val19 = 0x38e,
-    .val20 = 0x1c6};
+    .character = {
+      .parts = {
+        .charId = 10,
+        .mouthSerialId = 0,
+        .faceSerialId = 0,
+        .val0 = 255},
+       .appearance = {
+        .val0 = 0xFFFF,
+        .headSize = 1,
+        .height = 2,
+        .thighVolume = 2,
+        .legVolume = 2,
+        .val1 = 0xFF}},
+      .horse =
+        {.uid = character->mountUid,
+         .tid = mount->tid,
+         .name = mount->name,
+         .parts = {.skinId = 0x2, .maneId = 0x3, .tailId = 0x3, .faceId = 0x3},
+          .appearance =
+            {.scale = 0x4,
+              .legLength = 0x4,
+              .legVolume = 0x5,
+              .bodyLength = 0x3,
+              .bodyVolume = 0x4},
+          .stats =
+            {
+              .agility = 9,
+              .spirit = 9,
+              .speed = 9,
+              .strength = 9,
+              .ambition = 0x13
+            },
+          .rating = 0,
+          .clazz = 0x15,
+          .val0 = 1,
+          .grade = 5,
+          .growthPoints = 2,
+          .vals0 =
+            {
+              .stamina = 0x7d0,
+              .attractiveness = 0x3c,
+              .hunger = 0x21c,
+              .val0 = 0x00,
+              .val1 = 0x03E8,
+              .val2 = 0x00,
+              .val3 = 0x00,
+              .val4 = 0x00,
+              .val5 = 0x03E8,
+              .val6 = 0x1E,
+              .val7 = 0x0A,
+              .val8 = 0x0A,
+              .val9 = 0x0A,
+              .val10 = 0x00,
+            },
+          .vals1 =
+            {
+              .val0 = 0x00,
+              .val1 = 0x00,
+              .val2 = 0xb8a167e4,
+              .val3 = 0x02,
+              .val4 = 0x00,
+              .classProgression = 0x32e7d,
+              .val5 = 0x00,
+              .val6 = 0x00,
+              .val7 = 0x00,
+              .val8 = 0x00,
+              .val9 = 0x00,
+              .val10 = 0x04,
+              .val11 = 0x00,
+              .val12 = 0x00,
+              .val13 = 0x00,
+              .val14 = 0x00,
+              .val15 = 0x01
+            },
+          .mastery =
+            {
+              .magic = 0x1fe,
+              .jumping = 0x421,
+              .sliding = 0x5f8,
+              .gliding = 0xcfa4,
+            },
+          .val16 = 0xb8a167e4,
+          .val17 = 0},
+      .val7 =
+        {.values =
+           {{0x6, 0x0},
+            {0xF, 0x4},
+            {0x1B, 0x2},
+            {0x1E, 0x0},
+            {0x1F, 0x0},
+            {0x25, 0x7530},
+            {0x35, 0x4},
+            {0x42, 0x2},
+            {0x43, 0x4},
+            {0x45, 0x0}}},
+      .val8 = 0xE06,
+      .val11 = {4, 0x2B, 4},
+      .val14 = 0xca1b87db,
+      .val15 = {.val1 = 1},
+      .val16 = 4,
+      .val17 = {.mountUid = character->mountUid, .val1 = 0x12, .val2 = 0x16e67e4},
+      .val18 = 0x3a,
+      .val19 = 0x38e,
+      .val20 = 0x1c6};
 
   _server.QueueCommand(clientId, CommandId::LobbyLoginOK, [command](SinkStream& sink)
   {
@@ -317,14 +335,6 @@ void LobbyDirector::HandleShowInventory(
   ClientId clientId,
   const LobbyCommandShowInventory& showInventory)
 {
-  auto userItr = _clientUsers.find(clientId);
-  if (userItr == _clientUsers.cend())
-  {
-    return;
-  }
-
-  auto& [userId, user] = *_clientUsers.find(userItr->second);
-
   _server.QueueCommand(
     clientId,
     CommandId::LobbyShowInventoryOK,
@@ -339,13 +349,6 @@ void LobbyDirector::HandleAchievementCompleteList(
   ClientId clientId,
   const LobbyCommandAchievementCompleteList& achievementCompleteList)
 {
-  auto userItr = _clientUsers.find(clientId);
-  if (userItr == _clientUsers.cend())
-  {
-    return;
-  }
-
-  auto& [userId, user] = *_clientUsers.find(userItr->second);
   _server.QueueCommand(
     clientId,
     CommandId::LobbyAchievementCompleteListOK,
@@ -360,13 +363,6 @@ void LobbyDirector::HandleRequestLeagueInfo(
   ClientId clientId,
   const LobbyCommandRequestLeagueInfo& requestLeagueInfo)
 {
-  auto userItr = _clientUsers.find(clientId);
-  if (userItr == _clientUsers.cend())
-  {
-    return;
-  }
-
-  auto& [userId, user] = *_clientUsers.find(userItr->second);
   _server.QueueCommand(
     clientId,
     CommandId::LobbyRequestLeagueInfoOK,
@@ -381,13 +377,6 @@ void LobbyDirector::HandleRequestQuestList(
   ClientId clientId,
   const LobbyCommandRequestQuestList& requestQuestList)
 {
-  auto userItr = _clientUsers.find(clientId);
-  if (userItr == _clientUsers.cend())
-  {
-    return;
-  }
-
-  auto& [userId, user] = *_clientUsers.find(userItr->second);
   _server.QueueCommand(
     clientId,
     CommandId::LobbyRequestQuestListOK,
@@ -418,25 +407,24 @@ void LobbyDirector::HandleEnterRanch(
   ClientId clientId,
   const LobbyCommandEnterRanch& enterRanch)
 {
-  const auto [_, userId] = *_clientUsers.find(clientId);
+  const auto [_, characterUid] = *_clientCharacters.find(clientId);
 
   _server.QueueCommand(
     clientId,
     CommandId::LobbyEnterRanchOK,
-    [userId, this](auto& sink)
+    [characterUid, this](auto& sink)
     {
-      auto& [_, user] = *_clientUsers.find(userId);
-
+      auto character = _dataDirector.GetCharacter(characterUid);
       // TODO: Move somewhere configurable
       struct in_addr addr;
       inet_pton(AF_INET, "127.0.0.1", &addr);
       uint16_t port = 10031;
 
       LobbyCommandEnterRanchOK response{
-      .ranchUid = user,
-      .code = 0x44332211, // TODO: Generate and store in the ranch server instance
-      .ip = (uint32_t) addr.s_addr,
-      .port = port
+        .ranchUid = character->ranchUid,
+        .code = 0x44332211, // TODO: Generate and store in the ranch server instance
+        .ip = (uint32_t) addr.s_addr,
+        .port = port
       };
       LobbyCommandEnterRanchOK::Write(response, sink);
     });

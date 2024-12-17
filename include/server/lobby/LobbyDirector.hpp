@@ -79,7 +79,7 @@ private:
   //!
   CommandServer _server;
   //!
-  std::unordered_map<ClientId, DatumUid> _clientUsers;
+  std::unordered_map<ClientId, DatumUid> _clientCharacters;
 
   //!
   struct ClientLoginContext
