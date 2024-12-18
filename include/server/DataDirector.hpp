@@ -5,6 +5,8 @@
 #ifndef DATADIRECTOR_HPP
 #define DATADIRECTOR_HPP
 
+#include "spdlog/spdlog.h"
+
 #include <chrono>
 #include <cstdint>
 #include <functional>
@@ -83,7 +85,7 @@ public:
     //!
     explicit DatumAccess(Datum<Val>& datum)
       : _datum(datum)
-      , _datumLock(_datum.lock)
+      , _accessLock(_datum.lock)
     {
     }
 
@@ -93,14 +95,15 @@ public:
     DatumAccess(DatumAccess&& other) noexcept
       : _datum(other._datum)
     {
-      // fix
-      other._datumLock.release();
-      _datumLock(_datum.lock);
+      other._accessLock.unlock();
+      other._accessLock.release();
+
+      _accessLock = _datum.lock;
     }
 
     ~DatumAccess()
     {
-      _datumLock.release();
+      _accessLock.unlock();
     }
 
     [[nodiscard]] Val* operator->() const noexcept {
@@ -109,7 +112,7 @@ public:
 
   private:
     Datum<Val>& _datum;
-    std::unique_lock<std::mutex> _datumLock;
+    std::unique_lock<std::mutex> _accessLock;
   };
 
   DataDirector();

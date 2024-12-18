@@ -13,7 +13,7 @@ RanchDirector::RanchDirector(
   DataDirector& dataDirector,
   Settings::RanchSettings settings)
   : _settings(std::move(settings))
-  , _dataDirector(_dataDirector)
+  , _dataDirector(dataDirector)
   , _server("Ranch")
 {
   // Handlers
@@ -67,7 +67,6 @@ void RanchDirector::HandleEnterRanch(
   const auto ranchUid = enterRanch.ranchUid;
 
   _clientCharacters[clientId] = characterUid;
-  auto character = _dataDirector.GetCharacter(characterUid);
 
   auto ranch = _dataDirector.GetRanch(ranchUid);
   auto ranchInstance = _ranches[ranchUid];
@@ -75,7 +74,7 @@ void RanchDirector::HandleEnterRanch(
   // Add character to the ranch.
   ranchInstance._worldTracker.AddCharacter(characterUid);
 
-  RanchPlayer newRanchPlayer;
+  RanchPlayer enteringRanchPlayer;
   RanchCommandEnterRanchOK response{
     .ranchId = enterRanch.ranchUid,
     .unk0 = "unk0",
@@ -85,6 +84,7 @@ void RanchDirector::HandleEnterRanch(
       .unk1 = 1}
   };
 
+  // Add the ranch mounts.
   for (auto [mountUid, mountEntityId] : ranchInstance._worldTracker.GetMountEntities())
   {
     const auto& mount = _dataDirector.GetMount(mountUid);
@@ -154,12 +154,13 @@ void RanchDirector::HandleEnterRanch(
         .val17 = 0}});
   }
 
+  // Add the ranch players.
   for (auto [characterUid, characterEntityId] : ranchInstance._worldTracker.GetCharacterEntities())
   {
     auto ranchCharacter = _dataDirector.GetCharacter(characterUid);
     auto ranchCharacterMount = _dataDirector.GetMount(ranchCharacter->mountUid);
 
-    const RanchPlayer ranchCharacterPlayer{
+    const RanchPlayer ranchPlayer{
       .userUid = characterUid,
       .name = ranchCharacter->nickName,
       .gender = ranchCharacter->gender,
@@ -255,12 +256,14 @@ void RanchDirector::HandleEnterRanch(
 
     if (enterRanch.characterUid == characterUid)
     {
-      newRanchPlayer = ranchCharacterPlayer;
+      enteringRanchPlayer = ranchPlayer;
     }
 
-    response.users.push_back(ranchCharacterPlayer);
+    response.users.push_back(ranchPlayer);
   }
 
+  // Todo: Roll the code for the connecting client.
+  // Todo: The response contains the code, somewhere.
   _server.SetCode(clientId, {});
   _server.QueueCommand(
     clientId,
@@ -271,8 +274,8 @@ void RanchDirector::HandleEnterRanch(
     });
 
   // Notify to all other players of the entering player.
-  RanchCommandEnterRanchNotify notification = {
-    .player = newRanchPlayer
+  const RanchCommandEnterRanchNotify notification {
+    .player = enteringRanchPlayer
   };
 
   // Iterate over all the clients and broadcast join notification.
@@ -300,7 +303,6 @@ void RanchDirector::HandleEnterRanch(
         RanchCommandEnterRanchNotify::Write(notification, sink);
       });
   }
-
 }
 
 void RanchDirector::HandleSnapshot(
