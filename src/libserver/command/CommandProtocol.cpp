@@ -75,6 +75,8 @@ const std::unordered_map<CommandId, std::string_view> commands = {
   {CommandId::LobbyGetMessengerInfoOK, "LobbyGetMessengerInfoOK"},
   {CommandId::LobbyGetMessengerInfoCancel, "LobbyGetMessengerInfoCancel"},
 
+  {CommandId::LobbyClientNotify, "LobbyClientNotify"},
+
   {CommandId::RanchEnterRanch, "RanchEnterRanch"},
   {CommandId::RanchEnterRanchCancel, "RanchEnterRanchCancel"},
   {CommandId::RanchEnterRanchNotify, "RanchEnterRanchNotify"},
@@ -89,7 +91,30 @@ const std::unordered_map<CommandId, std::string_view> commands = {
   {CommandId::RanchCmdActionNotify, "RanchCmdActionNotify"},
 
   {CommandId::RanchStuff, "RanchStuff"},
-  {CommandId::RanchStuffOK, "RanchStuffOK"}
+  {CommandId::RanchStuffOK, "RanchStuffOK"},
+
+  {CommandId::RanchUpdateBusyState, "RanchUpdateBusyState"},
+  {CommandId::RanchUpdateBusyStateNotify, "RanchUpdateBusyStateNotify"},
+
+  {CommandId::RanchSearchStallion, "RanchSearchStallion"},
+  {CommandId::RanchSearchStallionOK, "RanchSearchStallionOK"},
+  {CommandId::RanchSearchStallionCancel, "RanchSearchStallionCancel"},
+
+  {CommandId::RanchEnterBreedingMarket, "RanchEnterBreedingMarket"},
+  {CommandId::RanchEnterBreedingMarketOK, "RanchEnterBreedingMarketOK"},
+  {CommandId::RanchEnterBreedingMarketCancel, "RanchEnterBreedingMarketCancel"},
+
+  {CommandId::RanchTryBreeding, "RanchTryBreeding"},
+  {CommandId::RanchTryBreedingOK, "RanchTryBreedingOK"},
+  {CommandId::RanchTryBreedingCancel, "RanchTryBreedingCancel"},
+
+  {CommandId::RanchBreedingWishlist, "RanchBreedingWishlist"},
+  {CommandId::RanchBreedingWishlistCancel, "RanchBreedingWishlistCancel"},
+  {CommandId::RanchBreedingWishlistOK, "RanchBreedingWishlistOK"},
+
+  {CommandId::RanchUpdateMountNickname, "RanchUpdateMountNickname"},
+  {CommandId::RanchUpdateMountNicknameOK, "RanchUpdateMountNicknameOK"},
+  {CommandId::RanchUpdateMountNicknameCancel, "RanchUpdateMountNicknameCancel"},
 };
 
 } // namespace anon

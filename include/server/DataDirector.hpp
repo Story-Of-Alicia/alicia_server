@@ -52,6 +52,8 @@ struct User
 
     DatumUid mountUid{};
     DatumUid ranchUid{};
+
+    std::vector<DatumUid> horses{};
   };
 
   //! Mount.
