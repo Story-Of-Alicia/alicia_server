@@ -506,20 +506,20 @@ struct RanchCommandRanchStuffOK
 
 struct RanchCommandSearchStallion
 {
-  uint32_t unk0;
-  uint8_t unk1;
-  uint8_t unk2;
-  uint8_t unk3;
-  uint8_t unk4;
-  uint8_t unk5;
-  uint8_t unk6;
-  uint8_t unk7;
-  uint8_t unk8;
+  uint32_t unk0{};
+  uint8_t unk1{};
+  uint8_t unk2{};
+  uint8_t unk3{};
+  uint8_t unk4{};
+  uint8_t unk5{};
+  uint8_t unk6{};
+  uint8_t unk7{};
+  uint8_t unk8{};
 
   // Nested list size specified with a uint8_t. Max size 3
-  std::array<std::vector<uint32_t>, 3> unk9;
+  std::array<std::vector<uint32_t>, 3> unk9{};
 
-  uint8_t unk10;
+  uint8_t unk10{};
 
   //! Writes the command to the provided sink stream.
   //! @param command Command.
@@ -553,28 +553,28 @@ struct RanchCommandSearchStallionOK
 {
   // Possibly some paging values?
   // For example, current page/number of pages
-  uint32_t unk0;
-  uint32_t unk1;
+  uint32_t unk0{};
+  uint32_t unk1{};
 
   struct Stallion {
-    std::string unk0;
-    uint32_t unk1; // owner? horse id?
-    uint32_t unk2; // likely either of these in either order
-    std::string name;
-    uint8_t grade;
-    uint8_t chance;
-    uint32_t price;
-    uint32_t unk7;
-    uint32_t unk8;
-    Horse::Stats stats;
-    Horse::Parts parts;
-    Horse::Appearance appearance;
-    uint8_t unk11;
-    uint8_t coatBonus;
+    std::string unk0{};
+    uint32_t unk1{}; // owner? horse id?
+    uint32_t unk2{}; // likely either of these in either order
+    std::string name{};
+    uint8_t grade{};
+    uint8_t chance{};
+    uint32_t price{};
+    uint32_t unk7{};
+    uint32_t unk8{};
+    Horse::Stats stats{};
+    Horse::Parts parts{};
+    Horse::Appearance appearance{};
+    uint8_t unk11{};
+    uint8_t coatBonus{};
   };
 
   // List size specified with a uint8_t. Max size 10
-  std::vector<Stallion> stallions;
+  std::vector<Stallion> stallions{};
 
   //! Writes the command to the provided sink stream.
   //! @param command Command.
@@ -611,14 +611,14 @@ struct RanchCommandEnterBreedingMarketOK
 {
   // List size specified with a uint8_t. Max size 10
   struct AvailableHorse {
-    uint32_t uid;
-    uint32_t tid;
-    uint8_t unk0;
-    uint32_t unk1;
-    uint8_t unk2;
-    uint8_t unk3;
+    uint32_t uid{};
+    uint32_t tid{};
+    uint8_t unk0{};
+    uint32_t unk1{};
+    uint8_t unk2{};
+    uint8_t unk3{};
   };
-  std::vector<AvailableHorse> availableHorses;
+  std::vector<AvailableHorse> availableHorses{};
 
   //! Writes the command to a provided sink buffer.
   //! @param command Command.
@@ -653,8 +653,8 @@ struct RanchCommandEnterBreedingMarketCancel
 //! Serverbound get messenger info command.
 struct RanchCommandTryBreeding
 {
-  uint32_t unk0;
-  uint32_t unk1;
+  uint32_t unk0{};
+  uint32_t unk1{};
 
   //! Writes the command to a provided sink buffer.
   //! @param command Command.
@@ -672,27 +672,27 @@ struct RanchCommandTryBreeding
 //! Clientbound get messenger info response.
 struct RanchCommandTryBreedingOK
 {
-  uint32_t uid;
-  uint32_t tid;
-  uint32_t val;
-  uint32_t count;
+  uint32_t uid{};
+  uint32_t tid{};
+  uint32_t val{};
+  uint32_t count{};
 
-  uint8_t unk0;
+  uint8_t unk0{};
 
-  Horse::Parts parts;
-  Horse::Appearance appearance;
-  Horse::Stats stats;
+  Horse::Parts parts{};
+  Horse::Appearance appearance{};
+  Horse::Stats stats{};
 
-  uint32_t unk1;
-  uint8_t unk2;
-  uint8_t unk3;
-  uint8_t unk4;
-  uint8_t unk5;
-  uint8_t unk6;
-  uint8_t unk7;
-  uint8_t unk8;
-  uint16_t unk9;
-  uint8_t unk10;
+  uint32_t unk1{};
+  uint8_t unk2{};
+  uint8_t unk3{};
+  uint8_t unk4{};
+  uint8_t unk5{};
+  uint8_t unk6{};
+  uint8_t unk7{};
+  uint8_t unk8{};
+  uint16_t unk9{};
+  uint8_t unk10{};
 
   //! Writes the command to a provided sink buffer.
   //! @param command Command.
@@ -710,12 +710,12 @@ struct RanchCommandTryBreedingOK
 //! Serverbound get messenger info command.
 struct RanchCommandTryBreedingCancel
 {
-  uint8_t unk0;
-  uint32_t unk1;
-  uint8_t unk2;
-  uint8_t unk3;
-  uint8_t unk4;
-  uint8_t unk5;
+  uint8_t unk0{};
+  uint32_t unk1{};
+  uint8_t unk2{};
+  uint8_t unk3{};
+  uint8_t unk4{};
+  uint8_t unk5{};
 
   //! Writes the command to a provided sink buffer.
   //! @param command Command.
@@ -752,27 +752,27 @@ struct RanchCommandBreedingWishlistOK
 {
   struct WishlistElement
   {
-    std::string unk0;
-    uint32_t uid;
-    uint32_t tid;
-    uint8_t unk1;
-    std::string unk2;
-    uint8_t unk3;
-    uint32_t unk4;
-    uint32_t unk5;
-    uint32_t unk6;
-    uint32_t unk7;
-    uint32_t unk8;
-    Horse::Stats stats;
-    Horse::Parts parts;
-    Horse::Appearance appearance;
-    uint8_t unk9;
-    uint8_t unk10;
-    uint8_t unk11;
+    std::string unk0{};
+    uint32_t uid{};
+    uint32_t tid{};
+    uint8_t unk1{};
+    std::string unk2{};
+    uint8_t unk3{};
+    uint32_t unk4{};
+    uint32_t unk5{};
+    uint32_t unk6{};
+    uint32_t unk7{};
+    uint32_t unk8{};
+    Horse::Stats stats{};
+    Horse::Parts parts{};
+    Horse::Appearance appearance{};
+    uint8_t unk9{};
+    uint8_t unk10{};
+    uint8_t unk11{};
   };
 
   // List length specified with a uint8_t, max size 8
-  std::vector<WishlistElement> wishlist;
+  std::vector<WishlistElement> wishlist{};
 
   //! Writes the command to a provided sink buffer.
   //! @param command Command.
@@ -807,9 +807,9 @@ struct RanchCommandBreedingWishlistCancel
 //! Serverbound get messenger info command.
 struct RanchCommandUpdateMountNickname
 {
-  uint32_t unk0;
-  std::string nickname;
-  uint32_t unk1;
+  uint32_t unk0{};
+  std::string nickname{};
+  uint32_t unk1{};
 
   //! Writes the command to a provided sink buffer.
   //! @param command Command.
@@ -827,10 +827,10 @@ struct RanchCommandUpdateMountNickname
 //! Clientbound get messenger info response.
 struct RanchCommandUpdateMountNicknameOK
 {
-  uint32_t unk0;
-  std::string nickname;
-  uint32_t unk1;
-  uint32_t unk2;
+  uint32_t unk0{};
+  std::string nickname{};
+  uint32_t unk1{};
+  uint32_t unk2{};
   
   //! Writes the command to a provided sink buffer.
   //! @param command Command.
@@ -848,7 +848,7 @@ struct RanchCommandUpdateMountNicknameOK
 //! Serverbound get messenger info command.
 struct RanchCommandUpdateMountNicknameCancel
 {
-  uint8_t unk0;
+  uint8_t unk0{};
 
   //! Writes the command to a provided sink buffer.
   //! @param command Command.
