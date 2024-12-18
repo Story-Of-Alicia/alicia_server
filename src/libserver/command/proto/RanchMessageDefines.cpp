@@ -207,7 +207,7 @@ void RanchCommandEnterRanch::Write(
 void RanchCommandEnterRanch::Read(
   RanchCommandEnterRanch& command, SourceStream& buffer)
 {
-  buffer.Read(command.userUid)
+  buffer.Read(command.characterUid)
     .Read(command.code)
     .Read(command.ranchUid);
 }

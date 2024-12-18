@@ -102,7 +102,7 @@ public:
   //! @param interface Address of the interface to bind to.
   //! @param port Port to bind to.
   void Host(
-    const std::string_view& interface,
+    const asio::ip::address& address,
     uint16_t port);
 
   //! Set the connect handler.

@@ -339,11 +339,11 @@ CommandServer::CommandServer(std::string name)
 }
 
 void CommandServer::Host(
-  const std::string& interface,
+  const asio::ip::address& address,
   uint16_t port)
 {
-  _server.Host(interface, port);
-  spdlog::debug("{} server hosted on %s:%d", this->_name, interface, port);
+  _server.Host(address, port);
+  spdlog::debug("{} server hosted on %s:%d", this->_name, address.to_string(), port);
 }
 
 void CommandServer::RegisterCommandHandler(
@@ -407,7 +407,7 @@ void CommandServer::QueueCommand(
           client,
           GetCommandName(command),
           magic.id,
-          streamOrigin);
+          payloadSize);
         LogBytes({ (std::byte *) mutableBuffer.data() + 4, payloadSize });
       }
     });

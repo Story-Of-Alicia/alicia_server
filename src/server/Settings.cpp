@@ -35,7 +35,8 @@ void Settings::LoadFromFile(const std::filesystem::path& filePath)
       {
         auto [address, port] = ParseAddressAndPort(lobby["bind"]);
         // If parsing succeeded, update values
-        if (!address.empty() && port != 0)
+        if (!address.is_unspecified()
+          && port != 0)
         {
           _lobbySettings.address = address;
           _lobbySettings.port = port;
@@ -50,7 +51,7 @@ void Settings::LoadFromFile(const std::filesystem::path& filePath)
         {
           auto [address, port] = ParseAddressAndPort(advertisement["ranch"]);
           // If parsing succeeded, update values
-          if (!address.empty() && port != 0)
+          if (!address.is_unspecified() && port != 0)
           {
             _lobbySettings.ranchAdvAddress = address;
             _lobbySettings.ranchAdvPort = port;
@@ -62,7 +63,7 @@ void Settings::LoadFromFile(const std::filesystem::path& filePath)
           // Advertised address and port of the messenger host
           auto [address, port] = ParseAddressAndPort(advertisement["messenger"]);
           // If parsing succeeded, update values
-          if (!address.empty() && port != 0)
+          if (!address.is_unspecified() && port != 0)
           {
             _lobbySettings.messengerAdvAddress = address;
             _lobbySettings.messengerAdvPort = port;
@@ -78,7 +79,7 @@ void Settings::LoadFromFile(const std::filesystem::path& filePath)
       {
         auto [address, port] = ParseAddressAndPort(ranch["bind"]);
         // If parsing succeeded, update values
-        if (!address.empty() && port != 0)
+        if (!address.is_unspecified() && port != 0)
         {
           _ranchSettings.address = address;
           _ranchSettings.port = port;
@@ -93,7 +94,7 @@ void Settings::LoadFromFile(const std::filesystem::path& filePath)
       {
         auto [address, port] = ParseAddressAndPort(messenger["bind"]);
         // If parsing succeeded, update values
-        if (!address.empty() && port != 0)
+        if (!address.is_unspecified() && port != 0)
         {
           _messengerSettings.address = address;
           _messengerSettings.port = port;
@@ -113,25 +114,36 @@ void Settings::LoadFromFile(const std::filesystem::path& filePath)
   }
 }
 
-std::pair<std::string, uint16_t> Settings::ParseAddressAndPort(const nlohmann::json& jsonObject)
+std::pair<asio::ip::address_v4, uint16_t> Settings::ParseAddressAndPort(const nlohmann::json& jsonObject)
 {
-  // Check if both "address" and "port" exist
-  if (jsonObject.contains("address") && jsonObject.contains("port"))
+  // Both "address" and "port" properties must exist.
+  if (!jsonObject.contains("address") && !jsonObject.contains("port"))
   {
-    try
-    {
-      std::string address = jsonObject.at("address").get<std::string>();
-      uint16_t port = jsonObject.at("port").get<uint16_t>();
-      address = alicia::ResolveAddress(address, std::to_string(port));
-      return std::make_pair(address, port);
-    }
-    catch (const std::exception& e)
-    {
-      std::cerr << "Error parsing address/port: " << e.what() << std::endl;
-      return std::make_pair("", 0); // Return empty pair if parsing fails
-    }
+    // Return empty pair if keys are missing
+    return std::make_pair(asio::ip::address_v4{}, 0);
   }
-  return std::make_pair("", 0); // Return empty pair if keys are missing
+
+  try
+  {
+    const std::string address = jsonObject.at("address").get<std::string>();
+    const uint16_t port = jsonObject.at("port").get<uint16_t>();
+
+    const auto resolvedAddress = ResolveHostName(address);
+    if (resolvedAddress.is_unspecified())
+    {
+      throw std::runtime_error(
+        std::format("Couldn't resolve '{}' to a valid IPv4 address.", address));
+    }
+
+    return std::make_pair(
+      resolvedAddress,
+      port);
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << "Error parsing address/port: " << e.what() << std::endl;
+    return std::make_pair(asio::ip::address_v4{}, 0); // Return empty pair if parsing fails
+  }
 }
 
 } // namespace alicia
