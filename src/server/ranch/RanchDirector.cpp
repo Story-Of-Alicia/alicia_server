@@ -16,6 +16,8 @@ RanchDirector::RanchDirector(
   , _dataDirector(dataDirector)
   , _server("Ranch")
 {
+  _ranches[100] = RanchInstance {};
+
   // Handlers
 
   // EnterRanch handler
@@ -69,7 +71,7 @@ void RanchDirector::HandleEnterRanch(
   _clientCharacters[clientId] = characterUid;
 
   auto ranch = _dataDirector.GetRanch(ranchUid);
-  auto ranchInstance = _ranches[ranchUid];
+  auto& ranchInstance = _ranches[ranchUid];
 
   // Add character to the ranch.
   ranchInstance._worldTracker.AddCharacter(characterUid);
@@ -289,7 +291,7 @@ void RanchDirector::HandleEnterRanch(
     }
 
     // Do not broadcast to clients that are not on the ranch.
-    const EntityId characterEntityId = ranchInstance._worldTracker.GetCharacterEntityId(
+    const EntityId characterEntityId = ranchInstance._worldTracker.GetCharacterId(
       clientCharacterUid);
     if (characterEntityId == InvalidEntityId)
     {
@@ -312,10 +314,10 @@ void RanchDirector::HandleSnapshot(
   const DatumUid characterUid = _clientCharacters[clientId];
 
   auto character = _dataDirector.GetCharacter(characterUid);
-  auto ranchInstance = _ranches[character->ranchUid];
+  auto& ranchInstance = _ranches[character->ranchUid];
 
   const RanchCommandRanchSnapshotNotify response {
-    .ranchIndex = ranchInstance._worldTracker.GetCharacterEntityId(characterUid),
+    .ranchIndex = ranchInstance._worldTracker.GetCharacterId(characterUid),
     .unk0 = snapshot.unk0,
     .snapshot = snapshot.snapshot
   };
@@ -331,7 +333,7 @@ void RanchDirector::HandleSnapshot(
     }
 
     // Do not broadcast to clients that are not on the ranch.
-    const EntityId characterEntityId = ranchInstance._worldTracker.GetCharacterEntityId(
+    const EntityId characterEntityId = ranchInstance._worldTracker.GetCharacterId(
       clientCharacterUid);
     if (characterEntityId == InvalidEntityId)
     {
