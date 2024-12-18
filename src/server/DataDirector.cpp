@@ -65,6 +65,10 @@ DataDirector::DataDirector()
   _mounts[4].value = {
     .tid = 0x4E21, .name = "Ramon"
   };
+
+  _ranches[100].value = {
+    .ranchName = "SoA Ranch"
+  };
 }
 
 

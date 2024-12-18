@@ -16,6 +16,8 @@ RanchDirector::RanchDirector(
   , _dataDirector(dataDirector)
   , _server("Ranch")
 {
+  _ranches[100] = RanchInstance {};
+
   // Handlers
 
   // EnterRanch handler
@@ -69,7 +71,7 @@ void RanchDirector::HandleEnterRanch(
   _clientCharacters[clientId] = characterUid;
 
   auto ranch = _dataDirector.GetRanch(ranchUid);
-  auto ranchInstance = _ranches[ranchUid];
+  auto& ranchInstance = _ranches[ranchUid];
 
   // Add character to the ranch.
   ranchInstance._worldTracker.AddCharacter(characterUid);
@@ -312,7 +314,7 @@ void RanchDirector::HandleSnapshot(
   const DatumUid characterUid = _clientCharacters[clientId];
 
   auto character = _dataDirector.GetCharacter(characterUid);
-  auto ranchInstance = _ranches[character->ranchUid];
+  auto& ranchInstance = _ranches[character->ranchUid];
 
   const RanchCommandRanchSnapshotNotify response {
     .ranchIndex = ranchInstance._worldTracker.GetCharacterEntityId(characterUid),
