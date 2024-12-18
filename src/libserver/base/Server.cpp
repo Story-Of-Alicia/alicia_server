@@ -103,7 +103,7 @@ void Client::ReadLoop() noexcept
         if (error)
         {
           throw std::runtime_error(
-            fmt::format("Network error (0x%X): %s", error.value(), error.what()));
+            fmt::format("Network error (0x{}): {}", error.value(), error.what()));
         }
 
         // Commit the received bytes, so they can be read by the handler.

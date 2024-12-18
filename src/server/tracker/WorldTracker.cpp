@@ -13,7 +13,7 @@ EntityId WorldTracker::AddCharacter(DatumUid character)
   return _nextEntityId++;
 }
 
-EntityId WorldTracker::GetCharacterId(DatumUid character)
+EntityId WorldTracker::GetCharacterEntityId(DatumUid character)
 {
   const auto itr = _characters.find(character);
   if (itr == _characters.cend())
@@ -27,7 +27,7 @@ EntityId WorldTracker::AddMount(DatumUid mount)
   return _nextEntityId++;
 }
 
-EntityId WorldTracker::GetMountId(DatumUid mount)
+EntityId WorldTracker::GetMountEntityId(DatumUid mount)
 {
   const auto itr = _mounts.find(mount);
   if (itr == _mounts.cend())
