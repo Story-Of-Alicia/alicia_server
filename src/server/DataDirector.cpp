@@ -47,7 +47,8 @@ DataDirector::DataDirector()
     .carrots = 5000,
     .characterEquipment = {Item{.uid = 100, .tid = 30035, .val = 0, .count = 1}},
     .mountUid = 3,
-    .ranchUid = 100
+    .ranchUid = 100,
+    .horses = {3}
   };
   _characters[2].value = {
     .nickName = "laith",
@@ -56,7 +57,8 @@ DataDirector::DataDirector()
     .carrots = 5000,
     .characterEquipment = {Item{.uid = 100, .tid = 30035, .val = 0, .count = 1}},
     .mountUid = 4,
-    .ranchUid = 100
+    .ranchUid = 100,
+    .horses = {4}
   };
 
   _mounts[3].value = {
