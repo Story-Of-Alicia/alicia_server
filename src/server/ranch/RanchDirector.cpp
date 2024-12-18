@@ -54,42 +54,42 @@ RanchDirector::RanchDirector(
 
   _server.RegisterCommandHandler<RanchCommandUpdateBusyState>(
     CommandId::RanchUpdateBusyState,
-    [](ClientId clientId, auto& command)
+    [this](ClientId clientId, auto& command)
     {
       HandleUpdateBusyState(clientId, command); 
     });
   
   _server.RegisterCommandHandler<RanchCommandSearchStallion>(
     CommandId::RanchSearchStallion,
-    [](ClientId clientId, auto& command)
+    [this](ClientId clientId, auto& command)
     {
       HandleSearchStallion(clientId, command); 
     });
 
   _server.RegisterCommandHandler<RanchCommandEnterBreedingMarket>(
     CommandId::RanchEnterBreedingMarket,
-    [](ClientId clientId, auto& command)
+    [this](ClientId clientId, auto& command)
     {
       HandleEnterBreedingMarket(clientId, command); 
     });
 
   _server.RegisterCommandHandler<RanchCommandTryBreeding>(
     CommandId::RanchTryBreeding,
-    [](ClientId clientId, auto& command)
+    [this](ClientId clientId, auto& command)
     {
       HandleTryBreeding(clientId, command); 
     });
 
   _server.RegisterCommandHandler<RanchCommandBreedingWishlist>(
     CommandId::RanchBreedingWishlist,
-    [](ClientId clientId, auto& command)
+    [this](ClientId clientId, auto& command)
     {
       HandleBreedingWishlist(clientId, command); 
     });
 
   _server.RegisterCommandHandler<RanchCommandUpdateMountNickname>(
     CommandId::RanchUpdateMountNickname,
-    [](ClientId clientId, auto& command)
+    [this](ClientId clientId, auto& command)
     {
       HandleUpdateMountNickname(clientId, command); 
     });
@@ -519,13 +519,13 @@ void RanchDirector::HandleEnterBreedingMarket(ClientId clientId, const RanchComm
     [&](auto& sink)
     {
       RanchCommandEnterBreedingMarketOK response;
-      for(HorseId horseId : character.horses)
+      for(DatumUid horseId : character->horses)
       {
-        auto& horse = _horses[horseId];
+        auto horse = _dataDirector.GetMount(horseId);
         RanchCommandEnterBreedingMarketOK::AvailableHorse availableHorse
         {
           .uid = horseId,
-          .tid = horse.tid,
+          .tid = horse->tid,
           .unk0 = 0,
           .unk1 = 0,
           .unk2 = 0,

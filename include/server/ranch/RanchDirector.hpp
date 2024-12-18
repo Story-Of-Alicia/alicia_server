@@ -45,6 +45,37 @@ private:
     const RanchCommandRanchStuff& command);
 
   //!
+  void HandleUpdateBusyState(
+    ClientId clientId, 
+    const RanchCommandUpdateBusyState& command);   
+    
+  //!
+  void HandleSearchStallion(
+    ClientId clientId, 
+    const RanchCommandSearchStallion& command);
+
+  //!
+  void HandleEnterBreedingMarket(
+    ClientId clientId, 
+    const RanchCommandEnterBreedingMarket& command);
+
+  //!
+  void HandleTryBreeding(
+    ClientId clientId, 
+    const RanchCommandTryBreeding& command);
+
+  //!
+  void HandleBreedingWishlist(
+    ClientId clientId, 
+    const RanchCommandBreedingWishlist& command);
+
+  //!
+  void HandleUpdateMountNickname(
+    ClientId clientId, 
+    const RanchCommandUpdateMountNickname& command);
+
+
+  //!
   Settings::RanchSettings _settings;
   //!
   DataDirector& _dataDirector;
