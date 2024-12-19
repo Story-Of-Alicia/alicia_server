@@ -55,6 +55,10 @@ void Client::Begin()
 void Client::End()
 {
   _processIo = false;
+
+  _socket.shutdown(asio::socket_base::shutdown_both);
+  _socket.close();
+
   _endHandler();
 }
 
