@@ -27,11 +27,11 @@ public:
   //!
   EntityId AddCharacter(DatumUid character);
   //!
-  [[nodiscard]] EntityId GetCharacterId(DatumUid character);
+  [[nodiscard]] EntityId GetCharacterEntityId(DatumUid character);
   //!
   EntityId AddMount(DatumUid mount);
   //!
-  [[nodiscard]] EntityId GetMountId(DatumUid mount);
+  [[nodiscard]] EntityId GetMountEntityId(DatumUid mount);
 
   //!
   [[nodiscard]] const EntityMap& GetMountEntities();

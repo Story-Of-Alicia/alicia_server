@@ -28,7 +28,7 @@ add_library(alicia-libserver STATIC
 target_include_directories(alicia-libserver
         PUBLIC include/)
 target_link_libraries(alicia-libserver
-        PUBLIC project-properties Boost::headers spdlog::spdlog nlohmann_json::nlohmann_json pqxx)
+        PUBLIC project-properties Boost::headers spdlog::spdlog nlohmann_json::nlohmann_json)
 
 # Alicia server executable
 add_executable(alicia-server
