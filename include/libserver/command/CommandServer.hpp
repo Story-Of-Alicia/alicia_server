@@ -99,6 +99,19 @@ public:
     CommandSupplier supplier);
 
 private:
+  //!
+  void HandleClientConnect(ClientId clientId);
+  //!
+  void HandleClientDisconnect(ClientId clientId);
+  //!
+  void HandleClientRead(
+    ClientId clientId,
+    asio::streambuf& readBuffer);
+  //!
+  void HandleClientWrite(
+    ClientId clientId,
+    asio::streambuf& writeBuffer);
+
   std::string _name;
 
   std::unordered_map<CommandId, RawCommandHandler> _handlers{};
