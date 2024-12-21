@@ -18,7 +18,7 @@ public:
   {
     // Bind address and port of the lobby host.
     asio::ip::address_v4 address {
-      asio::ip::make_address_v4("127.0.0.1")
+      asio::ip::address_v4::any()
     };
     uint16_t port = 10030;
 
@@ -39,7 +39,7 @@ public:
   struct RanchSettings
   {
     asio::ip::address_v4 address{
-      asio::ip::make_address_v4("127.0.0.1")
+      asio::ip::address_v4::any()
     };
     uint16_t port = 10031;
   } _ranchSettings;
@@ -48,7 +48,7 @@ public:
   struct MessengerSettings
   {
     asio::ip::address_v4 address{
-      asio::ip::make_address_v4("127.0.0.1")
+      asio::ip::address_v4::any()
     };
     uint16_t port = 10032;
   } _messengerSettings;

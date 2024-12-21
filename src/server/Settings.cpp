@@ -1,3 +1,5 @@
+#include "spdlog/spdlog.h"
+
 #include <fstream>
 #include <iostream>
 #include <libserver/Util.hpp>
@@ -13,7 +15,7 @@ void Settings::LoadFromFile(const std::filesystem::path& filePath)
 
   if (!file.is_open())
   {
-    std::cerr << "Error: Could not open configuration file at: " << fullPath << std::endl;
+    spdlog::error("Could not open configuration file at '{}'", fullPath.string());
     return;
   }
 

@@ -101,6 +101,11 @@ LobbyDirector::LobbyDirector(
       HandleGetMessengerInfo(clientId, message);
     });
 
+  spdlog::debug("Advertising ranch server on {}:{}",
+    _settings.ranchAdvAddress.to_string(), _settings.ranchAdvPort);
+  spdlog::debug("Advertising messenger server on {}:{}",
+    _settings.messengerAdvAddress.to_string(), _settings.messengerAdvPort);
+
   // Host the server.
   _server.Host(_settings.address, _settings.port);
 }
@@ -174,8 +179,8 @@ void LobbyDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
     .profileGender = character->gender,
     .status = character->status,
 
-    // .characterEquipment = character->characterEquipment,
-    // .horseEquipment = character->horseEquipment,
+    .characterEquipment = character->characterEquipment,
+    .horseEquipment = character->horseEquipment,
 
     .level = character->level,
     .carrots = character->carrots,
@@ -207,7 +212,7 @@ void LobbyDirector::HandleUserLogin(ClientId clientId, const LobbyCommandLogin& 
 
     .character = {
       .parts = {
-        .charId = 10,
+        .charId = static_cast<uint8_t>(character->gender == Gender::Boy ? 10 : 20),
         .mouthSerialId = 0,
         .faceSerialId = 0,
         .val0 = 255},
@@ -415,16 +420,12 @@ void LobbyDirector::HandleEnterRanch(
     [characterUid, this](auto& sink)
     {
       auto character = _dataDirector.GetCharacter(characterUid);
-      // TODO: Move somewhere configurable
-      struct in_addr addr;
-      inet_pton(AF_INET, "127.0.0.1", &addr);
-      uint16_t port = 10031;
 
       LobbyCommandEnterRanchOK response{
         .ranchUid = character->ranchUid,
         .code = 0x44332211, // TODO: Generate and store in the ranch server instance
-        .ip = (uint32_t) addr.s_addr,
-        .port = port
+        .ip = htonl(_settings.ranchAdvAddress.to_uint()),
+        .port = _settings.ranchAdvPort,
       };
       LobbyCommandEnterRanchOK::Write(response, sink);
     });
@@ -439,15 +440,10 @@ void LobbyDirector::HandleGetMessengerInfo(
     CommandId::LobbyGetMessengerInfoOK,
     [&](auto& sink)
     {
-      // TODO: Move somewhere configurable
-      struct in_addr addr;
-      inet_pton(AF_INET, "127.0.0.1", &addr);
-      uint16_t port = 10032;
-
       LobbyCommandGetMessengerInfoOK response{
         .code = 0xDEAD, // TODO: Generate and store in the messenger server instance
-        .ip = (uint32_t) addr.s_addr,
-        .port = port
+        .ip = htonl(_settings.messengerAdvAddress.to_uint()),
+        .port = _settings.messengerAdvPort,
       };
       LobbyCommandGetMessengerInfoOK::Write(response, sink);
     });

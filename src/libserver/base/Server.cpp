@@ -56,8 +56,15 @@ void Client::End()
 {
   _processIo = false;
 
-  _socket.shutdown(asio::socket_base::shutdown_both);
-  _socket.close();
+  try
+  {
+    _socket.shutdown(asio::socket_base::shutdown_both);
+    _socket.close();
+  }
+  catch(const std::exception& x)
+  {
+    spdlog::error("Couldn't end connection", x.what());
+  }
 
   _endHandler();
 }
